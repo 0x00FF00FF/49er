@@ -34,7 +34,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentRemoved(ItemViewProperties projectProperties) {
-        getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+        if (projectProperties != null) {
+            getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+        }
+        resizeRv(true);
+        domainLink.onParentRemoved(projectProperties);
     }
 
     @Override

@@ -41,7 +41,9 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentRemoved(ItemViewProperties viewProperties) {
-        getRv().setAdapter(createNewTimeEntriesAdapter(viewProperties));
+        if (viewProperties != null) {
+            getRv().setAdapter(createNewTimeEntriesAdapter(viewProperties));
+        }
     }
 
     private TimeEntriesAdapter createNewTimeEntriesAdapter(ItemViewProperties viewProperties) {
