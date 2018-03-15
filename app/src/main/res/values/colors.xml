@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3f51b5</color>
+    <color name="colorPrimaryDark">#303f9f</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="greatGreen">#88FF00</color>
+    <!--villain-->
+    <color name="villain.dark.green">#1c1513</color>
+    <color name="villain.colorful.green">#58ba0c</color>
+    <color name="villain.pale.green">#84b649</color>
+    <color name="villain.brown">#3e252c</color>
+    <color name="villain.dark.brown">#2d1b29</color>
+    <!--old-picture-->
+    <color name="old.picture.dark.grey">#35474d</color>
+    <color name="old.picture.pink">#fe9496</color>
+    <color name="old.picture.green">#caedcc</color>
+    <color name="old.picture.white">#eff8d1</color>
+    <color name="old.picture.cyan">#19aba7</color>
+    <!--projects.default-->
+    <color name="projects.default.ff0070">#ff0070</color>
+    <color name="projects.default.00ff8f">#00ff8f</color>
+    <color name="projects.default.008080">#008080</color>
+    <color name="projects.default.cbbeb5">#cbbeb5</color>
+    <color name="projects.default.e9aac8">#e9aac8</color>
+    <color name="projects.default.c9aac8">#c9aac8</color>
+    <color name="projects.default.a9aac8">#a9aac8</color>
+    <color name="projects.default.96e7cf">#96e7cf</color>
+    <color name="projects.default.96c7cf">#96c7cf</color>
+    <color name="projects.default.96a7cf">#96a7cf</color>
+    <color name="projects.default.baa0a7">#baa0a7</color>
+    <color name="projects.default.bac0c7">#bac0c7</color>
+    <color name="projects.default.bae0e7">#bae0e7</color>
+    <color name="projects.default.b5a1d1">#b5a1d1</color>
+    <color name="projects.default.b5c1d1">#b5c1d1</color>
+    <color name="projects.default.b5e1d1">#b5e1d1</color>
+    <color name="projects.default.dfc6d0">#dfc6d0</color>
+    <color name="projects.default.ffe6d0">#ffe6d0</color>
+    <color name="projects.default.bfa6d0">#bfa6d0</color>
+    <color name="projects.default.ecbcd7">#ecbcd7</color>
+    <color name="projects.default.d8d3e4">#d8d3e4</color>
+    <color name="projects.default.232467">#232467</color>
+    <color name="projects.default.644783">#644783</color>
+    <color name="projects.default.0f54ad">#0f54ad</color>
+    <color name="projects.default.000033">#000033</color>
+    <color name="projects.default.282531">#282531</color>
+    <color name="projects.default.383640">#383640</color>
+    <color name="projects.default.282236">#282236</color>
+    <color name="projects.default.2a233c">#2a233c</color>
+    <color name="projects.default.2e4f70">#2e4f70</color>
+    <color name="projects.default.44344e">#44344e</color>
+    <color name="projects.default.6c619e">#6c619e</color>
+    <color name="projects.default.7070ff">#7070ff</color>
+    <color name="projects.default.e5a3a0">#e5a3a0</color>
+    <color name="projects.default.ffb2b6">#ffb2b6</color>
+    <color name="projects.default.7fc257">#7fc257</color>
+    <color name="projects.default.8ed861">#8ed861</color>
+    <color name="projects.default.ee5133">#ee5133</color>
+    <color name="projects.default.545f66">#545f66</color>
+    <color name="projects.default.911b2a">#911b2a</color>
+    <color name="projects.default.7d857f">#7d857f</color>
+</resources>

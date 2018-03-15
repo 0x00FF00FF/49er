@@ -1,0 +1,33 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="ProjectsList" parent="AppTheme">
+        <item name="android:overScrollMode">never</item>
+        <!--<item name="android:background">@color/greatGreen</item>-->
+    </style>
+
+    <style name="ProjectsListItem" parent="AppTheme">
+        <item name="android:layout_margin">@dimen/sv_margin</item>
+        <item name="android:textSize">@dimen/list_item_text_size</item>
+        <item name="android:gravity">center|start</item>
+        <item name="android:textColor">@color/projects.default.383640</item>
+        <item name="android:alpha">.6</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+</resources>
