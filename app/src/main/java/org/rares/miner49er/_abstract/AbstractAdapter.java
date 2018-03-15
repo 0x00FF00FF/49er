@@ -74,4 +74,6 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
         }
         super.onViewAttachedToWindow(holder);
     }
+
+    // adding a comment
 }
