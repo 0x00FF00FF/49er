@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.joda.time.DateTime;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
@@ -25,10 +26,10 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
     private SortedList<TimeEntryData> sortedData;
 
-    public TimeEntriesAdapter(ResizeableItemsUiOps uiOps, int tempTeNumber) {
+    public TimeEntriesAdapter(BaseInterfaces.ListItemClickListener listener, int tempTeNumber) {
         sortedData = new SortedList<>(TimeEntryData.class, timeEntriesCallback);
-        ops = uiOps;
-        ops.setViewHolderList(viewHolders);
+        clickListener = listener;
+        setMaxElevation(BaseInterfaces.MAX_ELEVATION_TIME_ENTRIES);
         initializeData(tempTeNumber);
 //        setHasStableIds(true);
     }
@@ -57,8 +58,8 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
                         .inflate(R.layout.resizeable_list_item, parent, false);
 
         final TimeEntriesViewHolder tevh = new TimeEntriesViewHolder(projectItemView);
-        tevh.setItemClickListener(ops);
-        tevh.setMaxItemElevation(ops.getMaxElevation() + 2);
+        tevh.setItemClickListener(clickListener);
+//        tevh.setMaxItemElevation(getMaxElevation() + 2);
         return tevh;
     }
 

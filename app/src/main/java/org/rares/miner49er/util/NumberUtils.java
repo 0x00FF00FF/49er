@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class NumberUtils {
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
-    private static final AtomicInteger projectsIds = new AtomicInteger(Integer.MAX_VALUE);
+    private static final AtomicInteger projectsIds = new AtomicInteger(30/*Integer.MAX_VALUE*/);
     private static final AtomicInteger elevationDegree = new AtomicInteger(21);
 
     public static int getRandomInt(int min, int max) {
@@ -41,6 +41,7 @@ public class NumberUtils {
      * @return a newly generated id for projects.
      */
     public static int getNextProjectId() {
+//        return projectsIds.getAndDecrement();
         return projectsIds.getAndDecrement();
     }
 

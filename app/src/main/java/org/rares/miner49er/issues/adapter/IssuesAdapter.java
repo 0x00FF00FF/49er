@@ -1,6 +1,5 @@
 package org.rares.miner49er.issues.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,14 +7,11 @@ import android.view.ViewGroup;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.issues.model.IssueData;
 import org.rares.miner49er.util.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.Setter;
 
 /**
  * @author rares
@@ -30,11 +26,12 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     private List<IssueData> dataList = new ArrayList<>();
 
-    public IssuesAdapter(final IssuesUiOps uiOps, int tempIssuesNumber) {
-        ops = uiOps;
+    public IssuesAdapter(final BaseInterfaces.ListItemClickListener listener, int tempIssuesNumber) {
+        clickListener = listener;
         setIssuesCount(tempIssuesNumber);
+        setMaxElevation(BaseInterfaces.MAX_ELEVATION_ISSUES);
         initializeData();
-        uiOps.setViewHolderList(viewHolders);
+//        clickListener.setViewHolderList(viewHolders);
 //        setHasStableIds(true);
     }
 
@@ -45,8 +42,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
                 inflate(R.layout.resizeable_list_item, parent, false);
 
         final IssuesViewHolder ivh = new IssuesViewHolder(containerView);
-        ivh.setItemClickListener(ops);
-        ivh.setMaxItemElevation(ops.getMaxElevation() + 2);
+        ivh.setItemClickListener(clickListener);
+//        ivh.setMaxItemElevation(getMaxElevation() + 2);
         // ^ careful with this if/when using shared rvp
         return ivh;
     }
@@ -55,7 +52,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     public void onBindViewHolder(IssuesViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         holder.bindData(dataList.get(position));
-        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());
+//        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());
     }
 
     @Override

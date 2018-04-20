@@ -10,5 +10,4 @@ public class ProjectViewProperties extends ItemViewProperties {
     private String text;
     @Getter @Setter
     private int projectId;
-
 }

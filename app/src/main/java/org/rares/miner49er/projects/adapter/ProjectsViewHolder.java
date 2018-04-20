@@ -31,7 +31,7 @@ import butterknife.BindView;
 
 public class ProjectsViewHolder extends ResizeableViewHolder {
 
-    private static final String TAG = ProjectsViewHolder.class.getName();
+    private static final String TAG = ProjectsViewHolder.class.getSimpleName();
 
     @BindView(R.id.tv_resource_name_item)
     TextView projectName;
@@ -50,12 +50,12 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
         int itemBgColor = Color.parseColor(data.getColor());
         projectName.setText(data.getProjectName());
         projectViewProperties.setSelected(false);
-        projectViewProperties.setText(data.getProjectName());
+        projectViewProperties.setData(data.getProjectName());
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setProjectId(114);
 
-        itemView.setBackgroundColor(itemBgColor);
-        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());
+//        itemView.setBackgroundColor(itemBgColor);
+//        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());
     }
 
 }

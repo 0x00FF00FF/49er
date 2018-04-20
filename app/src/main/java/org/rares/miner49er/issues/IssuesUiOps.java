@@ -4,8 +4,10 @@ import android.app.Activity;
 
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.util.NumberUtils;
 
@@ -20,15 +22,14 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private static final String TAG = IssuesUiOps.class.getSimpleName();
 
-    public IssuesUiOps(Activity activity) {
-        super(activity);    // why is this again? TODO: document on "no default constructor".
-        setMaxElevation(BaseInterfaces.MAX_ELEVATION_ISSUES);
-    }
+    public IssuesUiOps(){}
 
     @Override
     public void onParentSelected(ItemViewProperties projectProperties, boolean enlarge) {
+//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+//        final int lastPos = adapter.getLastSelectedPosition();
         getRv().setAdapter(createNewIssuesAdapter(projectProperties));
-        resizeItems(getLastSelectedId());
+//        resizeItems(lastPos); //todo: test this.
         resizeRv(!enlarge);
     }
 
@@ -42,8 +43,9 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void onListItemClick(ItemViewProperties itemViewProperties) {
-        boolean enlarge = resizeItems(itemViewProperties.getItemContainerCustomId());
+    public void onListItemClick(ResizeableViewHolder holder) {
+        ItemViewProperties itemViewProperties = holder.getItemProperties();
+        boolean enlarge = selectItem(itemViewProperties.getItemContainerCustomId());
         resizeRv(enlarge);
         domainLink.onParentSelected(itemViewProperties, enlarge);
     }

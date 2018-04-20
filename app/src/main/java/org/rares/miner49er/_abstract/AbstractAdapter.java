@@ -2,9 +2,9 @@ package org.rares.miner49er._abstract;
 
 import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,12 +17,21 @@ import lombok.Setter;
 public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewHolder>
         extends RecyclerView.Adapter<ExtendedViewHolder> {
 
-    @Getter @Setter
+    public static final String TAG = AbstractAdapter.class.getSimpleName();
+
+    @Getter
+    @Setter
+    private int maxElevation = 0;
+
+    @Getter
+    @Setter
     private int parentColor;
 
-    protected ResizeableItemsUiOps ops;
-    protected List<ResizeableViewHolder> viewHolders = new ArrayList<>();  // -- this can leak :(
-    // TODO: this badly needs refactoring.
+    @Getter
+    @Setter
+    private int lastSelectedPosition = -1;
+
+    protected ListItemClickListener clickListener;
 
 
     /**
@@ -38,9 +47,10 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
     @Override
     @CallSuper
     public void onBindViewHolder(ExtendedViewHolder holder, int position) {
-        if (!viewHolders.contains(holder)) {
-            viewHolders.add(holder);
-        }
+        Log.i(TAG, "onBindViewHolder: ");
+//        if (!viewHolders.contains(holder)) {
+//            viewHolders.add(holder);
+//        }
         int bgColor = parentColor + ((position % 2 == 0 ? 1 : -1) * 15);
         holder.itemView.setBackgroundColor(bgColor);
         holder.getItemProperties().setItemBgColor(bgColor);
@@ -54,26 +64,25 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
 
     @Override
     public void onViewDetachedFromWindow(ExtendedViewHolder holder) {
-        super.onViewDetachedFromWindow(holder);
+        Log.i(TAG, "onViewDetachedFromWindow: " + holder.getItemProperties().getData());
     }
 
     @Override
     public void onViewRecycled(ExtendedViewHolder holder) {
-        if (holder.getItemProperties().isSelected()) {
-            ops.setLastSelectedId(holder.getItemProperties().getItemContainerCustomId());
-        }
-        holder.resizeItemView(true);
-        super.onViewRecycled(holder);
+        Log.i(TAG, "onViewRecycled: " + holder.getItemProperties().getData());
+//        if (holder.getItemProperties().isSelected()) {
+//            setLastSelectedPosition(holder.getItemProperties().getItemContainerCustomId());
+//        }
+//        holder.resizeItemView(true);
     }
 
     @Override
     public void onViewAttachedToWindow(ExtendedViewHolder holder) {
-        if (ops.getLastSelectedId() == holder.getItemProperties().getItemContainerCustomId()) {
-            holder.getItemProperties().setSelected(true);
-            holder.resizeItemView(false);
-        }
-        super.onViewAttachedToWindow(holder);
+        Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemProperties().getData());
+//        if (getLastSelectedPosition() == holder.getItemProperties().getItemContainerCustomId()) {
+//            holder.getItemProperties().setSelected(true);
+//            holder.resizeItemView(false);
+//        }
     }
 
-    // adding a comment
 }

@@ -1,8 +1,8 @@
 package org.rares.miner49er.projects.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.util.SortedList;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,14 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.rares.miner49er.BaseInterfaces;
+import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
-import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.util.NumberUtils;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +31,7 @@ import java.util.regex.Pattern;
  */
 
 public class ProjectsAdapter
-extends AbstractAdapter<ProjectsViewHolder> {
+        extends AbstractAdapter<ProjectsViewHolder> {
 //        extends RecyclerView.Adapter<ProjectsViewHolder> {
 
     private int currentSortType = 1;
@@ -66,8 +64,7 @@ extends AbstractAdapter<ProjectsViewHolder> {
             "Project 15",
             "Project 16",
             "Project 17",
-            "Project 18",
-            "Project 19  this one has a longer name",
+            "Project 18"
     };
 
     private final String[] projectsColors = {
@@ -109,13 +106,13 @@ extends AbstractAdapter<ProjectsViewHolder> {
     private List<Integer> customIds = new ArrayList<>();
 
 
-    public ProjectsAdapter(final ProjectsUiOps uiOps) {
-        ops = uiOps;
-        ops.setViewHolderList(viewHolders);   // todo check how to do it with RV?
+    public ProjectsAdapter(final ListItemClickListener listener) {
+        clickListener = listener;
         slCallback = getNewAlphaNumSort(this);
         sortedData = new SortedList<>(ProjectData.class, slCallback);
+        setMaxElevation(BaseInterfaces.MAX_ELEVATION_PROJECTS);
         initializeData();
-        setHasStableIds(true);
+//        setHasStableIds(true);
     }
 
     /**
@@ -132,11 +129,14 @@ extends AbstractAdapter<ProjectsViewHolder> {
             customIds.add(NumberUtils.getNextProjectId());
         }
         sortedData.endBatchedUpdates();
+
+        setParentColor(Color.parseColor(projectsColors[0]));
     }
 
 
     @Override
     public ProjectsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent + "], viewType = [" + viewType + "]");
         Context ctx = parent.getContext();
 
         View projectItemView =
@@ -144,8 +144,8 @@ extends AbstractAdapter<ProjectsViewHolder> {
                         .inflate(R.layout.resizeable_list_item, parent, false);
 
         final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
-        pvh.setItemClickListener(ops);
-        pvh.setMaxItemElevation(ops.getMaxElevation() + 2);
+        pvh.setItemClickListener(clickListener);
+//        pvh.setMaxItemElevation(getMaxElevation() + 2);
         return pvh;
     }
 
@@ -185,6 +185,13 @@ extends AbstractAdapter<ProjectsViewHolder> {
     @Override
     public int getItemCount() {
         return sortedData.size();
+    }
+
+
+    @Override
+    public int getItemViewType(int position) {
+//        Log.i(TAG, "getItemViewType position: " + position);
+        return R.layout.resizeable_list_item;
     }
 
 

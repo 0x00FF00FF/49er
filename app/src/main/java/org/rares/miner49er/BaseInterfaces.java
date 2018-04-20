@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import org.rares.miner49er._abstract.ItemViewProperties;
+import org.rares.miner49er._abstract.ResizeableViewHolder;
 
 import butterknife.Unbinder;
 
@@ -29,12 +30,13 @@ public interface BaseInterfaces {
         void resetLastSelectedId();
 
         /**
-         * Resize each item view from the holders list.
+         * Sets the _selected_ item in the adapter.
+         * The _selected_ status is not default RV behaviour.
          *
          * @param selectedId - denotes the current selected item's position within the adapter
          * @return - true if a click was performed on an already selected item
          */
-        boolean resizeItems(int selectedId);
+        boolean selectItem(int selectedId);
     }
 
     interface ListItemClickListener {
@@ -43,10 +45,11 @@ public interface BaseInterfaces {
         /**
          * Called when a project was clicked on.
          *
-         * @param itemViewProperties the the transient project properties object
+         * param itemViewProperties the the transient project properties object
          *                           containing information about the selected project
          */
-        void onListItemClick(ItemViewProperties itemViewProperties);
+//        void onListItemClick(ItemViewProperties itemViewProperties);
+        void onListItemClick(ResizeableViewHolder holder);
     }
 
     interface DomainLink {

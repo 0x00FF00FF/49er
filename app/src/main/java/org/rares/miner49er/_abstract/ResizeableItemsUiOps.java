@@ -1,24 +1,13 @@
 package org.rares.miner49er._abstract;
 
-import android.app.Activity;
 import android.os.Build;
-import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.rares.miner49er.BaseInterfaces;
-import org.rares.miner49er.R;
-import org.rares.miner49er.util.NumberUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import butterknife.BindDimen;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,41 +18,49 @@ import lombok.Setter;
 
 public abstract class ResizeableItemsUiOps
         implements
-        Unbinder,
         BaseInterfaces.ListItemClickListener,
         BaseInterfaces.ResizeableItems
 {
 
     private static final String TAG = ResizeableItemsUiOps.class.getSimpleName();
 
-    protected Activity activity;
-
-    protected Unbinder unbinder;
-
     @Setter
     protected BaseInterfaces.DomainLink domainLink;
 
-    @BindDimen(R.dimen.projects_rv_collapsed_width)
-    int collapsedWidth;
+    @Setter
+    private int rvCollapsedWidth;
 
     @Getter @Setter
     private RecyclerView rv;
 
-    @Getter @Setter
-    private int lastSelectedId = -1;
-
-    @Getter @Setter
-    private List<ResizeableViewHolder> viewHolderList = new ArrayList<>();
-    // TODO: check if the list of view holders can be removed as a link between the adapter and the ui ops
-
-    @Getter @Setter
-    private int maxElevation = 0;
-
     @Override
     public void resetLastSelectedId() {
-        lastSelectedId = -1;
+        ((AbstractAdapter)getRv().getAdapter()).setLastSelectedPosition(-1);
     }
 
+    public boolean selectItem(int selectedPosition) {
+        // check if selected position is valid
+        AbstractAdapter _tempAdapter = ((AbstractAdapter)getRv().getAdapter());
+        final int prevSelected = _tempAdapter.getLastSelectedPosition();
+
+//        ResizeableViewHolder viewHolder = (ResizeableViewHolder) getRv().findViewHolderForAdapterPosition(prevSelected);
+//        if (viewHolder != null) {
+////            viewHolder.resizeItemView(true);
+//            viewHolder.setIsRecyclable(true);
+//        }
+//
+        if (prevSelected == selectedPosition) {
+            resetLastSelectedId();
+//            getRv().requestLayout();//////////////////////////
+            return true;
+        }
+        _tempAdapter.setLastSelectedPosition(selectedPosition);
+//        _tempAdapter.notifyItemChanged(prevSelected);
+//        _tempAdapter.notifyItemChanged(selectedPosition);
+        return false;
+    }
+
+/*
     @Override
     public boolean resizeItems(int selectedId) {
         boolean deselecting = false;
@@ -93,12 +90,7 @@ public abstract class ResizeableItemsUiOps
         Log.d(TAG, "resizeItems() returned: " + deselecting);
         return deselecting;
     }
-
-    public ResizeableItemsUiOps(Activity activity) {
-        this.activity = activity;
-        unbinder = ButterKnife.bind(this, activity);
-        ((BaseInterfaces.UnbinderHost) activity).registerUnbinder(unbinder);
-    }
+*/
 
     /**
      * Resize the projects recycler view based on the enlarge param
@@ -112,22 +104,18 @@ public abstract class ResizeableItemsUiOps
         int width = getRv().getLayoutParams().width;
         int height = getRv().getLayoutParams().height;
         LinearLayout.LayoutParams lpProjectsRvParent = new LinearLayout.LayoutParams(
-                enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : collapsedWidth, height);
+                enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth, height);
 
-        getRv().setLayoutParams(lpProjectsRvParent);
+        // only change layout params if needed.
+//        if ((enlarge && width == rvCollapsedWidth) || (!enlarge && width == ViewGroup.LayoutParams.MATCH_PARENT)) {
+            getRv().setLayoutParams(lpProjectsRvParent);
+//        }
+        // commented to always redraw because the cra**y invalidate() method doesn't redraw the selected view
 
+        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getRv().setElevation(enlarge ? 0 : getMaxElevation());
+            getRv().setElevation(enlarge ? 0 : _tempAdapter.getMaxElevation());
         }
-    }
-
-//    @CallSuper
-    @Override
-    public void unbind() {
-        Log.e(TAG, "unbind: called in Abstract class.");
-        unbinder.unbind();
-        ((BaseInterfaces.UnbinderHost) activity).deRegisterUnbinder(this);
-        domainLink = null;
     }
 
 }

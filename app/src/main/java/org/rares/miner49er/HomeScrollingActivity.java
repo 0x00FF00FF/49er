@@ -29,6 +29,7 @@ import org.rares.miner49er.util.DisplayUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -77,6 +78,11 @@ public class HomeScrollingActivity
     @BindView(R.id.scroll_views_container)
     LinearLayout scrollViewsContainer;
 
+    @BindDimen(R.dimen.projects_rv_collapsed_width)
+    int rvCollapsedWidth;
+
+    @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width)
+    int itemCollapsedSelectedWidth;
 
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
@@ -176,24 +182,46 @@ public class HomeScrollingActivity
 
     private void setupRV() {
 
+        // cache
+        projectsRV.setItemViewCacheSize(4);
+        issuesRV.setItemViewCacheSize(4);
+        timeEntriesRv.setItemViewCacheSize(4);
+
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
-        TimeEntriesUiOps timeEntriesOps = new TimeEntriesUiOps(this);
+        TimeEntriesUiOps timeEntriesOps = new TimeEntriesUiOps();
         timeEntriesOps.setRv(timeEntriesRv);
 
         issuesRV.setLayoutManager(new LinearLayoutManager(this));
-        issuesUiOps = new IssuesUiOps(this);
+        issuesUiOps = new IssuesUiOps();
+        issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);  /////// dagger here? or maybe just butterKnife?
         issuesUiOps.setRv(issuesRV);
         issuesUiOps.setDomainLink(timeEntriesOps);
 
-        projectsUiOps = new ProjectsUiOps(this);
+        projectsUiOps = new ProjectsUiOps();
         projectsUiOps.setRv(projectsRV);
         projectsUiOps.setProjectsListResizeListener(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
+        projectsUiOps.setRvCollapsedWidth(rvCollapsedWidth); /////// dagger here? or maybe just butterKnife?
         projectsUiOps.setDomainLink(issuesUiOps);
 
-        projectsRV.setLayoutManager(new LinearLayoutManager(this));
         projectsRV.setAdapter(projectsAdapter);
+//        StickyLinearLayoutManager layoutManager = new StickyLinearLayoutManager();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+//        layoutManager.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
+//        layoutManager.setMaxItemElevation(projectsAdapter.getMaxElevation()+2);
+        projectsRV.setLayoutManager(layoutManager);
+
+        // pool
+        // - cannot share same pool between rvs
+        // because of the different types of view holders
+
+//        RecyclerView.RecycledViewPool sharedPool = new RecyclerView.RecycledViewPool();
+//        sharedPool.setMaxRecycledViews(R.layout.resizeable_list_item, 40);
+//        timeEntriesRv.setRecycledViewPool(sharedPool);
+//        issuesRV.setRecycledViewPool(sharedPool);
+//        projectsRV.setRecycledViewPool(sharedPool);
+
         // supportsPredictiveItemAnimations
     }
 

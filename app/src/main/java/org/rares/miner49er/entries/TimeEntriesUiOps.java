@@ -7,6 +7,7 @@ import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.entries.adapter.TimeEntriesAdapter;
 import org.rares.miner49er.entries.adapter.TimeEntryViewProperties;
 import org.rares.miner49er.util.NumberUtils;
@@ -21,21 +22,16 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     public static final String TAG = TimeEntriesUiOps.class.getSimpleName();
 
-    public TimeEntriesUiOps(Activity activity) {
-        super(activity);
-        setMaxElevation(BaseInterfaces.MAX_ELEVATION_TIME_ENTRIES);
-    }
-
     @Override
-    public void onListItemClick(ItemViewProperties itemViewProperties) {
-        TimeEntryViewProperties tvp = (TimeEntryViewProperties) itemViewProperties;
+    public void onListItemClick(ResizeableViewHolder holder) {
+        TimeEntryViewProperties tvp = (TimeEntryViewProperties) holder.getItemProperties();
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + tvp.getText());
     }
 
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean enlarge) {
         getRv().setAdapter(createNewTimeEntriesAdapter(viewProperties));
-        resizeItems(getLastSelectedId());
+//        resizeItems(getLastSelectedId()); //todo:test this. is this still needed?
         resizeRv(!enlarge);
     }
 
