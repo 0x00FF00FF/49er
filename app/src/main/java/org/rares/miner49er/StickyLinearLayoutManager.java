@@ -353,7 +353,6 @@ public class StickyLinearLayoutManager extends RecyclerView.LayoutManager {
             _lastAddedPos = i;
         }
 
-//        //Log.e(TAG, "drawChildren: <<<<<<<<<<<<<<<<<<");
         return yScrollDelta;
     }
 
