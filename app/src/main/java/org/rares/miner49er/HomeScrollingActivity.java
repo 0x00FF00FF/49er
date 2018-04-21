@@ -206,8 +206,8 @@ public class HomeScrollingActivity
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
-//        StickyLinearLayoutManager layoutManager = new StickyLinearLayoutManager();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        StickyLinearLayoutManager layoutManager = new StickyLinearLayoutManager();
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 //        layoutManager.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
 //        layoutManager.setMaxItemElevation(projectsAdapter.getMaxElevation()+2);
         projectsRV.setLayoutManager(layoutManager);
