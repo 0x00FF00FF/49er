@@ -19,7 +19,6 @@ import android.widget.LinearLayout;
 
 import org.rares.miner49er.entries.TimeEntriesUiOps;
 import org.rares.miner49er.issues.IssuesUiOps;
-import org.rares.miner49er.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
