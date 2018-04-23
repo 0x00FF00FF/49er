@@ -19,7 +19,7 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  * @since 02.03.2018
  */
 
-
+// TODO: 4/23/18 this is going to be refactored.
 public abstract class ResizeableViewHolder
         extends RecyclerView.ViewHolder
         implements

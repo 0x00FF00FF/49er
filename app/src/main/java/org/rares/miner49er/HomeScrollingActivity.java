@@ -19,6 +19,8 @@ import android.widget.LinearLayout;
 
 import org.rares.miner49er.entries.TimeEntriesUiOps;
 import org.rares.miner49er.issues.IssuesUiOps;
+import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
+import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
@@ -205,10 +207,18 @@ public class HomeScrollingActivity
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
-        StickyLinearLayoutManager layoutManager = new StickyLinearLayoutManager();
+        RecyclerView.LayoutManager layoutManager = new StickyLinearLayoutManager();
+//        SimpleLinearLayoutManager layoutManager = new SimpleLinearLayoutManager(this);
 //        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-//        layoutManager.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
-//        layoutManager.setMaxItemElevation(projectsAdapter.getMaxElevation()+2);
+
+        // this condition is true, but here if we want to change
+        // our custom managers with the default LLM implementation
+        if (layoutManager instanceof ResizeableLayoutManager) {
+            // this is not downCasting
+            ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
+            mgr.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
+            mgr.setMaxItemElevation(projectsAdapter.getMaxElevation() + 2);
+        }
         projectsRV.setLayoutManager(layoutManager);
 
         // pool

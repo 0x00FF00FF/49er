@@ -1,32 +1,32 @@
-package org.rares.miner49er;
+package org.rares.miner49er.layoutmanager;
 
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import lombok.Setter;
 
 // TODO: 07.04.2018 | send info from adapter to lm -> selected item
-// TODO: 07.04.2018 | check what's happening with the first item
 
 /**
  * @author rares
  * @since 29.03.2018
  */
 
-public class StickyLinearLayoutManager extends RecyclerView.LayoutManager {
+public class StickyLinearLayoutManager
+        extends RecyclerView.LayoutManager
+        implements ResizeableLayoutManager {
 
     private final static String tag = StickyLinearLayoutManager.class.getSimpleName();
     private static String TAG = tag;
 
-    public static final int BOTTOM = -1;
+    private static final int BOTTOM = -1;
     //    public static final int NONE = 0;
-    public static final int TOP = 1;
+    private static final int TOP = 1;
 
     @Setter
     private int selectedPosition = -1;    // currently adapter _selected_ position

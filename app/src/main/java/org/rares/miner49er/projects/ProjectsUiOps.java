@@ -1,9 +1,11 @@
 package org.rares.miner49er.projects;
 
+import android.support.v7.widget.RecyclerView;
+
 import org.rares.miner49er.BaseInterfaces.DomainLink;
-import org.rares.miner49er.StickyLinearLayoutManager;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
+import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 
 import lombok.Setter;
@@ -37,10 +39,13 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 //        holder.setIsRecyclable(false);
         domainLink.onParentSelected(holder.getItemProperties(), enlarge);
 
-//        StickyLinearLayoutManager layoutManager = (StickyLinearLayoutManager) getRv().getLayoutManager();
-//        layoutManager.setSelectedPosition(enlarge ? -1 : adapterPosition);
-//        layoutManager.resizeSelectedView(holder.itemView, enlarge);
-        //todo force redraw single items
+        RecyclerView.LayoutManager layoutManager = getRv().getLayoutManager();
+
+        if (layoutManager instanceof ResizeableLayoutManager) {
+            ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
+            mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
+            mgr.resizeSelectedView(holder.itemView, enlarge);
+        }
 
         resizeRv(enlarge);
     }
