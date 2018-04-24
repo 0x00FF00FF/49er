@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import lombok.Setter;
 
 // TODO: 07.04.2018 | send info from adapter to lm -> selected item
@@ -37,7 +36,12 @@ public class StickyLinearLayoutManager
     @Setter
     private int itemCollapsedSelectedWidth = -1;
 
+
+    // extraChildren: number of children drawn outside of bounds, both at top and bottom.
+    // e.g. extraChildren = 1 will result in one child at top, and one at bottom.
+    // this number will affect child recycling as well as drawing..
     private int
+            extraChildren = 0,
             decoratedChildWidth = 0,
             decoratedChildHeight = 0,
             firstVisiblePosition = 0,
@@ -180,7 +184,7 @@ public class StickyLinearLayoutManager
             for (int i = 0; i < max; i++) {
                 View v = getChildAt(i);
                 float itemLowerBorder = v.getY() + decoratedChildHeight - dy;
-                if (itemLowerBorder < 0) {
+                if (itemLowerBorder < -(decoratedChildHeight * extraChildren)) {
                     toRecycle[index++] = v;
                 }
             }
@@ -188,7 +192,7 @@ public class StickyLinearLayoutManager
             for (int i = max - 1; i >= 0; i--) {
                 View v = getChildAt(i);
                 float itemY = v.getY() - dy;
-                if (itemY > getHeight()) {
+                if (itemY > getHeight() + (decoratedChildHeight * extraChildren)) {
                     toRecycle[index++] = v;
                 }
             }
@@ -275,7 +279,7 @@ public class StickyLinearLayoutManager
         int from =
                 newItemPosition == BOTTOM ?
                         Math.min(getItemCount(), bottomMostPosition == 0 ? 0 : bottomMostPosition + 1) :
-                        Math.max(0, firstVisiblePosition);
+                        Math.max(0, firstVisiblePosition - extraChildren);
 
         if (from == getItemCount()) {
             Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [Adding items after last adapter position.]");
@@ -286,7 +290,7 @@ public class StickyLinearLayoutManager
 
         View item = getChildAt(0);
 
-        int to = newItemPosition == BOTTOM ? lastVisiblePosition : getPosition(item);
+        int to = newItemPosition == BOTTOM ? lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);
 
         if (from > to) {
             Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [from > to]");
@@ -301,17 +305,17 @@ public class StickyLinearLayoutManager
         int reversePosition = 0;
         for (int i = from; i < to; i++) {
             int inbetween = 0; // space between items | if item decorations wouldn't be enough
-            int r, t, b;
+            int r, t, b, l;
             t = i * decoratedChildHeight + (inbetween * (i + 1)) - lastTopY;
             b = (i + 1) * (decoratedChildHeight + inbetween) - lastTopY;
             if (newItemPosition == BOTTOM) {
-                if (t > getHeight()) {
+                if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
                     Log.e(TAG, "v drawChildren: item is out of view bounds." +
                             " will not draw position #" + i + " t=" + t);
                     return;
                 }
             } else {
-                if (b < 0) {
+                if (b < -decoratedChildHeight * extraChildren) {
                     Log.e(TAG, "drawChildren: ^ item is out of view bounds." +
                             " will not draw position #" + i + " b=" + b
                     );
@@ -324,10 +328,10 @@ public class StickyLinearLayoutManager
 //                //Log.i(TAG, "drawChildren: item.elevation: " + item.getElevation());
 //            }
 
-            int l = (int) Math.pow(2, 6 - i) * 3;
+            l = (int) Math.pow(2, 6 - i) * 3;
 
-            r = item.getLayoutParams().width == -1 ? getWidth() : item.getLayoutParams().width;
-
+            int lpWidth = item.getLayoutParams().width;
+            r = lpWidth == -1 ? getWidth() : lpWidth;
 
             if (newItemPosition == BOTTOM) {
                 addView(item);
