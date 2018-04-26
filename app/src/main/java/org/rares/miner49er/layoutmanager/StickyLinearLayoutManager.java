@@ -24,8 +24,10 @@ public class StickyLinearLayoutManager
     private static String TAG = tag;
 
     private static final int BOTTOM = -1;
-    //    public static final int NONE = 0;
+    private static final int NONE = 0;
     private static final int TOP = 1;
+
+    public static final int TAG_INITIAL_POSITION = 298734927;
 
     @Setter
     private int selectedPosition = -1;    // currently adapter _selected_ position
@@ -39,7 +41,11 @@ public class StickyLinearLayoutManager
 
     // extraChildren: number of children drawn outside of bounds, both at top and bottom.
     // e.g. extraChildren = 1 will result in one child at top, and one at bottom.
-    // this number will affect child recycling as well as drawing..
+    // this number will affect child recycling as well as drawing
+    // only works with positive values.
+    // --
+    // virtualPosition: made-up position to help calculate the selected view position
+    // after not scrolling out of bounds when it should.
     private int
             extraChildren = 0,
             decoratedChildWidth = 0,
@@ -48,6 +54,8 @@ public class StickyLinearLayoutManager
             itemsNumber = 0,
             lastVisiblePosition = 0,
             lastTopY = 0;
+
+    private int virtualTop = 0, virtualBottom, virtualPosition, originalPosition;
 
     private View selectedView = null;
 
@@ -118,7 +126,7 @@ public class StickyLinearLayoutManager
         itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
         removeAndRecycleView(labRatView, recycler);
 
-        drawChildren(BOTTOM, recycler);
+        drawChildren(NONE, recycler);
 
         //Log.d(TAG, "onLayoutChildren: -------------------e-n-d----------------------");
     }
@@ -140,7 +148,7 @@ public class StickyLinearLayoutManager
             predicts items positions and does not do stuff if it doesn't make sense
             (like removing 10 items at once if dy demands so)
          */
-        int maxScroll = getItemCount() * (decoratedChildHeight - 2);
+        int maxScroll = (getItemCount() - 1) * (decoratedChildHeight);
 
         View firstView = getChildAt(0);
         int firstChildPos = -1;
@@ -180,7 +188,7 @@ public class StickyLinearLayoutManager
         final int max = getChildCount();// TODO: 4/21/18 clean these fors up
         View[] toRecycle = new View[max];
         int index = 0;
-        if (dy > 0) { // adding items at BOTTOM
+        if (dy > 0) { // adding items at BOTTOM -> removing at top
             for (int i = 0; i < max; i++) {
                 View v = getChildAt(i);
                 float itemLowerBorder = v.getY() + decoratedChildHeight - dy;
@@ -188,7 +196,7 @@ public class StickyLinearLayoutManager
                     toRecycle[index++] = v;
                 }
             }
-        } else {     // adding items at TOP
+        } else {     // adding items at TOP -> removing at bottom
             for (int i = max - 1; i >= 0; i--) {
                 View v = getChildAt(i);
                 float itemY = v.getY() - dy;
@@ -200,6 +208,10 @@ public class StickyLinearLayoutManager
         for (int i = 0; i < max; i++) {
             View v = toRecycle[i];
             if (v != null) {
+                if (v == selectedView) {
+                    Log.v(TAG, "scrollVerticallyBy: # They tried to make me go to rehab, I said, no, no, no.. #");
+                    continue;
+                }
                 removeAndRecycleView(v, recycler);
                 String text = getItemText(v);
                 Log.d(TAG, "scrollVerticallyBy: " +
@@ -273,13 +285,27 @@ public class StickyLinearLayoutManager
             logDirection = " ^ ";
         }
         TAG = tag + logDirection;
+        View item = getChildAt(getChildCount() - 1);
 
-        int bottomMostPosition = getChildCount() == 0 ? 0 : getPosition(getChildAt(getChildCount() - 1));
+        int bottomMostPosition = getChildCount() == 0 ? 0 : getPosition(item);
+        Log.i(TAG, "drawChildren: bottomMostPosition> " + bottomMostPosition + "|" + getChildCount());
+        if (item == selectedView) {
+            if (getChildCount() > 1) {
+                bottomMostPosition = getPosition(getChildAt(getChildCount() - 2));
+            }
+        }
 
-        int from =
-                newItemPosition == BOTTOM ?
-                        Math.min(getItemCount(), bottomMostPosition == 0 ? 0 : bottomMostPosition + 1) :
-                        Math.max(0, firstVisiblePosition - extraChildren);
+        int from = 0;
+        if (newItemPosition == BOTTOM) {
+            from = Math.min(getItemCount(), bottomMostPosition == 0 ? 0 : bottomMostPosition + 1);
+        }
+        if (newItemPosition == NONE) {
+            from = firstVisiblePosition;
+        }
+        if (newItemPosition == TOP) {
+            from = Math.max(0, firstVisiblePosition - extraChildren);
+        }
+
 
         if (from == getItemCount()) {
             Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [Adding items after last adapter position.]");
@@ -288,27 +314,39 @@ public class StickyLinearLayoutManager
 
         lastVisiblePosition = Math.min(firstVisiblePosition + itemsNumber + 2, getItemCount());
 
-        View item = getChildAt(0);
-
-        int to = newItemPosition == BOTTOM ? lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);
-
-        if (from > to) {
-            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [from > to]");
-            return;
+        item = getChildAt(0);
+        if (item == selectedView) {
+            if (getChildCount() > 1) {
+                item = getChildAt(1);
+            }
         }
+
+        int to = newItemPosition == BOTTOM || newItemPosition == NONE ?
+                lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);
 
         Log.e(TAG, "drawChildren: firstVisiblePosition: " + firstVisiblePosition);
         Log.e(TAG, "_drawChildren: lastVisiblePosition: " + lastVisiblePosition);
         Log.i(TAG, "drawChildren: from: " + from + " -> to: " + to + " > " + getItemText(item));
         Log.i(TAG, "_drawChildren: child count: " + getChildCount());
 
+        if (from > to) {
+            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [from > to]");
+            return;
+        }
+
         int reversePosition = 0;
         for (int i = from; i < to; i++) {
+            if (i == selectedPosition) {
+                if (newItemPosition != NONE) {
+                    Log.i(TAG, "drawChildren: skipping view at position: " + i);
+                    continue;
+                }
+            }
             int inbetween = 0; // space between items | if item decorations wouldn't be enough
             int r, t, b, l;
             t = i * decoratedChildHeight + (inbetween * (i + 1)) - lastTopY;
             b = (i + 1) * (decoratedChildHeight + inbetween) - lastTopY;
-            if (newItemPosition == BOTTOM) {
+            if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                 if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
                     Log.e(TAG, "v drawChildren: item is out of view bounds." +
                             " will not draw position #" + i + " t=" + t);
@@ -328,12 +366,15 @@ public class StickyLinearLayoutManager
 //                //Log.i(TAG, "drawChildren: item.elevation: " + item.getElevation());
 //            }
 
+            Log.i(TAG, "drawChildren: item: " + item + "/" + selectedView);
+
+
             l = (int) Math.pow(2, 6 - i) * 3;
 
             int lpWidth = item.getLayoutParams().width;
             r = lpWidth == -1 ? getWidth() : lpWidth;
 
-            if (newItemPosition == BOTTOM) {
+            if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                 addView(item);
             } else {
                 addView(item, reversePosition++);
@@ -360,8 +401,10 @@ public class StickyLinearLayoutManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 itemView.setElevation(0);
             }
+            selectedView.setTag(TAG_INITIAL_POSITION, null);
         } else {
             itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
+            setInitialPosition(itemView);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 itemView.setElevation(maxItemElevation);
             }
@@ -380,7 +423,17 @@ public class StickyLinearLayoutManager
             }
             requestLayout();
             selectedView = itemView;
+        } else {
+            selectedView = null;
         }
+    }
+
+    private void setInitialPosition(View v) {
+        int pos = getPosition(v) * decoratedChildHeight;
+        v.setTag(TAG_INITIAL_POSITION, pos);
+        originalPosition = pos;
+        virtualPosition = virtualTop + originalPosition;
+        Log.v(TAG, "setInitialPosition: " + pos + ", " + v.getY() + ", " + (virtualPosition - virtualTop));
     }
 
     private String getItemText(View v) {
@@ -392,4 +445,154 @@ public class StickyLinearLayoutManager
         return tv.getText().toString();
     }
 
+    // TODO: 4/26/18 bottom limit (getHeight()) should be dynamic.
+    @Override
+    public void offsetChildrenVertical(int dy) {
+        boolean scrollToEnd = dy < 0, addItemsAtEnd = scrollToEnd;
+        if (dy == 0) {
+            return;
+        }
+
+        virtualTop += dy;
+        virtualBottom = virtualTop + getHeight();
+
+        /*
+         *          # offset children logic #
+         *
+         *  parse the child views. > if iterated child
+         *  is not the selected one, use the default
+         *  behaviour (scroll as if nothing happened)
+         *  >> if child is the selected one, let it
+         *  scroll normally inside the visible region.
+         *  (if its virtual position is between the
+         *  virtual top and bottom)
+         *  > if the child goes outside the bounds,
+         *  don't let it (adapt dy for that view).
+         *  > if dy is too big for the child to fully
+         *  disappear, adapt it to the right value so
+         *  that the view will stick to the top or
+         *  bottom and won't slide outside of bounds.
+         *  > when scrolling from outside the bounds,
+         *  (the original position would be outside)
+         *  don't scroll the sticky view unless it's
+         *  at its original position inside the list.
+         *  for this to happen, dy is forced to be 0
+         *  if the original position is outside the
+         *  visible bounds. dy will be adapted in this
+         *  case as well, so that there will be no
+         *  differences between the current position
+         *  and its original position (these can be
+         *  perceived as blank spaces between the
+         *  selected view and the next/previous one,
+         *  and/or the view will overlap the previous
+         *  or next view, depending on scroll direction)
+         *
+         *  >> the virtual points are dynamically
+         *  calculated and change as the viewport is
+         *  scrolled. virtualTop changes by adding the
+         *  original dy (and not the computed offset for
+         *  the selected view!) virtualBottom depends on
+         *  virtualTop. virtualPosition is derived
+         *  from virtualTop at the beginning of the
+         *  view selection process, but as the views
+         *  are scrolled, the calculated offset for
+         *  the selected view is added to its value
+         *  so that we can compute the difference
+         *  between the total amount of scroll and
+         *  the adapted one, applied only to the
+         *  selected view. based on this difference,
+         *  we can decide when to apply limits to dy
+         *  so that the view will move in a controlled
+         *  fashion, its movement would be smooth and
+         *  there will bee no blank spaces or overlaps.
+         */
+
+
+        for (int i = 0; i < getChildCount(); i++) {
+            View v = getChildAt(i);
+            if (v != selectedView) {
+                v.offsetTopAndBottom(dy);
+            } else {
+                int offset = 0;
+                if (virtualPosition + decoratedChildHeight < virtualBottom && virtualPosition > 0) {
+                    Log.d(TAG, "offsetChildrenVertical: v.getY() + dy: " + v.getY() + dy + " virtualPos: " + virtualPosition);
+                    offset = dy;
+                } else {
+                    offset = dy;
+                    if (scrollToEnd) {
+                        if (virtualPosition - virtualTop < originalPosition) {
+                            // this happens when the view is at the bottom
+                            // and we want to keep it there when the original
+                            // position would not enter the visible bounds
+                            offset = 0;
+                        } else {
+                            if (virtualPosition - virtualTop == originalPosition) {
+                                // this happens when the view is inside the visible bounds
+                                offset = dy;
+                            } else { // virtualPosition - virtualTop > originalPosition
+                                // this happens when original position is about to get inside
+                                // of visible bounds. applying the full value of dy would shift
+                                // the selected view from the bottom even if it's not at the exact
+                                // original location, resulting in the appearance of blank space
+                                // and views overlapping. based on dy, the difference can vary
+                                // between 1 and a lot of pixels. we need to limit dy so that
+                                // when the original position comes into view, it will be fully
+                                // covered by the sticky selected view.
+                                //
+                                // quite an edge case :)
+                                Log.w(TAG, "offsetChildrenVertical: " + dy + "/" + (virtualPosition - virtualTop) + "/" + originalPosition + "/" + v.getY());
+                                // dy is already applied to virtualTop
+                                offset = originalPosition - (virtualPosition - virtualTop);
+                            }
+                        }
+                        if (v.getY() + dy <= 0) {
+                            // if scrolling towards bottom, dy negative, adding items at top
+                            // this keeps the view from going offscreen.
+                            Log.i(TAG, "offsetChildrenVertical: VIEW WILL GET OUT OF BOUNDS." + v.getY() + "/" + dy);
+                            offset = (int) -v.getY();
+                        }
+                    } else {
+                        // same as the previous case, if the following is true,
+                        // the selected view is at its original position so
+                        // we can scroll normally
+                        if (virtualPosition - virtualTop == originalPosition) {
+                            offset = dy;
+                        }
+                        // if the view is coming next to its original position
+                        // while scrolling from outside the bounds, adapt the
+                        // dy value so that there will be no empty space and
+                        // overlaps
+                        if (virtualPosition - virtualTop < originalPosition) {
+                            offset = originalPosition - (virtualPosition - virtualTop);
+                        }
+                        // if the original position is outside of the bounds,
+                        // and it will remain there after applying dy, do not
+                        // move the sticky view from top
+                        if (virtualPosition - virtualTop > originalPosition) {
+                            offset = 0;
+                        }
+                        // if scrolling towards top, dy is positive.
+                        // new items are added to the top of the list.
+                        if (v.getY() + decoratedChildHeight + dy > getHeight()) {
+                            // this blocks the view at the bottom
+                            int tooMuch = (int) (v.getY() + decoratedChildHeight + dy - getHeight());
+                            Log.d(TAG, "offsetChildrenVertical: tooMuch: " + tooMuch);
+                            offset = dy - tooMuch;
+                        }
+                    }
+                }
+                Log.e(TAG, "offsetChildrenVertical: offset: " + offset);
+                virtualPosition += offset;
+                v.offsetTopAndBottom(offset);
+            }
+        }
+        Log.v(TAG, "offsetChildrenVertical: dy: " + dy + "  scroll to end " + scrollToEnd);
+        Log.i(TAG, "offsetChildrenVertical: " +
+                "virtual top, bottom, position, original: "
+                + virtualTop + ", "
+                + virtualBottom + ", "
+                + virtualPosition + ", "
+                + originalPosition
+        );
+    }
 }

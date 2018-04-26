@@ -2,14 +2,11 @@ package org.rares.miner49er._abstract;
 
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
-import org.rares.miner49er.BaseInterfaces;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.rares.miner49er.BaseInterfaces;
 
 /**
  * @author rares
@@ -43,12 +40,11 @@ public abstract class ResizeableItemsUiOps
         AbstractAdapter _tempAdapter = ((AbstractAdapter)getRv().getAdapter());
         final int prevSelected = _tempAdapter.getLastSelectedPosition();
 
-//        ResizeableViewHolder viewHolder = (ResizeableViewHolder) getRv().findViewHolderForAdapterPosition(prevSelected);
+//        RecyclerView.ViewHolder viewHolder = getRv().findViewHolderForAdapterPosition(prevSelected);
 //        if (viewHolder != null) {
-////            viewHolder.resizeItemView(true);
 //            viewHolder.setIsRecyclable(true);
 //        }
-//
+
         if (prevSelected == selectedPosition) {
             resetLastSelectedId();
 //            getRv().requestLayout();//////////////////////////

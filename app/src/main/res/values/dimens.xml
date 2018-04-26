@@ -5,8 +5,8 @@
     <dimen name="projects_list_item_height">64dp</dimen>
     <!--<dimen name="projects_rv_collapsed_width">96dp</dimen>-->
     <!--<dimen name="projects_rv_collapsed_selected_item_width">112dp</dimen>-->
-    <dimen name="projects_rv_collapsed_width">48dp</dimen>
-    <dimen name="projects_rv_collapsed_selected_item_width">56dp</dimen>
+    <dimen name="projects_rv_collapsed_width">112dp</dimen>
+    <dimen name="projects_rv_collapsed_selected_item_width">128dp</dimen>
     <dimen name="sv_margin">8dp</dimen>
     <dimen name="list_item_text_size">20sp</dimen>
     <dimen name="issues_list_item_height">58dp</dimen>
