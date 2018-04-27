@@ -178,6 +178,10 @@ public class StickyLinearLayoutManager
             dy = maxScroll - decoratedChildHeight - lastTopY;
         }
 
+        if (dy == 0) {
+            return 0;
+        }
+
         lastTopY += dy;
 
         Log.i(TAG, "scrollVerticallyBy: " +
@@ -223,6 +227,7 @@ public class StickyLinearLayoutManager
                 break;
             }
         }
+
         offsetChildrenVertical(-dy);
         drawChildren(itemAddPosition, recycler);
         return dy;
@@ -232,7 +237,8 @@ public class StickyLinearLayoutManager
     public void collectAdjacentPrefetchPositions(
             int dx, int dy,
             RecyclerView.State state,
-            LayoutPrefetchRegistry layoutPrefetchRegistry) {
+            LayoutPrefetchRegistry layoutPrefetchRegistry
+    ) {
         //Log.i(TAG, "collectAdjacentPrefetchPositions: ---------------------------------------------- ");
 
 //        boolean listGoingDown = dy > 0;
@@ -377,13 +383,17 @@ public class StickyLinearLayoutManager
             if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                 addView(item);
             } else {
+                // when first item in list is selected and sticky, adding items after it.
+                if (selectedPosition == 0) {
+                    reversePosition++;
+                }
                 addView(item, reversePosition++);
             }
             measureChildWithMargins(item, 0, 0);
             layoutDecoratedWithMargins(item, 0, t, r, b);
 
             Log.d(TAG, "drawChildren: newly added view: " + text +
-                    "; position: " + (reversePosition - 1) +
+                    "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
                     "; children: " + getChildCount());
             Log.i(TAG, "drawChildren: " + getItemText(item) +
                     " adapter position: " + i +
@@ -552,11 +562,19 @@ public class StickyLinearLayoutManager
                             offset = (int) -v.getY();
                         }
                     } else {
+                        // if scrolling towards top, dy is positive.
+                        // new items are added to the top of the list.
+
                         // same as the previous case, if the following is true,
                         // the selected view is at its original position so
                         // we can scroll normally
                         if (virtualPosition - virtualTop == originalPosition) {
                             offset = dy;
+                            // unless the selectedView is the first, in which
+                            // case we don't continue the scroll.
+                            if (selectedPosition == 0 && selectedView.getY() == 0) {
+                                offset = 0;
+                            }
                         }
                         // if the view is coming next to its original position
                         // while scrolling from outside the bounds, adapt the
@@ -564,6 +582,11 @@ public class StickyLinearLayoutManager
                         // overlaps
                         if (virtualPosition - virtualTop < originalPosition) {
                             offset = originalPosition - (virtualPosition - virtualTop);
+                            // unless the selectedView is the first, in which
+                            // case we don't continue the scroll.
+                            if (selectedPosition == 0 && selectedView.getY() == 0) {
+                                return;
+                            }
                         }
                         // if the original position is outside of the bounds,
                         // and it will remain there after applying dy, do not
@@ -571,10 +594,8 @@ public class StickyLinearLayoutManager
                         if (virtualPosition - virtualTop > originalPosition) {
                             offset = 0;
                         }
-                        // if scrolling towards top, dy is positive.
-                        // new items are added to the top of the list.
+                        // this blocks the view at the bottom
                         if (v.getY() + decoratedChildHeight + dy > getHeight()) {
-                            // this blocks the view at the bottom
                             int tooMuch = (int) (v.getY() + decoratedChildHeight + dy - getHeight());
                             Log.d(TAG, "offsetChildrenVertical: tooMuch: " + tooMuch);
                             offset = dy - tooMuch;
@@ -587,12 +608,17 @@ public class StickyLinearLayoutManager
             }
         }
         Log.v(TAG, "offsetChildrenVertical: dy: " + dy + "  scroll to end " + scrollToEnd);
+        int selPos = -44444444;
+        if (selectedView != null) {
+            selPos = (int) selectedView.getY();
+        }
         Log.i(TAG, "offsetChildrenVertical: " +
                 "virtual top, bottom, position, original: "
                 + virtualTop + ", "
                 + virtualBottom + ", "
                 + virtualPosition + ", "
-                + originalPosition
+                + originalPosition + ", "
+                + selPos
         );
     }
 }

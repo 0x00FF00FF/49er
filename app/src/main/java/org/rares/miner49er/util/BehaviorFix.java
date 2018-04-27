@@ -14,6 +14,9 @@ import android.view.View;
 
 public class BehaviorFix extends AppBarLayout.Behavior {
 
+
+    public static final String TAG = BehaviorFix.class.getSimpleName();
+
     public BehaviorFix() {
         super();
     }
