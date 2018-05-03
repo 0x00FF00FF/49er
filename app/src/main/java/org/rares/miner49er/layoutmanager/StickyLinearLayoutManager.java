@@ -280,6 +280,7 @@ public class StickyLinearLayoutManager
             RecyclerView.Recycler recycler
     ) {
 
+
         // first of all, update first visible position.
         firstVisiblePosition = lastTopY / decoratedChildHeight;
 
@@ -292,6 +293,8 @@ public class StickyLinearLayoutManager
         }
         TAG = tag + logDirection;
         View item = getChildAt(getChildCount() - 1);
+
+//        Log.i(TAG, "drawChildren: spare items: " + recycler.getScrapList().size());
 
         int bottomMostPosition = getChildCount() == 0 ? 0 : getPosition(item);
         Log.i(TAG, "drawChildren: bottomMostPosition> " + bottomMostPosition + "|" + getChildCount());
@@ -456,6 +459,7 @@ public class StickyLinearLayoutManager
     }
 
     // TODO: 4/26/18 bottom limit (getHeight()) should be dynamic.
+    // TODO: 5/3/18 add support for different item heights.
     @Override
     public void offsetChildrenVertical(int dy) {
         boolean scrollToEnd = dy < 0, addItemsAtEnd = scrollToEnd;
