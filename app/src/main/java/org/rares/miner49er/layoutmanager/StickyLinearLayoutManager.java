@@ -1,5 +1,6 @@
 package org.rares.miner49er.layoutmanager;
 
+import android.animation.ValueAnimator;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -8,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import lombok.Setter;
+import org.rares.miner49er.BaseInterfaces;
+import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 
 // TODO: 07.04.2018 | send info from adapter to lm -> selected item
 
@@ -141,6 +144,16 @@ public class StickyLinearLayoutManager
                 "[scrollRemaining: " + state.getRemainingScrollVertical() + "]" +
                 "[firstVisiblePosition: " + firstVisiblePosition + "]"
         );
+
+        if (selectedView != null) {
+            ValueAnimator anim = null;
+            if (selectedView.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {
+                anim = (ValueAnimator) selectedView.getTag(BaseInterfaces.TAG_ANIMATOR);
+            }
+            if (anim != null && anim.isRunning()) {
+                anim.end();
+            }
+        }
 
         /*
             seems like for high dy, the algorithm does not work quite well..
@@ -414,13 +427,16 @@ public class StickyLinearLayoutManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 itemView.setElevation(0);
             }
+//            int parentWidth = ((View)itemView.getParent()).getMeasuredWidth(); // parent is a View in our case
+//            ResizeableItemsUiOps.resizeAnimated(itemView, 0, ViewGroup.LayoutParams.MATCH_PARENT);
             selectedView.setTag(TAG_INITIAL_POSITION, null);
         } else {
-            itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
+//            itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
             setInitialPosition(itemView);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                itemView.setElevation(maxItemElevation);
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                itemView.setElevation(maxItemElevation);
+//            }
+            ResizeableItemsUiOps.resizeAnimated(itemView, maxItemElevation, itemCollapsedSelectedWidth);
         }
 
         if (selectedView == null) {
@@ -430,11 +446,12 @@ public class StickyLinearLayoutManager
         }
 
         if (itemView != selectedView) {
-            selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                selectedView.setElevation(0);
-            }
-            requestLayout();
+//            selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                selectedView.setElevation(0);
+//            }
+            ResizeableItemsUiOps.resizeAnimated(selectedView, 0, ViewGroup.LayoutParams.MATCH_PARENT);
+//            requestLayout();
             selectedView = itemView;
         } else {
             selectedView = null;

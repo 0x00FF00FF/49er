@@ -5,6 +5,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -28,8 +29,27 @@ public class BehaviorFix extends AppBarLayout.Behavior {
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target,
                                int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
-        super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
-                dxUnconsumed, dyUnconsumed, type);
+        if (dyUnconsumed >= 0) {
+            super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
+                    dxUnconsumed, dyUnconsumed, type);
+        } else {
+            if (dyConsumed < 0) {
+                super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
+                        dxUnconsumed, -dyConsumed, type);
+                ViewCompat.stopNestedScroll(target, ViewCompat.TYPE_NON_TOUCH);
+            } else {
+                super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
+                        dxUnconsumed, dyUnconsumed, type);
+            }
+        }
+        Log.d(TAG, "onNestedScroll() called with: " +
+//                "coordinatorLayout = [" + coordinatorLayout + "], " +
+//                "child = [" + child + "], " +
+                "target = [" + target + "], " +
+//                "dxConsumed = [" + dxConsumed + "], " +
+                "dyConsumed = [" + dyConsumed + "], " +
+//                "dxUnconsumed = [" + dxUnconsumed + "], " +
+                "dyUnconsumed = [" + dyUnconsumed + "], ");
         stopNestedScrollIfNeeded(dyUnconsumed, child, target, type);
     }
 

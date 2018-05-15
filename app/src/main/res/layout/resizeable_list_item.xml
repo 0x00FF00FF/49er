@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/resizeable_list_item_container"
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/projects_list_item_height"
-    android:orientation="horizontal"
-    tools:showIn="@layout/activity_home_scrolling">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/resizeable_list_item_container"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/projects_list_item_height"
+              android:orientation="horizontal"
+              tools:background="@color/old.picture.white"
+              tools:layout_marginBottom="1dp"
+              tools:showIn="@layout/activity_home_scrolling">
 
     <TextView
-        android:id="@+id/tv_resource_name_item"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:maxLines="1"
-        android:ellipsize="end"
-        tools:text="something here like a project's name"
-        style="@style/ProjectsListItem"
-        />
+            android:id="@+id/tv_resource_name_item"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:maxLines="1"
+            android:ellipsize="end"
+            style="@style/ProjectsListItem"
+            tools:text="something here like a project's name"
+            tools:padding="1dp"
+    />
 </LinearLayout>

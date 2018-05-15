@@ -1,14 +1,12 @@
 package org.rares.miner49er.projects;
 
 import android.support.v7.widget.RecyclerView;
-
+import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
-
-import lombok.Setter;
 
 
 /**
@@ -77,7 +75,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 //                    // ^
 //                } else {
 //                    domainLink.onParentRemoved(null);
-//                    resizeRv(resizeItems(getLastSelectedId()));
+//                    resizeAnimated(resizeItems(getLastSelectedId()));
 //                }
 //            }
 //        }

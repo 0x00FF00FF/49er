@@ -1,9 +1,6 @@
 package org.rares.miner49er.entries;
 
-import android.app.Activity;
 import android.util.Log;
-
-import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;

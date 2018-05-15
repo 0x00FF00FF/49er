@@ -1,9 +1,12 @@
 package org.rares.miner49er._abstract;
 
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.os.Build;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
@@ -16,8 +19,7 @@ import org.rares.miner49er.BaseInterfaces;
 public abstract class ResizeableItemsUiOps
         implements
         BaseInterfaces.ListItemClickListener,
-        BaseInterfaces.ResizeableItems
-{
+        BaseInterfaces.ResizeableItems {
 
     private static final String TAG = ResizeableItemsUiOps.class.getSimpleName();
 
@@ -27,17 +29,18 @@ public abstract class ResizeableItemsUiOps
     @Setter
     private int rvCollapsedWidth;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private RecyclerView rv;
 
     @Override
     public void resetLastSelectedId() {
-        ((AbstractAdapter)getRv().getAdapter()).setLastSelectedPosition(-1);
+        ((AbstractAdapter) getRv().getAdapter()).setLastSelectedPosition(-1);
     }
 
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
-        AbstractAdapter _tempAdapter = ((AbstractAdapter)getRv().getAdapter());
+        AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
         final int prevSelected = _tempAdapter.getLastSelectedPosition();
 
 //        RecyclerView.ViewHolder viewHolder = getRv().findViewHolderForAdapterPosition(prevSelected);
@@ -97,21 +100,53 @@ public abstract class ResizeableItemsUiOps
      */
     protected void resizeRv(boolean enlarge) {
 
-        int width = getRv().getLayoutParams().width;
-        int height = getRv().getLayoutParams().height;
-        LinearLayout.LayoutParams lpProjectsRvParent = new LinearLayout.LayoutParams(
-                enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth, height);
-
-        // only change layout params if needed.
-//        if ((enlarge && width == rvCollapsedWidth) || (!enlarge && width == ViewGroup.LayoutParams.MATCH_PARENT)) {
-            getRv().setLayoutParams(lpProjectsRvParent);
-//        }
-        // commented to always redraw because the cra**y invalidate() method doesn't redraw the selected view
-
         AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getRv().setElevation(enlarge ? 0 : _tempAdapter.getMaxElevation());
-        }
+        int width = enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth;
+        int elevation = enlarge ? 0 : _tempAdapter.getMaxElevation();
+
+        resizeAnimated(getRv(), elevation, width);
     }
 
+    public static void resizeAnimated(final View v, int desiredElevation, int desiredWidth) {
+
+        final int fromWidth = v.getMeasuredWidth();
+        float fromElevation = 0;
+
+        final int parentWidth = ((View) v.getParent()).getMeasuredWidth();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            fromElevation = v.getElevation();
+        }
+
+        if (desiredWidth == ViewGroup.LayoutParams.MATCH_PARENT) {
+            desiredWidth = parentWidth;
+        }
+
+        PropertyValuesHolder pvhElevation = PropertyValuesHolder.ofFloat("elevation", fromElevation, desiredElevation);
+        PropertyValuesHolder pvhWidth = PropertyValuesHolder.ofInt("width", fromWidth, desiredWidth);
+
+
+        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhElevation, pvhWidth);
+        v.setTag(BaseInterfaces.TAG_ANIMATOR, anim);
+
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                int valW = (Integer) valueAnimator.getAnimatedValue("width");
+                if (valW == parentWidth) {
+                    valW = ViewGroup.LayoutParams.MATCH_PARENT;
+                }
+                float valE = (float) valueAnimator.getAnimatedValue("elevation");
+                ViewGroup.LayoutParams layoutParams = v.getLayoutParams();
+                layoutParams.width = valW;
+                v.setLayoutParams(layoutParams);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    v.setElevation(valE);
+                }
+            }
+        });
+        anim.setInterpolator(new LinearOutSlowInInterpolator());
+        anim.setDuration(300);
+        anim.start();
+    }
 }
