@@ -12,8 +12,6 @@ import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: 07.04.2018 | send info from adapter to lm -> selected item
-
 /**
  * @author rares
  * @since 29.03.2018

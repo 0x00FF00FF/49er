@@ -21,10 +21,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentSelected(ItemViewProperties projectProperties, boolean enlarge) {
-//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
-//        final int lastPos = adapter.getLastSelectedPosition();
         getRv().setAdapter(createNewIssuesAdapter(projectProperties));
-//        resizeItems(lastPos); //todo: test this.
         resizeRv(!enlarge);
     }
 
