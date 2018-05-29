@@ -1,9 +1,9 @@
 package org.rares.miner49er.issues.adapter;
 
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -35,11 +35,12 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 //        setHasStableIds(true);
     }
 
+    @NonNull
     @Override
-    public IssuesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public IssuesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View containerView =
                 LayoutInflater.from(parent.getContext()).
-                inflate(R.layout.resizeable_list_item, parent, false);
+                        inflate(R.layout.resizeable_list_item, parent, false);
 
         final IssuesViewHolder ivh = new IssuesViewHolder(containerView);
         ivh.setItemClickListener(clickListener);
@@ -49,10 +50,17 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(IssuesViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        holder.bindData(dataList.get(position));
+        holder.bindData(dataList.get(position), getLastSelectedPosition() != -1);
 //        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());
+    }
+
+    @Override
+    public String resolveData(int position) {
+        String data = dataList.get(position).toString();
+//        return dataList.get(position).toString();
+        return getLastSelectedPosition() != -1 ? data.replace("Issue", "I") : data;
     }
 
     @Override
@@ -60,7 +68,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         return issuesCount;
     }
 
-    public void setIssuesCount(int count){
+    public void setIssuesCount(int count) {
         issuesCount = count;
     }
 

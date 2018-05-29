@@ -16,11 +16,18 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-
+import butterknife.BindDimen;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
 import org.rares.miner49er.entries.TimeEntriesUiOps;
 import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
+import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+import org.rares.miner49er.layoutmanager.postprocessing.resize.ResizeItemPostProcessor;
+import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
@@ -29,12 +36,6 @@ import org.rares.miner49er.util.DisplayUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindDimen;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.Unbinder;
 
 public class HomeScrollingActivity
         extends
@@ -183,6 +184,8 @@ public class HomeScrollingActivity
 
     private void setupRV() {
 
+//        projectsRV.setHasFixedSize(true);
+
         // cache
         projectsRV.setItemViewCacheSize(4);
         issuesRV.setItemViewCacheSize(4);
@@ -192,11 +195,15 @@ public class HomeScrollingActivity
         TimeEntriesUiOps timeEntriesOps = new TimeEntriesUiOps();
         timeEntriesOps.setRv(timeEntriesRv);
 
-        issuesRV.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
+//        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
+        setupResizeableManager(issuesManager, BaseInterfaces.MAX_ELEVATION_ISSUES);
+        issuesRV.setLayoutManager(issuesManager);
         issuesUiOps = new IssuesUiOps();
         issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);  /////// dagger here? or maybe just butterKnife?
         issuesUiOps.setRv(issuesRV);
         issuesUiOps.setDomainLink(timeEntriesOps);
+        issuesUiOps.setResizePostProcessor(new ResizeItemPostProcessor());
 
         projectsUiOps = new ProjectsUiOps();
         projectsUiOps.setRv(projectsRV);
@@ -207,19 +214,19 @@ public class HomeScrollingActivity
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
-        RecyclerView.LayoutManager layoutManager = new StickyLinearLayoutManager();
+        RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
 //        SimpleLinearLayoutManager layoutManager = new SimpleLinearLayoutManager(this);
 //        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 
         // this condition is true, but here if we want to change
         // our custom managers with the default LLM implementation
-        if (layoutManager instanceof ResizeableLayoutManager) {
-            // this is not downCasting
-            ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
-            mgr.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
-            mgr.setMaxItemElevation(projectsAdapter.getMaxElevation() + 2);
-        }
-        projectsRV.setLayoutManager(layoutManager);
+
+        setupResizeableManager(projectsLayoutManager, projectsAdapter.getMaxElevation());
+        projectsRV.setLayoutManager(projectsLayoutManager);
+        ResizePostProcessor.PostProcessor pp = new AnimatedItemRotator();
+//        ResizePostProcessor.PostProcessor pp = new SimpleItemRotator();
+        pp.setPostProcessConsumer(projectsUiOps);
+        projectsUiOps.setResizePostProcessor(pp);
 
         // pool
         // - cannot share same pool between rvs
@@ -232,6 +239,16 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
         // supportsPredictiveItemAnimations
+    }
+
+    private void setupResizeableManager(RecyclerView.LayoutManager manager, int itemElevation) {
+        if (manager instanceof ResizeableLayoutManager) {
+            // this is not downCasting
+            ResizeableLayoutManager mgr = (ResizeableLayoutManager) manager;
+            mgr.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
+            mgr.setItemCollapsedWidth(rvCollapsedWidth);
+            mgr.setMaxItemElevation(itemElevation + 2);
+        }
     }
 
     /**

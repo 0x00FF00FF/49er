@@ -1,28 +1,25 @@
 package org.rares.miner49er.projects.adapter;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
-import org.rares.miner49er.Miner49erApplication;
+import butterknife.BindView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.projects.model.ProjectData;
-
-import butterknife.BindView;
+import org.rares.miner49er.util.TextUtils;
 
 /*
-* To avoid inner classes, i've split the adapter,
-* view holder and the click listener into separate
-* classes.
-* This minimizes the risk of memory leaks, and
-* helps respecting the single responsibility principle.
-*
-* I hope i can keep up with this and make it a habit
-* to not use any inner classes anymore, be they named
-* or anonymous.
-*/
+ * To avoid inner classes, i've split the adapter,
+ * view holder and the click listener into separate
+ * classes.
+ * This minimizes the risk of memory leaks, and
+ * helps respecting the single responsibility principle.
+ *
+ * I hope i can keep up with this and make it a habit
+ * to not use any inner classes anymore, be they named
+ * or anonymous.
+ */
 
 /**
  * @author rares
@@ -45,16 +42,19 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
     }
 
     @Override
-    public void bindData(Object o) {
+    public void bindData(Object o, boolean shortVersion) {
         ProjectData data = (ProjectData) o;
         int itemBgColor = Color.parseColor(data.getColor());
-        projectName.setText(data.getProjectName());
         projectViewProperties.setSelected(false);
         projectViewProperties.setData(data.getProjectName());
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setProjectId(114);
-
-//        itemView.setBackgroundColor(itemBgColor);
+        if (shortVersion) {
+            projectName.setText(TextUtils.extractInitials(data.getProjectName()));
+        } else {
+            projectName.setText(data.getProjectName());
+        }
+        itemView.setBackgroundColor(itemBgColor);
 //        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());
     }
 

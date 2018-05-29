@@ -3,13 +3,19 @@ package org.rares.miner49er._abstract;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.os.Build;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
+import org.rares.miner49er.layoutmanager.ItemAnimationDto;
+import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
+import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+
+import java.util.List;
 
 /**
  * @author rares
@@ -19,9 +25,10 @@ import org.rares.miner49er.BaseInterfaces;
 public abstract class ResizeableItemsUiOps
         implements
         BaseInterfaces.ListItemClickListener,
-        BaseInterfaces.ResizeableItems {
+        BaseInterfaces.ResizeableItems,
+        ResizePostProcessor.PostProcessorConsumer {
 
-    private static final String TAG = ResizeableItemsUiOps.class.getSimpleName();
+    private static String TAG = ResizeableItemsUiOps.class.getSimpleName();
 
     @Setter
     protected BaseInterfaces.DomainLink domainLink;
@@ -33,63 +40,62 @@ public abstract class ResizeableItemsUiOps
     @Setter
     private RecyclerView rv;
 
+    @Getter
+    private ListState rvState = ListState.LARGE;
+
+    private ResizePostProcessor.PostProcessor resizePostProcessor;
+
     @Override
     public void resetLastSelectedId() {
-        ((AbstractAdapter) getRv().getAdapter()).setLastSelectedPosition(-1);
+        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
+        _tempAdapter.setLastSelectedPosition(-1);
+    }
+
+    @Override
+    public boolean onListItemClick(ResizeableViewHolder holder) {
+        int adapterPosition = holder.getAdapterPosition();
+        boolean enlarge = selectItem(adapterPosition);
+
+        domainLink.onParentSelected(holder.getItemProperties(), enlarge);
+
+        RecyclerView.LayoutManager layoutManager = getRv().getLayoutManager();
+
+        if (layoutManager instanceof ResizeableLayoutManager) {
+            ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
+            mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
+            List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
+            for (ItemAnimationDto ia : animatedItemsList) {
+                resizeAnimated(ia);
+            }
+        }
+
+        resizeRv(enlarge);
+
+        return enlarge;
     }
 
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
         AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
         final int prevSelected = _tempAdapter.getLastSelectedPosition();
+        _tempAdapter.setPreviouslySelectedPosition(prevSelected);
 
-//        RecyclerView.ViewHolder viewHolder = getRv().findViewHolderForAdapterPosition(prevSelected);
-//        if (viewHolder != null) {
-//            viewHolder.setIsRecyclable(true);
-//        }
+        Log.v(TAG, "selectItem: >>>>  " + prevSelected + "|" + selectedPosition);
 
-        if (prevSelected == selectedPosition) {
+        boolean enlarge = prevSelected == selectedPosition;
+
+        rvState = enlarge ? ListState.LARGE : ListState.SMALL;
+        Log.d(TAG, "selectItem: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
+        if (enlarge) {
             resetLastSelectedId();
-//            getRv().requestLayout();//////////////////////////
             return true;
         }
+
         _tempAdapter.setLastSelectedPosition(selectedPosition);
 //        _tempAdapter.notifyItemChanged(prevSelected);
 //        _tempAdapter.notifyItemChanged(selectedPosition);
         return false;
     }
-
-/*
-    @Override
-    public boolean resizeItems(int selectedId) {
-        boolean deselecting = false;
-        for (int i = 0; i < viewHolderList.size(); i++) {
-            ResizeableViewHolder vh = viewHolderList.get(i);
-            int currentId = vh.getItemProperties().getItemContainerCustomId();
-            boolean forceExpand;
-            if (selectedId == lastSelectedId) {                 // expand
-                deselecting = true;
-                vh.getItemProperties().setSelected(false);
-                forceExpand = true;
-            } else {                                            // compact
-                if (selectedId == currentId) {
-                    vh.getItemProperties().setSelected(true);
-                } else {
-                    vh.getItemProperties().setSelected(false);
-                }
-                forceExpand = false;
-            }
-            vh.resizeItemView(forceExpand);
-        }
-        if (deselecting) {
-            resetLastSelectedId();
-        } else {
-            lastSelectedId = selectedId;
-        }
-        Log.d(TAG, "resizeItems() returned: " + deselecting);
-        return deselecting;
-    }
-*/
 
     /**
      * Resize the projects recycler view based on the enlarge param
@@ -99,54 +105,110 @@ public abstract class ResizeableItemsUiOps
      *                the issues rv (if the device supports the operation)
      */
     protected void resizeRv(boolean enlarge) {
-
+        boolean animationEnabled = true;
         AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
+//        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
         int width = enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth;
         int elevation = enlarge ? 0 : _tempAdapter.getMaxElevation();
 
-        resizeAnimated(getRv(), elevation, width);
+        ItemAnimationDto itemAnimationDto = new ItemAnimationDto(getRv(), elevation, width);
+        if (animationEnabled) {
+            resizeAnimated(itemAnimationDto);
+        } else {
+            getRv().getLayoutParams().width = width;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getRv().setElevation(elevation);
+            }
+            getRv().requestLayout();
+        }
+        // post process views
+        if (resizePostProcessor != null) {
+            resizePostProcessor.postProcess(getRv());
+        }
     }
 
-    public static void resizeAnimated(final View v, int desiredElevation, int desiredWidth) {
+    /**
+     * Resize a view by using animation.
+     */
+    protected void resizeAnimated(final ItemAnimationDto animatedItem) {
+        final View v = animatedItem.getAnimatedView();
+        float endElevation = animatedItem.getElevation();
+        final int endWidth = animatedItem.getWidth();
+        final int parentWidth = getParentWidth(v);
+        int startAnimationWidth = endWidth == ViewGroup.LayoutParams.MATCH_PARENT ? parentWidth : endWidth;
 
-        final int fromWidth = v.getMeasuredWidth();
-        float fromElevation = 0;
-
-        final int parentWidth = ((View) v.getParent()).getMeasuredWidth();
-
+        int startWidth = v.getWidth();
+        float startElevation = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            fromElevation = v.getElevation();
+            startElevation = v.getElevation();
         }
 
-        if (desiredWidth == ViewGroup.LayoutParams.MATCH_PARENT) {
-            desiredWidth = parentWidth;
+        final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
+        PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
+
+        ValueAnimator anim;
+        final ResizeableViewHolder holder = getHolder(v);
+        if (holder != null && holder.getAnimator() != null) {
+            anim = (ValueAnimator) holder.getAnimator();
+        } else {
+            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {
+                anim = (ValueAnimator) v.getTag(BaseInterfaces.TAG_ANIMATOR);
+            } else {
+                anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE);
+            }
         }
 
-        PropertyValuesHolder pvhElevation = PropertyValuesHolder.ofFloat("elevation", fromElevation, desiredElevation);
-        PropertyValuesHolder pvhWidth = PropertyValuesHolder.ofInt("width", fromWidth, desiredWidth);
-
-
-        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhElevation, pvhWidth);
-        v.setTag(BaseInterfaces.TAG_ANIMATOR, anim);
-
+        anim.removeAllUpdateListeners();
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int valW = (Integer) valueAnimator.getAnimatedValue("width");
-                if (valW == parentWidth) {
-                    valW = ViewGroup.LayoutParams.MATCH_PARENT;
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int animatedW = (int) animation.getAnimatedValue("width");
+                if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == parentWidth) {
+                    animatedW = ViewGroup.LayoutParams.MATCH_PARENT;
                 }
-                float valE = (float) valueAnimator.getAnimatedValue("elevation");
-                ViewGroup.LayoutParams layoutParams = v.getLayoutParams();
-                layoutParams.width = valW;
-                v.setLayoutParams(layoutParams);
+                float animatedE = (float) animation.getAnimatedValue("elevation");
+                v.getLayoutParams().width = animatedW;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    v.setElevation(valE);
+                    v.setElevation(animatedE);
                 }
+                v.requestLayout();
             }
         });
-        anim.setInterpolator(new LinearOutSlowInInterpolator());
-        anim.setDuration(300);
+        anim.setDuration(200);
         anim.start();
+    }
+
+    private int getParentWidth(View v) {
+        Log.e(TAG, "getParentWidth: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
+        int containerWidth = ((View) getRv().getParent()).getMeasuredWidth();
+        if (v instanceof LinearLayout) {
+            return rvState == ListState.SMALL ? rvCollapsedWidth : containerWidth;
+        }
+        return containerWidth;
+    }
+
+    private ResizeableViewHolder getHolder(View v) {
+        ResizeableViewHolder holder = null;
+        if (v instanceof LinearLayout) {
+            holder = (ResizeableViewHolder) getRv().getChildViewHolder(v);
+        }
+        return holder;
+    }
+
+    public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
+        resizePostProcessor = postProcessor;
+        RecyclerView.LayoutManager lm = getRv().getLayoutManager();
+        if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
+            ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
+                    .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
+        }
+    }
+
+    @Override
+    public void onPostProcessEnd() {
+        if (rvState == ListState.LARGE) {
+            AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
+            adapter.setPreviouslySelectedPosition(-1);
+        }
     }
 }

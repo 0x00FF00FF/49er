@@ -25,6 +25,18 @@ public interface BaseInterfaces {
 
     interface ResizeableItems {
 
+
+        /**
+         * Used to show the final state of the recycler view.
+         * The state changes when a user clicks on a child
+         * item of the recycler view, thus changing the
+         * width of the recycler view.
+         */
+        enum ListState {
+            SMALL,
+            LARGE
+        }
+
         /**
          * Resets the last selected id.
          */
@@ -50,7 +62,7 @@ public interface BaseInterfaces {
          *                           containing information about the selected project
          */
 //        void onListItemClick(ItemViewProperties itemViewProperties);
-        void onListItemClick(ResizeableViewHolder holder);
+        boolean onListItemClick(ResizeableViewHolder holder);
     }
 
     interface DomainLink {

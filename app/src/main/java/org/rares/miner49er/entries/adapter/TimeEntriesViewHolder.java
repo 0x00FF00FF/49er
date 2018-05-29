@@ -2,13 +2,10 @@ package org.rares.miner49er.entries.adapter;
 
 import android.view.View;
 import android.widget.TextView;
-
-import org.joda.time.DateTime;
+import butterknife.BindView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.entries.model.TimeEntryData;
-
-import butterknife.BindView;
 
 /**
  * @author rares
@@ -24,12 +21,13 @@ public class TimeEntriesViewHolder extends ResizeableViewHolder {
     TextView teTextView;
 
     @Override
-    public void bindData(Object data) {
+    public void bindData(Object data, boolean shortVersion) {
         TimeEntryData entryData = (TimeEntryData) data;
-        String entryDate = new DateTime(entryData.getDate()).toString();
-        teTextView.setText("Time entry for: " + entryDate + " | " + entryData.getHours());
+
+//        teTextView.setText("Time entry for: " + entryDate + " | " + entryData.getHours());
+        teTextView.setText(entryData.toString());
         tvp.setText(teTextView.getText().toString());
-        tvp.setItemContainerCustomId(entryData.getId());
+//        tvp.setItemContainerCustomId(entryData.getId());
     }
 
     public TimeEntriesViewHolder(View itemView) {

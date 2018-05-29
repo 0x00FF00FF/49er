@@ -1,8 +1,5 @@
 package org.rares.miner49er.issues;
 
-import org.rares.miner49er._abstract.ItemViewProperties;
-import org.rares.miner49er.issues.adapter.IssuesViewProperties;
-
 /**
  * @author rares
  * @since 10.10.2017

@@ -15,6 +15,7 @@
             android:layout_height="match_parent"
             android:maxLines="1"
             android:ellipsize="end"
+            tools:background="@color/projects.default.bae0e7"
             style="@style/ProjectsListItem"
             tools:text="something here like a project's name"
             tools:padding="1dp"

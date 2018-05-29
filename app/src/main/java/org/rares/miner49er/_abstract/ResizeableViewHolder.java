@@ -1,16 +1,14 @@
 package org.rares.miner49er._abstract;
 
+import android.animation.Animator;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
-
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
-import org.rares.miner49er.BaseInterfaces.UnbinderHost;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
+import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+import org.rares.miner49er.BaseInterfaces.UnbinderHost;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
@@ -28,6 +26,10 @@ public abstract class ResizeableViewHolder
 
     private static final String TAG = ResizeableViewHolder.class.getSimpleName();
 
+    @Getter
+    @Setter
+    Animator animator = null;   // perhaps extend valueAnimator and provide only ofPVH + rename to avoid confusion
+
     @Setter
     private ListItemClickListener itemClickListener;
 
@@ -41,7 +43,7 @@ public abstract class ResizeableViewHolder
 
     private Unbinder unbinder;
 
-    public abstract void bindData(Object data);
+    public abstract void bindData(Object data, boolean shortVersion);
 
     public ResizeableViewHolder(View itemView) {
         super(itemView);
@@ -51,21 +53,9 @@ public abstract class ResizeableViewHolder
         ButterKnife.bind(this, itemView);
     }
 
-    public void resizeItemView(boolean forceExpand) {
-//        if (forceExpand) {
-//            expandViewContainer(true);
-//        } else {
-//            if (getItemProperties().isSelected()) {
-//                expandViewContainer(false);
-//            } else {
-//                collapseViewContainer();
-//            }
-//        }
-    }
-
     @Override
     public void onClick(View v) {
-        Log.d(TAG, "onClick: " + v.toString() + "; adapter position: " + getAdapterPosition());
+//        Log.d(TAG, "onClick: " + v.toString() + "; adapter position: " + getAdapterPosition());
         if (getAdapterPosition() != NO_POSITION) {
             itemClickListener.onListItemClick(this);
         }

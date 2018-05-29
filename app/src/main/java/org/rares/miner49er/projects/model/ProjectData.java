@@ -3,10 +3,10 @@ package org.rares.miner49er.projects.model;
 
 //import com.github.javafaker.Faker;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * @author rares

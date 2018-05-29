@@ -1,9 +1,8 @@
 package org.rares.miner49er.issues.adapter;
 
-import org.rares.miner49er._abstract.ItemViewProperties;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.rares.miner49er._abstract.ItemViewProperties;
 
 /**
  * @author rares

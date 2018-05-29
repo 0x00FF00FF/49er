@@ -20,9 +20,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     public static final String TAG = TimeEntriesUiOps.class.getSimpleName();
 
     @Override
-    public void onListItemClick(ResizeableViewHolder holder) {
+    public boolean onListItemClick(ResizeableViewHolder holder) {
         TimeEntryViewProperties tvp = (TimeEntryViewProperties) holder.getItemProperties();
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + tvp.getText());
+        return true;
     }
 
     @Override

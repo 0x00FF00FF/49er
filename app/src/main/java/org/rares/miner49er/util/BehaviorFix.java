@@ -5,7 +5,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -42,14 +41,14 @@ public class BehaviorFix extends AppBarLayout.Behavior {
                         dxUnconsumed, dyUnconsumed, type);
             }
         }
-        Log.d(TAG, "onNestedScroll() called with: " +
-//                "coordinatorLayout = [" + coordinatorLayout + "], " +
-//                "child = [" + child + "], " +
-                "target = [" + target + "], " +
-//                "dxConsumed = [" + dxConsumed + "], " +
-                "dyConsumed = [" + dyConsumed + "], " +
-//                "dxUnconsumed = [" + dxUnconsumed + "], " +
-                "dyUnconsumed = [" + dyUnconsumed + "], ");
+//        Log.d(TAG, "onNestedScroll() called with: " +
+////                "coordinatorLayout = [" + coordinatorLayout + "], " +
+////                "child = [" + child + "], " +
+//                "target = [" + target + "], " +
+////                "dxConsumed = [" + dxConsumed + "], " +
+//                "dyConsumed = [" + dyConsumed + "], " +
+////                "dxUnconsumed = [" + dxUnconsumed + "], " +
+//                "dyUnconsumed = [" + dyUnconsumed + "], ");
         stopNestedScrollIfNeeded(dyUnconsumed, child, target, type);
     }
 

@@ -2,4 +2,8 @@
 <resources>
     <integer name="anim_duration_medium">300</integer>
     <integer name="anim_duration_long">800</integer>
+    <!--ids-->
+    <integer name="id_item_text"/>
+    <integer name="id_item_width"/>
+    <integer name="id_item_height"/>
 </resources>

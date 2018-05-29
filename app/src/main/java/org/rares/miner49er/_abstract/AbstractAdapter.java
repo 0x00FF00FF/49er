@@ -1,13 +1,13 @@
 package org.rares.miner49er._abstract;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
-
+import android.view.ViewGroup;
+import android.widget.TextView;
 import lombok.Getter;
 import lombok.Setter;
+import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
 
 /**
  * @author rares
@@ -29,7 +29,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
 
     @Getter
     @Setter
-    private int lastSelectedPosition = -1;
+    private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
 
     protected ListItemClickListener clickListener;
 
@@ -39,15 +39,15 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
      * and return true;
      */
     @Override
-    public boolean onFailedToRecycleView(ExtendedViewHolder holder) {
+    public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
         // todo: disable animation
         return true;
     }
 
     @Override
     @CallSuper
-    public void onBindViewHolder(ExtendedViewHolder holder, int position) {
-        Log.i(TAG, "onBindViewHolder: ");
+    public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
+//        Log.i(TAG, "onBindViewHolder: ");
 //        if (!viewHolders.contains(holder)) {
 //            viewHolders.add(holder);
 //        }
@@ -63,26 +63,35 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
     }
 
     @Override
-    public void onViewDetachedFromWindow(ExtendedViewHolder holder) {
-        Log.i(TAG, "onViewDetachedFromWindow: " + holder.getItemProperties().getData());
+    public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
+//        Log.i(TAG, "onViewDetachedFromWindow: " + holder.getItemProperties().getData());
     }
 
     @Override
-    public void onViewRecycled(ExtendedViewHolder holder) {
-        Log.i(TAG, "onViewRecycled: " + holder.getItemProperties().getData());
-//        if (holder.getItemProperties().isSelected()) {
-//            setLastSelectedPosition(holder.getItemProperties().getItemContainerCustomId());
-//        }
-//        holder.resizeItemView(true);
+    public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
+//        Log.i(TAG, "onViewRecycled: " + holder.getItemProperties().getData());
     }
 
     @Override
-    public void onViewAttachedToWindow(ExtendedViewHolder holder) {
-        Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemProperties().getData());
-//        if (getLastSelectedPosition() == holder.getItemProperties().getItemContainerCustomId()) {
-//            holder.getItemProperties().setSelected(true);
-//            holder.resizeItemView(false);
-//        }
+    public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
+//        Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemProperties().getData());
+        // the following may not be needed if
+        // the first itemView after the visible
+        // ones in the recycler view list is not
+        // drawn; but that solution could have
+        // other (unwanted) implications in
+        // scrolling behaviour.
+        {
+            TextView tv = (TextView) ((ViewGroup) holder.itemView).getChildAt(0);
+            String newData = resolveData(holder.getAdapterPosition());
+            if (tv.getText().length() != newData.length()) {
+                tv.setText(newData);
+            }
+//            Log.w(TAG, "onViewAttachedToWindow: " + tv.getText());
+        }
+
     }
+
+    public abstract String resolveData(int position);
 
 }

@@ -1,21 +1,18 @@
 package org.rares.miner49er.entries.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import org.joda.time.DateTime;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.entries.model.TimeEntryData;
 import org.rares.miner49er.util.NumberUtils;
-
-import java.util.List;
 
 /**
  * @author rares
@@ -43,14 +40,22 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
             ted.setAuthorName("Peter Piper");
             ted.setDate(dt.plusDays(i).getMillis());
             ted.setDateAdded(dt.withDayOfYear(i + 1).getMillis());
-            ted.setHours(15);
+            ted.setHours(6);
             sortedData.add(ted);
         }
+        TimeEntryData ted = new TimeEntryData();
+        ted.setId(NumberUtils.getNextProjectId());
+        ted.setAuthorName("Fat Frumos");
+        ted.setDate(dt.plusDays(16).minusYears(1).getMillis());
+        ted.setDateAdded(dt.withDayOfYear(4 + 1).getMillis());
+        ted.setHours(-6);
+        sortedData.add(ted);
         sortedData.endBatchedUpdates();
     }
 
+    @NonNull
     @Override
-    public TimeEntriesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public TimeEntriesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
 
         View projectItemView =
@@ -68,9 +73,14 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
         return sortedData.size();
     }
 
-    public void onBindViewHolder(TimeEntriesViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull TimeEntriesViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        holder.bindData(sortedData.get(position));
+        holder.bindData(sortedData.get(position), getLastSelectedPosition() != -1);
+    }
+
+    @Override
+    public String resolveData(int position) {
+        return sortedData.get(position).toString();
     }
 
     private final SortedListAdapterCallback<TimeEntryData> timeEntriesCallback =

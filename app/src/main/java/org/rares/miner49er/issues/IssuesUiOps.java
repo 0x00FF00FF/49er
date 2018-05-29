@@ -1,13 +1,8 @@
 package org.rares.miner49er.issues;
 
-import android.app.Activity;
-
-import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
-import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.util.NumberUtils;
 
@@ -40,14 +35,6 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         }
         resizeRv(true);
         domainLink.onParentRemoved(projectProperties);
-    }
-
-    @Override
-    public void onListItemClick(ResizeableViewHolder holder) {
-        ItemViewProperties itemViewProperties = holder.getItemProperties();
-        boolean enlarge = selectItem(itemViewProperties.getItemContainerCustomId());
-        resizeRv(enlarge);
-        domainLink.onParentSelected(itemViewProperties, enlarge);
     }
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {

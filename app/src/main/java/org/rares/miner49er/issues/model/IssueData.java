@@ -13,4 +13,8 @@ public class IssueData {
     String name;
     int id;
 //    List<TimeEntry> timeEntries;
+
+    public String toString(){
+        return name;// + " [" + id +"]";
+    }
 }

@@ -18,7 +18,8 @@
         <item name="android:textSize">@dimen/list_item_text_size</item>
         <item name="android:gravity">center|start</item>
         <item name="android:textColor">@color/projects.default.383640</item>
-        <item name="android:alpha">.6</item>
+        <!--<item name="android:alpha">.6</item>-->
+        <!--<item name="android:background">@color/projects.default.bae0e7</item>-->
     </style>
 
     <style name="AppTheme.NoActionBar">

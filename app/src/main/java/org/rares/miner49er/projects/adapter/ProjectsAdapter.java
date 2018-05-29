@@ -2,19 +2,20 @@ package org.rares.miner49er.projects.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.util.NumberUtils;
+import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,8 +23,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-// TODO: 11.10.2017 maybe create an abstract adapter?
 
 /**
  * @author rares
@@ -42,9 +41,6 @@ public class ProjectsAdapter
     public static final int SORT_TYPE_FAVORITES = 3;
 
     private static final String TAG = ProjectsAdapter.class.getSimpleName();
-
-
-    // is this even needed? ops should never become null...
 
     private final String[] dummyData = {
             "Project 1",
@@ -134,8 +130,9 @@ public class ProjectsAdapter
     }
 
 
+    @NonNull
     @Override
-    public ProjectsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ProjectsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent + "], viewType = [" + viewType + "]");
         Context ctx = parent.getContext();
 
@@ -144,6 +141,8 @@ public class ProjectsAdapter
                         .inflate(R.layout.resizeable_list_item, parent, false);
 
         final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
+
+//        decideRotation(pvh);
         pvh.setItemClickListener(clickListener);
 //        pvh.setMaxItemElevation(getMaxElevation() + 2);
         return pvh;
@@ -151,12 +150,18 @@ public class ProjectsAdapter
 
 
     @Override
-    public void onBindViewHolder(ProjectsViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
             holder.getItemProperties().setItemContainerCustomId(customIds.get(position));
-            holder.bindData(sortedData.get(position));
+            holder.bindData(sortedData.get(position), getLastSelectedPosition() != -1);
         }
+    }
+
+    @Override
+    public String resolveData(int position) {
+        ProjectData data = sortedData.get(position);
+        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(data.getProjectName()) : data.getProjectName();
     }
 
     public void removeItem() {

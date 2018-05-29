@@ -1,16 +1,16 @@
 package org.rares.miner49er.layoutmanager;
 
-import android.animation.ValueAnimator;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import lombok.Setter;
-import org.rares.miner49er.BaseInterfaces;
-import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: 07.04.2018 | send info from adapter to lm -> selected item
 
@@ -21,7 +21,8 @@ import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 
 public class StickyLinearLayoutManager
         extends RecyclerView.LayoutManager
-        implements ResizeableLayoutManager {
+        implements ResizeableLayoutManager,
+        ResizePostProcessor.PostProcessorValidatorConsumer {
 
     private final static String tag = StickyLinearLayoutManager.class.getSimpleName();
     private static String TAG = tag;
@@ -30,8 +31,6 @@ public class StickyLinearLayoutManager
     private static final int NONE = 0;
     private static final int TOP = 1;
 
-    public static final int TAG_INITIAL_POSITION = 298734927;
-
     @Setter
     private int selectedPosition = -1;    // currently adapter _selected_ position
 
@@ -39,8 +38,10 @@ public class StickyLinearLayoutManager
     private int maxItemElevation = 0;
 
     @Setter
-    private int itemCollapsedSelectedWidth = -1;
+    private int itemCollapsedSelectedWidth = -1, itemCollapsedWidth = -1;
 
+    @Setter
+    private ResizePostProcessor.PostProcessorValidator postProcessorValidator = null;
 
     // extraChildren: number of children drawn outside of bounds, both at top and bottom.
     // e.g. extraChildren = 1 will result in one child at top, and one at bottom.
@@ -102,7 +103,7 @@ public class StickyLinearLayoutManager
             return;
         }
 
-        //Log.v(TAG, "onLayoutChildren: " + state);
+//        Log.v(TAG, "onLayoutChildren: " + state);
 
         //Log.i(TAG, "onLayoutChildren: state count: " + state.getItemCount());
         //Log.i(TAG, "onLayoutChildren: child count: " + getChildCount());
@@ -138,22 +139,22 @@ public class StickyLinearLayoutManager
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
         int itemAddPosition = dy > 0 ? BOTTOM : TOP;
         TAG = tag + (dy > 0 ? " v " : " ^ ");
-        Log.w(TAG, "scrollVerticallyBy: " +
-                "[dy: " + dy + "]" +
-                "[lastTopY: " + lastTopY + "]" +
-                "[scrollRemaining: " + state.getRemainingScrollVertical() + "]" +
-                "[firstVisiblePosition: " + firstVisiblePosition + "]"
-        );
+//        Log.w(TAG, "scrollVerticallyBy: " +
+//                "[dy: " + dy + "]" +
+//                "[lastTopY: " + lastTopY + "]" +
+//                "[scrollRemaining: " + state.getRemainingScrollVertical() + "]" +
+//                "[firstVisiblePosition: " + firstVisiblePosition + "]"
+//        );
 
-        if (selectedView != null) {
-            ValueAnimator anim = null;
-            if (selectedView.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {
-                anim = (ValueAnimator) selectedView.getTag(BaseInterfaces.TAG_ANIMATOR);
-            }
-            if (anim != null && anim.isRunning()) {
-                anim.end();
-            }
-        }
+//        if (selectedView != null) {
+//            ValueAnimator anim = null;
+//            if (selectedView.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {
+//                anim = (ValueAnimator) selectedView.getTag(BaseInterfaces.TAG_ANIMATOR);
+//            }
+//            if (anim != null && anim.isRunning()) {
+//                anim.end();
+//            }
+//        }
 
         /*
             seems like for high dy, the algorithm does not work quite well..
@@ -174,7 +175,7 @@ public class StickyLinearLayoutManager
             }
         }
 
-        Log.w(TAG, "scrollVerticallyBy: [dy: " + dy + "]");
+//        Log.w(TAG, "scrollVerticallyBy: [dy: " + dy + "]");
 
 /*
 //      virtual space at the beginning.
@@ -197,12 +198,12 @@ public class StickyLinearLayoutManager
 
         lastTopY += dy;
 
-        Log.i(TAG, "scrollVerticallyBy: " +
-                " >>> firstVisiblePosition: " + firstVisiblePosition +
-                " lastTopY: " + lastTopY
-        );
+//        Log.i(TAG, "scrollVerticallyBy: " +
+//                " >>> firstVisiblePosition: " + firstVisiblePosition +
+//                " lastTopY: " + lastTopY
+//        );
 
-        final int max = getChildCount();// TODO: 4/21/18 clean these fors up
+        final int max = getChildCount();// TODO: 4/21/18 clean these fors up + refactor|extract methods
         View[] toRecycle = new View[max];
         int index = 0;
         if (dy > 0) { // adding items at BOTTOM -> removing at top
@@ -226,16 +227,16 @@ public class StickyLinearLayoutManager
             View v = toRecycle[i];
             if (v != null) {
                 if (v == selectedView) {
-                    Log.v(TAG, "scrollVerticallyBy: # They tried to make me go to rehab, I said, no, no, no.. #");
+//                    Log.v(TAG, "scrollVerticallyBy: # They tried to make me go to rehab, I said, no, no, no.. #");
                     continue;
                 }
                 removeAndRecycleView(v, recycler);
-                String text = getItemText(v);
-                Log.d(TAG, "scrollVerticallyBy: " +
-                        " XXX removing view: " + text +
-                        " item top border: " + (v.getY() - dy) +
-                        " item lower border: " + (v.getY() + decoratedChildHeight - dy) +
-                        " children: " + getChildCount());
+//                String text = getItemText(v);
+//                Log.d(TAG, "scrollVerticallyBy: " +
+//                        " XXX removing view: " + text +
+//                        " item top border: " + (v.getY() - dy) +
+//                        " item lower border: " + (v.getY() + decoratedChildHeight - dy) +
+//                        " children: " + getChildCount());
             } else {
                 break;
             }
@@ -293,7 +294,6 @@ public class StickyLinearLayoutManager
             RecyclerView.Recycler recycler
     ) {
 
-
         // first of all, update first visible position.
         firstVisiblePosition = lastTopY / decoratedChildHeight;
 
@@ -310,7 +310,7 @@ public class StickyLinearLayoutManager
 //        Log.i(TAG, "drawChildren: spare items: " + recycler.getScrapList().size());
 
         int bottomMostPosition = getChildCount() == 0 ? 0 : getPosition(item);
-        Log.i(TAG, "drawChildren: bottomMostPosition> " + bottomMostPosition + "|" + getChildCount());
+//        Log.i(TAG, "drawChildren: bottomMostPosition> " + bottomMostPosition + "|" + getChildCount());
         if (item == selectedView) {
             if (getChildCount() > 1) {
                 bottomMostPosition = getPosition(getChildAt(getChildCount() - 2));
@@ -330,7 +330,7 @@ public class StickyLinearLayoutManager
 
 
         if (from == getItemCount()) {
-            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [Adding items after last adapter position.]");
+//            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [Adding items after last adapter position.]");
             return;
         }
 
@@ -346,13 +346,13 @@ public class StickyLinearLayoutManager
         int to = newItemPosition == BOTTOM || newItemPosition == NONE ?
                 lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);
 
-        Log.e(TAG, "drawChildren: firstVisiblePosition: " + firstVisiblePosition);
-        Log.e(TAG, "_drawChildren: lastVisiblePosition: " + lastVisiblePosition);
-        Log.i(TAG, "drawChildren: from: " + from + " -> to: " + to + " > " + getItemText(item));
-        Log.i(TAG, "_drawChildren: child count: " + getChildCount());
+//        Log.e(TAG, "drawChildren: firstVisiblePosition: " + firstVisiblePosition);
+//        Log.e(TAG, "_drawChildren: lastVisiblePosition: " + lastVisiblePosition);
+//        Log.i(TAG, "drawChildren: from: " + from + " -> to: " + to + " > " + getItemText(item));
+//        Log.i(TAG, "_drawChildren: child count: " + getChildCount());
 
         if (from > to) {
-            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [from > to]");
+//            Log.v(TAG, "drawChildren: NOT DRAWING ANYTHING. [from > to]");
             return;
         }
 
@@ -360,7 +360,7 @@ public class StickyLinearLayoutManager
         for (int i = from; i < to; i++) {
             if (i == selectedPosition) {
                 if (newItemPosition != NONE) {
-                    Log.i(TAG, "drawChildren: skipping view at position: " + i);
+//                    Log.i(TAG, "drawChildren: skipping view at position: " + i);
                     continue;
                 }
             }
@@ -370,25 +370,29 @@ public class StickyLinearLayoutManager
             b = (i + 1) * (decoratedChildHeight + inbetween) - lastTopY;
             if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                 if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
-                    Log.e(TAG, "v drawChildren: item is out of view bounds." +
-                            " will not draw position #" + i + " t=" + t);
+//                    Log.e(TAG, "v drawChildren: item is out of view bounds." +
+//                            " will not draw position #" + i + " t=" + t);
                     return;
                 }
             } else {
                 if (b < -decoratedChildHeight * extraChildren) {
-                    Log.e(TAG, "drawChildren: ^ item is out of view bounds." +
-                            " will not draw position #" + i + " b=" + b
-                    );
+//                    Log.e(TAG, "drawChildren: ^ item is out of view bounds." +
+//                            " will not draw position #" + i + " b=" + b
+//                    );
                     return;
                 }
             }
             item = recycler.getViewForPosition(i);
-            String text = getItemText(item);
+
+//            String text = getItemText(item);
+//            if (selectedPosition != -1) {
+//                setItemText(item);
+//            }
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //                //Log.i(TAG, "drawChildren: item.elevation: " + item.getElevation());
 //            }
 
-            Log.i(TAG, "drawChildren: item: " + item + "/" + selectedView);
+//            Log.i(TAG, "drawChildren: item: " + item + "/" + selectedView);
 
 
             l = (int) Math.pow(2, 6 - i) * 3;
@@ -405,65 +409,89 @@ public class StickyLinearLayoutManager
                 }
                 addView(item, reversePosition++);
             }
+
             measureChildWithMargins(item, 0, 0);
+
             layoutDecoratedWithMargins(item, 0, t, r, b);
 
-            Log.d(TAG, "drawChildren: newly added view: " + text +
-                    "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
-                    "; children: " + getChildCount());
-            Log.i(TAG, "drawChildren: " + getItemText(item) +
-                    " adapter position: " + i +
-                    " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
-                    "; lastTopY: " + lastTopY +
-                    "; rv height: " + getHeight()
-            );
+            if (newItemPosition != NONE && postProcessorValidator != null) {
+                postProcessorValidator.validateItemPostProcess(
+                        item,
+                        item.getMeasuredWidth() <= itemCollapsedSelectedWidth,
+                        item == selectedView);
+            }
+
+//            Log.d(TAG, "drawChildren: newly added view: " + text +
+//                    "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
+//                    "; children: " + getChildCount());
+//            Log.i(TAG, "drawChildren: " + getItemText(item) +
+//                    " adapter position: " + i +
+//                    " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
+//                    "; lastTopY: " + lastTopY +
+//                    "; rv height: " + getHeight()
+//            );
         }
     }
 
-    public void resizeSelectedView(View itemView, boolean expandToMatchParent) {
+    public List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent) {
+        boolean animationEnabled = true;
+        List<ItemAnimationDto> animatedItems = new ArrayList<>();
+
+        int elevation;
+        int width;
 
         if (expandToMatchParent) {
-            itemView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                itemView.setElevation(0);
+            if (!animationEnabled) {
+                itemView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    itemView.setElevation(0);
+                }
             }
-//            int parentWidth = ((View)itemView.getParent()).getMeasuredWidth(); // parent is a View in our case
-//            ResizeableItemsUiOps.resizeAnimated(itemView, 0, ViewGroup.LayoutParams.MATCH_PARENT);
-            selectedView.setTag(TAG_INITIAL_POSITION, null);
+            elevation = 0;
+            width = ViewGroup.LayoutParams.MATCH_PARENT;
         } else {
-//            itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
             setInitialPosition(itemView);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                itemView.setElevation(maxItemElevation);
-//            }
-            ResizeableItemsUiOps.resizeAnimated(itemView, maxItemElevation, itemCollapsedSelectedWidth);
+            if (!animationEnabled) {
+                itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    itemView.setElevation(maxItemElevation);
+                }
+            }
+            elevation = maxItemElevation;
+            width = itemCollapsedSelectedWidth;
+        }
+
+        if (animationEnabled) {
+            animatedItems.add(new ItemAnimationDto(itemView, elevation, width));
         }
 
         if (selectedView == null) {
-            requestLayout();
+//            requestLayout();
             selectedView = itemView;
-            return;
+            return animatedItems;
         }
 
         if (itemView != selectedView) {
-//            selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                selectedView.setElevation(0);
-//            }
-            ResizeableItemsUiOps.resizeAnimated(selectedView, 0, ViewGroup.LayoutParams.MATCH_PARENT);
+            if (!animationEnabled) {
+                selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    selectedView.setElevation(0);
+                }
+            }
+            if (animationEnabled) {
+                animatedItems.add(new ItemAnimationDto(selectedView, 0, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
 //            requestLayout();
             selectedView = itemView;
         } else {
             selectedView = null;
         }
+        return animatedItems;
     }
 
     private void setInitialPosition(View v) {
-        int pos = getPosition(v) * decoratedChildHeight;
-        v.setTag(TAG_INITIAL_POSITION, pos);
-        originalPosition = pos;
+        originalPosition = getPosition(v) * decoratedChildHeight;
         virtualPosition = virtualTop + originalPosition;
-        Log.v(TAG, "setInitialPosition: " + pos + ", " + v.getY() + ", " + (virtualPosition - virtualTop));
     }
 
     private String getItemText(View v) {
@@ -546,7 +574,7 @@ public class StickyLinearLayoutManager
             } else {
                 int offset = 0;
                 if (virtualPosition + decoratedChildHeight < virtualBottom && virtualPosition > 0) {
-                    Log.d(TAG, "offsetChildrenVertical: v.getY() + dy: " + v.getY() + dy + " virtualPos: " + virtualPosition);
+//                    Log.d(TAG, "offsetChildrenVertical: v.getY() + dy: " + v.getY() + dy + " virtualPos: " + virtualPosition);
                     offset = dy;
                 } else {
                     offset = dy;
@@ -571,7 +599,7 @@ public class StickyLinearLayoutManager
                                 // covered by the sticky selected view.
                                 //
                                 // quite an edge case :)
-                                Log.w(TAG, "offsetChildrenVertical: " + dy + "/" + (virtualPosition - virtualTop) + "/" + originalPosition + "/" + v.getY());
+//                                Log.w(TAG, "offsetChildrenVertical: " + dy + "/" + (virtualPosition - virtualTop) + "/" + originalPosition + "/" + v.getY());
                                 // dy is already applied to virtualTop
                                 offset = originalPosition - (virtualPosition - virtualTop);
                             }
@@ -579,7 +607,7 @@ public class StickyLinearLayoutManager
                         if (v.getY() + dy <= 0) {
                             // if scrolling towards bottom, dy negative, adding items at top
                             // this keeps the view from going offscreen.
-                            Log.i(TAG, "offsetChildrenVertical: VIEW WILL GET OUT OF BOUNDS." + v.getY() + "/" + dy);
+//                            Log.i(TAG, "offsetChildrenVertical: VIEW WILL GET OUT OF BOUNDS." + v.getY() + "/" + dy);
                             offset = (int) -v.getY();
                         }
                     } else {
@@ -618,28 +646,36 @@ public class StickyLinearLayoutManager
                         // this blocks the view at the bottom
                         if (v.getY() + decoratedChildHeight + dy > getHeight()) {
                             int tooMuch = (int) (v.getY() + decoratedChildHeight + dy - getHeight());
-                            Log.d(TAG, "offsetChildrenVertical: tooMuch: " + tooMuch);
+//                            Log.d(TAG, "offsetChildrenVertical: tooMuch: " + tooMuch);
                             offset = dy - tooMuch;
                         }
                     }
                 }
-                Log.e(TAG, "offsetChildrenVertical: offset: " + offset);
+//                Log.e(TAG, "offsetChildrenVertical: offset: " + offset);
                 virtualPosition += offset;
                 v.offsetTopAndBottom(offset);
             }
         }
-        Log.v(TAG, "offsetChildrenVertical: dy: " + dy + "  scroll to end " + scrollToEnd);
+//        Log.v(TAG, "offsetChildrenVertical: dy: " + dy + "  scroll to end " + scrollToEnd);
         int selPos = -44444444;
         if (selectedView != null) {
             selPos = (int) selectedView.getY();
         }
-        Log.i(TAG, "offsetChildrenVertical: " +
-                "virtual top, bottom, position, original: "
-                + virtualTop + ", "
-                + virtualBottom + ", "
-                + virtualPosition + ", "
-                + originalPosition + ", "
-                + selPos
-        );
+//        Log.i(TAG, "offsetChildrenVertical: " +
+//                "virtual top, bottom, position, original: "
+//                + virtualTop + ", "
+//                + virtualBottom + ", "
+//                + virtualPosition + ", "
+//                + originalPosition + ", "
+//                + selPos
+//        );
+    }
+
+    @Override
+    public void onAdapterChanged(RecyclerView.Adapter oldAdapter, RecyclerView.Adapter newAdapter) {
+        // reset state on adapter change.
+        selectedView = null;
+        selectedPosition = -1;
+        lastTopY = 0;
     }
 }

@@ -2,12 +2,10 @@ package org.rares.miner49er.issues.adapter;
 
 import android.view.View;
 import android.widget.TextView;
-
+import butterknife.BindView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.model.IssueData;
-
-import butterknife.BindView;
 
 /**
  * @author rares
@@ -33,11 +31,11 @@ public class IssuesViewHolder extends ResizeableViewHolder
     }
 
     @Override
-    public void bindData(Object o) {
+    public void bindData(Object o, boolean shortVersion) {
         IssueData data = (IssueData) o;
         issueName.setText(data.getName());
         ivp.setSelected(false);
-        ivp.setText(data.getName());
+        ivp.setText(shortVersion ? data.getName().replace("Issue", "I") : data.getName());
         ivp.setItemContainerCustomId(data.getId());
     }
 }

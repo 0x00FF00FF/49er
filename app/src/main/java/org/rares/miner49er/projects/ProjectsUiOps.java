@@ -1,11 +1,9 @@
 package org.rares.miner49er.projects;
 
-import android.support.v7.widget.RecyclerView;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
-import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 
 
@@ -26,26 +24,12 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
     }
 
     @Override
-    public void onListItemClick(ResizeableViewHolder holder) {
-        int adapterPosition = holder.getAdapterPosition();
-        boolean enlarge = selectItem(adapterPosition);      // not very happy about this
-
+    public boolean onListItemClick(ResizeableViewHolder holder) {
+        boolean enlarge = super.onListItemClick(holder);
         if (!enlarge) {
             projectsListResizeListener.onProjectsListShrink();
         }
-
-//        holder.setIsRecyclable(false);
-        domainLink.onParentSelected(holder.getItemProperties(), enlarge);
-
-        RecyclerView.LayoutManager layoutManager = getRv().getLayoutManager();
-
-        if (layoutManager instanceof ResizeableLayoutManager) {
-            ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
-            mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
-            mgr.resizeSelectedView(holder.itemView, enlarge);
-        }
-
-        resizeRv(enlarge);
+        return enlarge;
     }
 
     /**

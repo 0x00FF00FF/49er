@@ -1,14 +1,10 @@
 package org.rares.miner49er;
 
 import android.app.Application;
-import android.content.Context;
+import net.danlew.android.joda.JodaTimeAndroid;
 
 //import com.squareup.leakcanary.LeakCanary;
 //import com.squareup.leakcanary.RefWatcher;
-
-import net.danlew.android.joda.JodaTimeAndroid;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author rares

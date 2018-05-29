@@ -2,8 +2,9 @@ package org.rares.miner49er.entries.model;
 
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
-
 import lombok.Data;
+import org.joda.time.DateTime;
+import org.rares.miner49er.util.TextUtils;
 
 /**
  * @author rares
@@ -39,5 +40,12 @@ public class TimeEntryData implements Comparable<TimeEntryData> {
                         dateAdded == otherTimeEntry.getDateAdded() &&
                         otherTimeEntry.getComment().equals(comment) &&
                         otherTimeEntry.getAuthorName().equals(authorName);
+    }
+
+    public String toString(){
+        DateTime dateTime = new DateTime(getDate());
+        String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
+        String entryDate = dateTime.toString(pattern);
+        return TextUtils.extractInitials(getAuthorName()) + " | " + getHours() + " | " + entryDate;
     }
 }
