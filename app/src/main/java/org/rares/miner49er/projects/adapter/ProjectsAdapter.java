@@ -104,11 +104,17 @@ public class ProjectsAdapter
 
     public ProjectsAdapter(final ListItemClickListener listener) {
         clickListener = listener;
-        slCallback = getNewAlphaNumSort(this);
+        slCallback = alphaNumSort(this);
         sortedData = new SortedList<>(ProjectData.class, slCallback);
         setMaxElevation(BaseInterfaces.MAX_ELEVATION_PROJECTS);
         initializeData();
 //        setHasStableIds(true);
+//          if this is true, the RV reuses all available view holders
+//          if this is false, the RV uses a lot less CPU time when
+//           updating or creating new views, but creates new view holders
+//           on each data set change.
+//          rv also can't figure out where items are and can't update
+//           them properly.
     }
 
     /**
@@ -116,10 +122,11 @@ public class ProjectsAdapter
      * - does not check if the sorted list is already empty.
      */
     private void initializeData() {
+
         sortedData.beginBatchedUpdates();
         for (int i = 0; i < dummyData.length; i++) {
             ProjectData projectData = new ProjectData();
-            projectData.setProjectName(dummyData[i]);
+            projectData.setName(dummyData[i]);
             projectData.setColor(projectsColors[i]);
             sortedData.add(projectData);
             customIds.add(NumberUtils.getNextProjectId());
@@ -153,7 +160,6 @@ public class ProjectsAdapter
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
-            holder.getItemProperties().setItemContainerCustomId(customIds.get(position));
             holder.bindData(sortedData.get(position), getLastSelectedPosition() != -1);
         }
     }
@@ -161,7 +167,8 @@ public class ProjectsAdapter
     @Override
     public String resolveData(int position) {
         ProjectData data = sortedData.get(position);
-        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(data.getProjectName()) : data.getProjectName();
+        String name = data.getName();
+        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(name) : name;
     }
 
     public void removeItem() {
@@ -177,7 +184,7 @@ public class ProjectsAdapter
 
     @Override
     public long getItemId(int position) {
-//        Log.d(TAG, "getItemId: item at position: " + sortedData.get(position).getProjectName());
+//        Log.d(TAG, "getItemId: item at position: " + sortedData.get(position).getName()());
 //        Log.i(TAG, "getItemId: position " + position);
         int ret = -1;
         if (customIds.size() > position) {
@@ -199,6 +206,29 @@ public class ProjectsAdapter
         return R.layout.resizeable_list_item;
     }
 
+    @Override
+    public void accept(List list) throws Exception {
+        // TODO: 7/31/18 diff util
+
+        if (list != null) {
+            if (list.size() == sortedData.size()) {
+                for (int i = 0; i < list.size(); i++) {
+                    ProjectData pd = sortedData.get(i);
+                    Object newPd = list.get(i);
+                    if (newPd instanceof ProjectData && !pd.compareContents((ProjectData) newPd)) {
+                        sortedData.updateItemAt(i, (ProjectData) newPd);
+                        notifyItemChanged(i);
+                    }
+                }
+            } else {
+                sortedData = null;
+                sortedData = new SortedList<>(ProjectData.class, alphaNumSort(this));
+                sortedData.addAll(list);
+                notifyDataSetChanged();
+            }
+        }
+
+    }
 
     /**
      * Change the sorting type for the list of projects. <br/>
@@ -217,10 +247,10 @@ public class ProjectsAdapter
         Log.d(TAG, "changeSortType: new " + sortType);
         Log.d(TAG, "changeSortType: current " + sortType);
         if (currentSortType == SORT_TYPE_SIMPLE) {
-            slCallback = getNewAlphaNumSort(this);
+            slCallback = alphaNumSort(this);
             currentSortType = SORT_TYPE_ALPHA_NUM;
         } else {
-            slCallback = getNewSimpleSort(this);
+            slCallback = simpleSort(this);
             currentSortType = SORT_TYPE_SIMPLE;
         }
 //        if (SORT_TYPE_ALPHA_NUM == sortType) {
@@ -235,21 +265,21 @@ public class ProjectsAdapter
         notifyDataSetChanged();
     }
 
-    private SortedListAdapterCallback<ProjectData> getNewSimpleSort(ProjectsAdapter adapter) {
+    private SortedListAdapterCallback<ProjectData> simpleSort(ProjectsAdapter adapter) {
         return new SortedListAdapterCallback<ProjectData>(adapter) {
 
             @Override
             public int compare(ProjectData o1, ProjectData o2) {
-                int res = String.CASE_INSENSITIVE_ORDER.compare(o1.getProjectName(), o2.getProjectName());
+                int res = String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName());
                 if (res == 0) {
-                    res = o1.getProjectName().compareTo(o2.getProjectName());
+                    res = o1.getName().compareTo(o2.getName());
                 }
                 return res;
             }
 
             @Override
             public boolean areContentsTheSame(ProjectData oldItem, ProjectData newItem) {
-                return oldItem.areContentsTheSameWith(newItem);
+                return oldItem.compareContents(newItem);
             }
 
             @Override
@@ -259,18 +289,18 @@ public class ProjectsAdapter
         };
     }
 
-    private SortedListAdapterCallback<ProjectData> getNewAlphaNumSort(ProjectsAdapter adapter) {
+    private SortedListAdapterCallback<ProjectData> alphaNumSort(ProjectsAdapter adapter) {
         return new SortedListAdapterCallback<ProjectData>(adapter) {
             @Override
             public int compare(ProjectData o1, ProjectData o2) {
                 return new InternalNumberComparator().compare(
-                        o1.getProjectName(),
-                        o2.getProjectName());
+                        o1.getName(),
+                        o2.getName());
             }
 
             @Override
             public boolean areContentsTheSame(ProjectData oldItem, ProjectData newItem) {
-                return oldItem.areContentsTheSameWith(newItem);
+                return oldItem.compareContents(newItem);
             }
 
             @Override

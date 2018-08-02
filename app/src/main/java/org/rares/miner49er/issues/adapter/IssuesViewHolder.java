@@ -23,19 +23,15 @@ public class IssuesViewHolder extends ResizeableViewHolder
 //    @BindView(R.id.resizeable_list_item_container)
 //    LinearLayout issueContainer;
 
-    private IssuesViewProperties ivp = new IssuesViewProperties();
 
     public IssuesViewHolder(View itemView) {
         super(itemView);
-        setItemProperties(ivp);
+        setItemProperties(new IssuesViewProperties());
     }
 
     @Override
     public void bindData(Object o, boolean shortVersion) {
         IssueData data = (IssueData) o;
         issueName.setText(data.getName());
-        ivp.setSelected(false);
-        ivp.setText(shortVersion ? data.getName().replace("Issue", "I") : data.getName());
-        ivp.setItemContainerCustomId(data.getId());
     }
 }

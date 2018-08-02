@@ -3,8 +3,8 @@ package org.rares.miner49er.projects.model;
 
 //import com.github.javafaker.Faker;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import org.rares.miner49er.issues.model.IssueData;
 
 import java.util.List;
 
@@ -13,25 +13,27 @@ import java.util.List;
  * @since 23.02.2018
  */
 
+@Data
 public class ProjectData {
 
+    private long id;
 
-//    private Faker faker = Faker.instance();
+    private String name;// = faker.zelda().character();
+    private String description;
+    private String icon;
+    private String picture;
+    private String color;
+    private long dateAdded;
 
-    @Getter
-    @Setter
-    String projectName;// = faker.zelda().character();
+    //    User owner;
+//    List<User> team;
+    List<IssueData> issues;
 
-    @Getter
-    @Setter
-    String color;
-
-    @Getter
-    @Setter
-    List<String> issues;
-
-    public boolean areContentsTheSameWith(ProjectData otherData) {
-        boolean areIssuesTheSame = true;
-        return color.equals(otherData.getColor()) && areIssuesTheSame;
+    public boolean compareContents(ProjectData otherData) {
+        return color.equals(otherData.getColor()) &&
+                description.equals(otherData.getDescription()) &&
+                icon.equals(otherData.getIcon()) &&
+                name.equals(otherData.getName()) &&
+                picture.equals(otherData.getPicture());
     }
 }

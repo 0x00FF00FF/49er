@@ -1,13 +1,13 @@
 package org.rares.miner49er.entries;
 
 import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.entries.adapter.TimeEntriesAdapter;
-import org.rares.miner49er.entries.adapter.TimeEntryViewProperties;
-import org.rares.miner49er.util.NumberUtils;
 
 /**
  * @author rares
@@ -21,8 +21,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     public boolean onListItemClick(ResizeableViewHolder holder) {
-        TimeEntryViewProperties tvp = (TimeEntryViewProperties) holder.getItemProperties();
-        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + tvp.getText());
+        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + (((TextView)((ViewGroup)holder.itemView).getChildAt(0))).getText());
         return true;
     }
 
@@ -40,7 +39,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     private TimeEntriesAdapter createNewTimeEntriesAdapter(ItemViewProperties viewProperties) {
-        TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this, NumberUtils.getRandomInt(5, 40));
+        TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
         teAdapter.setParentColor(viewProperties.getItemBgColor());
         return teAdapter;
     }

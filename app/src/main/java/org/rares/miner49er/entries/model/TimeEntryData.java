@@ -12,40 +12,36 @@ import org.rares.miner49er.util.TextUtils;
  */
 
 @Data
-public class TimeEntryData implements Comparable<TimeEntryData> {
+public class TimeEntryData {
 
-    private int id;
+    private long id;
+    private long issueId;
     private long dateAdded;
-    private long date;
-    private String comment;
-    private String authorName;
-    @IntRange(from=0, to=10)
+    private long workDate;
+    private String comments;
+
+    private long userId;
+    private String userName;
+    private String userPhoto;
+
+    @IntRange(from = 0, to = 10)
     private int hours;
 
-    @Override
-    public int compareTo(@NonNull TimeEntryData otherTimeEntry) {
-        if (date > otherTimeEntry.getDate()) {
-            return 1;
-        }
-        if (date < otherTimeEntry.getDate()) {
-            return -1;
-        }
-        return 0;
+    public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {
+        return id == otherTimeEntry.getId() &&
+                issueId == otherTimeEntry.getIssueId() &&
+                hours == otherTimeEntry.getHours() &&
+                workDate == otherTimeEntry.getWorkDate() &&
+                dateAdded == otherTimeEntry.getDateAdded() &&
+                otherTimeEntry.getComments().equals(comments) &&
+                otherTimeEntry.getUserPhoto().equals(userPhoto) &&
+                otherTimeEntry.getUserName().equals(userName);
     }
 
-    public boolean deepEquals(@NonNull TimeEntryData otherTimeEntry) {
-        return
-                id == otherTimeEntry.getId() &&
-                        hours == otherTimeEntry.getHours() &&
-                        dateAdded == otherTimeEntry.getDateAdded() &&
-                        otherTimeEntry.getComment().equals(comment) &&
-                        otherTimeEntry.getAuthorName().equals(authorName);
-    }
-
-    public String toString(){
-        DateTime dateTime = new DateTime(getDate());
+    public String toString() {
+        DateTime dateTime = new DateTime(getWorkDate());
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
         String entryDate = dateTime.toString(pattern);
-        return TextUtils.extractInitials(getAuthorName()) + " | " + getHours() + " | " + entryDate;
+        return TextUtils.extractInitials(getUserName()) + " | " + getHours() + " | " + entryDate;
     }
 }

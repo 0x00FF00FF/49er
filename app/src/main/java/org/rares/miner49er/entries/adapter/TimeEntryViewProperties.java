@@ -1,7 +1,5 @@
 package org.rares.miner49er.entries.adapter;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 
 /**
@@ -10,7 +8,4 @@ import org.rares.miner49er._abstract.ItemViewProperties;
  */
 
 public class TimeEntryViewProperties extends ItemViewProperties {
-    // meh
-    @Getter @Setter
-    String text;
 }

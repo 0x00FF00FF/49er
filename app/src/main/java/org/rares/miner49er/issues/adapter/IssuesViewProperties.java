@@ -1,7 +1,5 @@
 package org.rares.miner49er.issues.adapter;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 
 /**
@@ -9,7 +7,5 @@ import org.rares.miner49er._abstract.ItemViewProperties;
  * @since 10.10.2017
  */
 
-public class IssuesViewProperties extends ItemViewProperties{
-    @Getter @Setter
-    private String text;
+public class IssuesViewProperties extends ItemViewProperties {
 }

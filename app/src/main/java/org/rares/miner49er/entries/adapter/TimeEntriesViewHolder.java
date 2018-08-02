@@ -15,8 +15,6 @@ import org.rares.miner49er.entries.model.TimeEntryData;
 @SuppressWarnings("all")
 public class TimeEntriesViewHolder extends ResizeableViewHolder {
 
-    private TimeEntryViewProperties tvp = new TimeEntryViewProperties();
-
     @BindView(R.id.tv_resource_name_item)
     TextView teTextView;
 
@@ -24,15 +22,12 @@ public class TimeEntriesViewHolder extends ResizeableViewHolder {
     public void bindData(Object data, boolean shortVersion) {
         TimeEntryData entryData = (TimeEntryData) data;
 
-//        teTextView.setText("Time entry for: " + entryDate + " | " + entryData.getHours());
         teTextView.setText(entryData.toString());
-        tvp.setText(teTextView.getText().toString());
-//        tvp.setItemContainerCustomId(entryData.getId());
     }
 
     public TimeEntriesViewHolder(View itemView) {
         super(itemView);
-        setItemProperties(tvp);
+        setItemProperties(new TimeEntryViewProperties());
     }
 
 }

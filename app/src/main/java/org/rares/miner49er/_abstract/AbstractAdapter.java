@@ -5,9 +5,12 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import io.reactivex.functions.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+
+import java.util.List;
 
 /**
  * @author rares
@@ -15,7 +18,9 @@ import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
  */
 
 public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewHolder>
-        extends RecyclerView.Adapter<ExtendedViewHolder> {
+        extends RecyclerView.Adapter<ExtendedViewHolder>
+        implements Consumer<List>
+{
 
     public static final String TAG = AbstractAdapter.class.getSimpleName();
 

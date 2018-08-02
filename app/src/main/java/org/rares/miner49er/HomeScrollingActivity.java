@@ -21,6 +21,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import io.reactivex.functions.Consumer;
+import org.rares.miner49er._abstract.NetworkingService;
+import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.entries.TimeEntriesUiOps;
 import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
@@ -29,8 +32,10 @@ import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.resize.ResizeItemPostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
+import org.rares.miner49er.projects.ProjectsRepository;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
+import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.util.BehaviorFix;
 import org.rares.miner49er.util.DisplayUtil;
 
@@ -49,6 +54,7 @@ public class HomeScrollingActivity
     private float px2dp;
 
     List<Unbinder> unbinderList = new ArrayList<>();
+    List<Repository> repositoryList = new ArrayList<>();
 
     @BindView(R.id.app_bar)
     AppBarLayout appBarLayout;
@@ -276,6 +282,30 @@ public class HomeScrollingActivity
                 unbinderList != null
                         && unbinderList.size() > 0
                         && unbinderList.remove(unbinder);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        NetworkingService.INSTANCE.start();
+        ProjectsRepository projectRepository = new ProjectsRepository();
+        projectRepository.setup();
+        repositoryList.add(projectRepository);
+        if (projectsRV.getAdapter() instanceof Consumer) {
+            Log.d(TAG, "onStart() called: REGISTERED THE ADAPTER.");
+            projectRepository.registerSubscriber((Consumer<List<ProjectData>>) projectsRV.getAdapter());
+        } else {
+            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER AS CONSUMER." );
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        for (Repository repository  : repositoryList) {
+            repository.shutdown();
+        }
+        NetworkingService.INSTANCE.end();
     }
 
     @Override

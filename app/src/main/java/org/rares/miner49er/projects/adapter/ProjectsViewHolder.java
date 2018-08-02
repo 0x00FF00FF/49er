@@ -44,15 +44,12 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
     @Override
     public void bindData(Object o, boolean shortVersion) {
         ProjectData data = (ProjectData) o;
-        int itemBgColor = Color.parseColor(data.getColor());
-        projectViewProperties.setSelected(false);
-        projectViewProperties.setData(data.getProjectName());
+        int itemBgColor = Color.parseColor(data.getColor() == null ? "#cbbeb5" : data.getColor());
         projectViewProperties.setItemBgColor(itemBgColor);
-        projectViewProperties.setProjectId(114);
         if (shortVersion) {
-            projectName.setText(TextUtils.extractInitials(data.getProjectName()));
+            projectName.setText(TextUtils.extractInitials(data.getName()));
         } else {
-            projectName.setText(data.getProjectName());
+            projectName.setText(data.getName());
         }
         itemView.setBackgroundColor(itemBgColor);
 //        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());

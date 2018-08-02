@@ -1,6 +1,7 @@
 package org.rares.miner49er.issues.adapter;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,10 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         initializeData();
 //        clickListener.setViewHolderList(viewHolders);
 //        setHasStableIds(true);
+//      TODO: 8/1/18 turning stableIds on decreases performance??
+//          and investigate possibilities
+//          for viewHolders recycling or
+//          clean removal + addition
     }
 
     @NonNull
@@ -44,8 +49,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
         final IssuesViewHolder ivh = new IssuesViewHolder(containerView);
         ivh.setItemClickListener(clickListener);
-//        ivh.setMaxItemElevation(getMaxElevation() + 2);
-        // ^ careful with this if/when using shared rvp
+
         return ivh;
     }
 
@@ -79,5 +83,10 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
             data.setName("Issue #" + i);
             dataList.add(data);
         }
+    }
+
+    @Override
+    public void accept(List list) throws Exception {
+        Log.d(TAG, "accept() called with: list = [" + list + "]");
     }
 }

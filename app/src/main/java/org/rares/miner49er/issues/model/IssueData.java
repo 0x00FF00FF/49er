@@ -1,6 +1,9 @@
 package org.rares.miner49er.issues.model;
 
 import lombok.Data;
+import org.rares.miner49er.entries.model.TimeEntryData;
+
+import java.util.List;
 
 /**
  * @author rares
@@ -10,11 +13,24 @@ import lombok.Data;
 @Data
 public class IssueData {
 
-    String name;
-    int id;
-//    List<TimeEntry> timeEntries;
+    private long id;
+    private long projectId;
+    private String name;
+    //    private User owner;
+    private long dateAdded;
+    private long dateDue;
+    private List<TimeEntryData> timeEntries;
+//    List<User> assignedUsers;
 
-    public String toString(){
+    public String toString() {
         return name;// + " [" + id +"]";
+    }
+
+    public boolean compareContents(IssueData other) {
+        return projectId == other.getProjectId() &&
+                name.equals(other.getName()) &&
+                dateAdded == other.dateAdded &&
+//                owner.equals(other.getOwner()) &&
+                dateDue == other.dateDue;
     }
 }
