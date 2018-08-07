@@ -9,7 +9,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import org.rares.miner49er.persistence.entity.Project;
+import org.rares.miner49er.persistence.entities.Project;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -27,7 +27,7 @@ public enum NetworkingService {
     interface ProjectsService {
         //        @GET("users/{userId}/projects")
 //        Observable<ProjectData> getProjectList(@Path("userId") int userId);
-        @GET("projects.json")
+        @GET("projects_repaired.json")
 //        @GET("noProjects.json")
         Single<List<Project>> getProjectList();
     }
@@ -144,10 +144,10 @@ public enum NetworkingService {
 
     private void cleanDisposables() {
         disposables.dispose();
-        disposables = new CompositeDisposable();
     }
 
     public void start() {
+        disposables = new CompositeDisposable();
         setTimerInterval(2);
     }
 
@@ -159,7 +159,7 @@ public enum NetworkingService {
     public void registerProjectsConsumer(Consumer<List<Project>> consumer) {
         Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
-                timerFlowable.doOnEach(x-> Log.e(TAG, "registerProjectsConsumer: IM ALIVE!!!! ")).subscribe(
+                timerFlowable.subscribe(
                         timer -> disposables.add(projectsObs.subscribe(consumer)))
         );
     }
@@ -167,32 +167,15 @@ public enum NetworkingService {
     public void registerProjectsConsumer(SingleObserver<List<Project>> consumer) {
         Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
-                timerFlowable.doOnEach(x-> Log.e(TAG, "registerProjectsConsumer: IM ALIVE!!!! ")).subscribe(
+                timerFlowable.subscribe(
                         timer -> projectsObs.subscribe(consumer))
         );
     }
 
 
-
     public void setTimerInterval(long seconds) {
-        Log.w(TAG, "setTimerInterval: " + seconds + " seconds." );
-        timerFlowable = Flowable.interval(seconds, TimeUnit.SECONDS).share().doOnNext(x-> Log.i(TAG, ">TICK!<"));
+        Log.w(TAG, "setTimerInterval: " + seconds + " seconds.");
+        timerFlowable = Flowable.interval(seconds, TimeUnit.SECONDS).share().doOnNext(x -> Log.i(TAG, ">TICK!<"));
     }
-
-    private void logList(Consumer<Object> c, List l) {
-        for (Object o : l) {
-            log(c, o);
-        }
-    }
-
-
-    private void log(Consumer<Object> c, Object o) {
-        try {
-            c.accept(o);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }

@@ -36,4 +36,5 @@ public class ProjectData {
                 name.equals(otherData.getName()) &&
                 picture.equals(otherData.getPicture());
     }
+
 }

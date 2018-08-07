@@ -1,6 +1,7 @@
 package org.rares.miner49er.issues.adapter;
 
 import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +10,7 @@ import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.issues.model.IssueData;
-import org.rares.miner49er.util.NumberUtils;
+import org.rares.miner49er.issues.model.IssuesDiff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +24,12 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     private static final String TAG = IssuesAdapter.class.getName();
 
-    private int issuesCount = 40;
 
-    private List<IssueData> dataList = new ArrayList<>();
+    private List<IssueData> data = new ArrayList<>();
 
-    public IssuesAdapter(final BaseInterfaces.ListItemClickListener listener, int tempIssuesNumber) {
+    public IssuesAdapter(final BaseInterfaces.ListItemClickListener listener) {
         clickListener = listener;
-        setIssuesCount(tempIssuesNumber);
         setMaxElevation(BaseInterfaces.MAX_ELEVATION_ISSUES);
-        initializeData();
-//        clickListener.setViewHolderList(viewHolders);
-//        setHasStableIds(true);
-//      TODO: 8/1/18 turning stableIds on decreases performance??
-//          and investigate possibilities
-//          for viewHolders recycling or
-//          clean removal + addition
     }
 
     @NonNull
@@ -56,37 +48,31 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        holder.bindData(dataList.get(position), getLastSelectedPosition() != -1);
+        holder.bindData(data.get(position), getLastSelectedPosition() != -1);
 //        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());
     }
 
     @Override
     public String resolveData(int position) {
-        String data = dataList.get(position).toString();
-//        return dataList.get(position).toString();
+        String data = this.data.get(position).toString();
+//        return data.get(position).toString();
         return getLastSelectedPosition() != -1 ? data.replace("Issue", "I") : data;
     }
 
     @Override
     public int getItemCount() {
-        return issuesCount;
+        return data.size();
     }
 
-    public void setIssuesCount(int count) {
-        issuesCount = count;
-    }
-
-    private void initializeData() {
-        for (int i = 0; i < getItemCount(); i++) {
-            IssueData data = new IssueData();
-            data.setId(NumberUtils.getNextProjectId());
-            data.setName("Issue #" + i);
-            dataList.add(data);
-        }
+    private void updateData(List<IssueData> newData) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
+        data = newData;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @Override
     public void accept(List list) throws Exception {
         Log.d(TAG, "accept() called with: list = [" + list + "]");
+        updateData(list);
     }
 }

@@ -4,10 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import org.rares.miner49er.persistence.entity.IssueTable;
-import org.rares.miner49er.persistence.entity.ProjectTable;
-import org.rares.miner49er.persistence.entity.TimeEntryTable;
-import org.rares.miner49er.persistence.entity.UserTable;
+import org.rares.miner49er.persistence.tables.IssueTable;
+import org.rares.miner49er.persistence.tables.ProjectsTable;
+import org.rares.miner49er.persistence.tables.TimeEntryTable;
+import org.rares.miner49er.persistence.tables.UserTable;
 
 public class StorioDbHelper extends SQLiteOpenHelper {
 
@@ -23,7 +23,16 @@ public class StorioDbHelper extends SQLiteOpenHelper {
         UserTable.createTable(db);
         TimeEntryTable.createTable(db);
         IssueTable.createTable(db);
-        ProjectTable.createTable(db);
+        ProjectsTable.createTable(db);
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            // Enable foreign key constraints
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
     }
 
     @Override

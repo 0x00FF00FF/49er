@@ -1,5 +1,6 @@
 package org.rares.miner49er._abstract;
 
+import android.graphics.Color;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +31,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
 
     @Getter
     @Setter
-    private int parentColor;
+    private int parentColor = Color.parseColor("#cbbeb5");
 
     @Getter
     @Setter

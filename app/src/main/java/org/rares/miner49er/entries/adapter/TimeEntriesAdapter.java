@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er.entries.TimeEntriesProvider;
+import org.rares.miner49er.entries.TimeEntriesRepository;
 import org.rares.miner49er.entries.model.TimeEntryData;
 import org.rares.miner49er.entries.model.TimeEntryDiff;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
     private List<TimeEntryData> data;
-    private TimeEntriesProvider dataProvider = new TimeEntriesProvider();
+    private TimeEntriesRepository dataProvider = new TimeEntriesRepository();
 
     public TimeEntriesAdapter(BaseInterfaces.ListItemClickListener listener) {
         data = new ArrayList<>();
@@ -74,5 +74,6 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     @Override
     public void accept(List list) throws Exception {
         Log.d(TAG, "accept() called with: list = [" + list + "]");
+        updateList(list);
     }
 }

@@ -1,6 +1,9 @@
 package org.rares.miner49er.projects.model;
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
+import org.rares.miner49er.projects.ProjectsInterfaces;
 
 import java.util.List;
 
@@ -9,10 +12,12 @@ public class ProjectDiff extends DiffUtil.Callback {
     private List<ProjectData> oldProjectData;
     private List<ProjectData> newProjectData;
 
+    private static final String TAG = ProjectDiff.class.getSimpleName();
+
     ProjectDiff() {
     }
 
-    ProjectDiff(List<ProjectData> p1, List<ProjectData> p2) {
+    public ProjectDiff(List<ProjectData> p1, List<ProjectData> p2) {
         oldProjectData = p1;
         newProjectData = p2;
     }
@@ -37,4 +42,31 @@ public class ProjectDiff extends DiffUtil.Callback {
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
         return oldProjectData.get(oldItemPosition).compareContents(newProjectData.get(newItemPosition));
     }
+
+    @Nullable
+    @Override
+    public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+
+        ProjectData newData = newProjectData.get(newItemPosition);
+        ProjectData oldData = oldProjectData.get(oldItemPosition);
+
+        Bundle diffBundle = new Bundle();
+        if (!newData.getName().equals(oldData.getName())) {
+            diffBundle.putString(ProjectsInterfaces.KEY_NAME, newData.getName());
+        }
+        if (!newData.getColor().equals(oldData.getColor())) {
+            diffBundle.putString(ProjectsInterfaces.KEY_COLOR, newData.getColor());
+        }
+        if (!newData.getIcon().equals(oldData.getIcon())) {
+            diffBundle.putString(ProjectsInterfaces.KEY_ICON, newData.getIcon());
+        }
+        if (!newData.getPicture().equals(oldData.getPicture())) {
+            diffBundle.putString(ProjectsInterfaces.KEY_PICTURE, newData.getPicture());
+        }
+        if (diffBundle.size() == 0) return null;
+        return diffBundle;
+
+    }
+
+
 }

@@ -120,13 +120,15 @@ public class StickyLinearLayoutManager
 
         //Log.d(TAG, "onLayoutChildren: --------------s-t-a-r-t-------------------------");
 
-        View labRatView = recycler.getViewForPosition(0);
-        measureChildWithMargins(labRatView, 0, 0);
+        if (decoratedChildWidth == 0) {
+            View labRatView = recycler.getViewForPosition(0);
+            measureChildWithMargins(labRatView, 0, 0);
 
-        decoratedChildWidth = getDecoratedMeasuredWidth(labRatView);
-        decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
-        itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
-        removeAndRecycleView(labRatView, recycler);
+            decoratedChildWidth = getDecoratedMeasuredWidth(labRatView);
+            decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
+            itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
+            removeAndRecycleView(labRatView, recycler);
+        }
 
         drawChildren(NONE, recycler);
 

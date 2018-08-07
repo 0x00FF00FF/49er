@@ -10,15 +10,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TimeEntriesProvider {
+public class TimeEntriesRepository {
 
-    @Setter
-    private Comparator<TimeEntryData> comparator = (t1, t2) -> (int) (t1.getWorkDate() - t2.getWorkDate());
-
-    public TimeEntriesProvider() {
+    public TimeEntriesRepository() {
     }
 
-    public TimeEntriesProvider(Comparator<TimeEntryData> comparator) {
+    public TimeEntriesRepository(Comparator<TimeEntryData> comparator) {
         this.comparator = comparator;
     }
 
@@ -55,5 +52,15 @@ public class TimeEntriesProvider {
         Collections.sort(sortedData, comparator);
 
         return sortedData;
+    }
+
+
+    private final Comparator<TimeEntryData> defaultComparator = (t1, t2) -> (int) (t1.getWorkDate() - t2.getWorkDate());
+
+    @Setter
+    private Comparator<TimeEntryData> comparator = defaultComparator;
+
+    public void useDefaultComparator() {
+        comparator = defaultComparator;
     }
 }

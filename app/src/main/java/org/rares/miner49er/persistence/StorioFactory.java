@@ -3,14 +3,14 @@ package org.rares.miner49er.persistence;
 import android.content.Context;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite;
-import org.rares.miner49er.persistence.entity.Issue;
-import org.rares.miner49er.persistence.entity.IssueSQLiteTypeMapping;
-import org.rares.miner49er.persistence.entity.Project;
-import org.rares.miner49er.persistence.entity.ProjectSQLiteTypeMapping;
-import org.rares.miner49er.persistence.entity.TimeEntry;
-import org.rares.miner49er.persistence.entity.TimeEntrySQLiteTypeMapping;
-import org.rares.miner49er.persistence.entity.User;
-import org.rares.miner49er.persistence.entity.UserSQLiteTypeMapping;
+import org.rares.miner49er.persistence.entities.Issue;
+import org.rares.miner49er.persistence.entities.Project;
+import org.rares.miner49er.persistence.entities.TimeEntry;
+import org.rares.miner49er.persistence.entities.User;
+import org.rares.miner49er.persistence.resolvers.IssueSQLiteTypeMapping;
+import org.rares.miner49er.persistence.resolvers.ProjectSQLiteTypeMapping;
+import org.rares.miner49er.persistence.resolvers.TimeEntrySQLiteTypeMapping;
+import org.rares.miner49er.persistence.resolvers.UserSQLiteTypeMapping;
 
 public enum StorioFactory {
 

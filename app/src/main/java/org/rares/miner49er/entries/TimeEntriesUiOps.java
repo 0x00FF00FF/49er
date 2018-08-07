@@ -27,7 +27,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean enlarge) {
-        getRv().setAdapter(createNewTimeEntriesAdapter(viewProperties));
+        getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
 //        resizeRv(!enlarge);
     }
 

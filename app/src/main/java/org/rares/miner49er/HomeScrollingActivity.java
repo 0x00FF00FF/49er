@@ -25,6 +25,7 @@ import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.entries.TimeEntriesUiOps;
+import org.rares.miner49er.issues.IssuesRepository;
 import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
@@ -35,7 +36,6 @@ import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.projects.ProjectsRepository;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
-import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.util.BehaviorFix;
 import org.rares.miner49er.util.DisplayUtil;
 
@@ -55,6 +55,9 @@ public class HomeScrollingActivity
 
     List<Unbinder> unbinderList = new ArrayList<>();
     List<Repository> repositoryList = new ArrayList<>();
+
+    ProjectsRepository projectRepository = new ProjectsRepository();
+    IssuesRepository issuesRepository = new IssuesRepository();
 
     @BindView(R.id.app_bar)
     AppBarLayout appBarLayout;
@@ -284,27 +287,49 @@ public class HomeScrollingActivity
                         && unbinderList.remove(unbinder);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        NetworkingService.INSTANCE.start();
-        ProjectsRepository projectRepository = new ProjectsRepository();
-        projectRepository.setup();
-        repositoryList.add(projectRepository);
-        if (projectsRV.getAdapter() instanceof Consumer) {
+    private void registerToRepository(RecyclerView rv, Repository repository) {
+        RecyclerView.Adapter adapter = rv.getAdapter();
+        if (adapter instanceof Consumer) {
             Log.d(TAG, "onStart() called: REGISTERED THE ADAPTER.");
-            projectRepository.registerSubscriber((Consumer<List<ProjectData>>) projectsRV.getAdapter());
+            repository.registerSubscriber((Consumer<List>) adapter);
         } else {
-            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER AS CONSUMER." );
+            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER AS CONSUMER.");
         }
     }
 
     @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause() called");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume() called");
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        Log.d(TAG, "onStart() called");
+        super.onStart();
+        NetworkingService.INSTANCE.start();
+        projectRepository.setup();
+//        issuesRepository.setup();
+        repositoryList.add(projectRepository);
+//        repositoryList.add(issuesRepository);
+        registerToRepository(projectsRV, projectRepository);
+//        registerToRepository(issuesRV, issuesRepository);
+    }
+
+    @Override
     protected void onStop() {
+        Log.d(TAG, "onStop() called");
         super.onStop();
-        for (Repository repository  : repositoryList) {
+        for (Repository repository : repositoryList) {
             repository.shutdown();
         }
+        repositoryList.clear();
         NetworkingService.INSTANCE.end();
     }
 

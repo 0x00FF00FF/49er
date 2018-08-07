@@ -4,7 +4,6 @@ import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.issues.adapter.IssuesAdapter;
-import org.rares.miner49er.util.NumberUtils;
 
 /**
  * @author rares
@@ -21,7 +20,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentSelected(ItemViewProperties projectProperties, boolean enlarge) {
-        getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+        // no need to change adapter. just set new data.
+        getRv().swapAdapter(createNewIssuesAdapter(projectProperties), true);
         resizeRv(!enlarge);
     }
 
@@ -35,8 +35,10 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     }
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
-        IssuesAdapter issuesAdapter = new IssuesAdapter(this, NumberUtils.getRandomInt(5, 40));
+        IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
+        new IssuesRepository().registerSubscriber(issuesAdapter);
+        //// TODO: 8/2/18 ^ this is where i left off...
         return issuesAdapter;
     }
 }

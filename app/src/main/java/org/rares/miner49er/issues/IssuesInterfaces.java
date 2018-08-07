@@ -5,10 +5,11 @@ package org.rares.miner49er.issues;
  * @since 10.10.2017
  */
 
-// TODO: 10.10.2017 - try to see how to use dagger2 in this situation
 public interface IssuesInterfaces {
 
-
-
+    int SORT_TYPE_SIMPLE = 0;
+    int SORT_TYPE_NEWEST_FIRST = 1;
+    int SORT_TYPE_OLDEST_FIRST = 2;
+    int SORT_TYPE_ALPHANUMERIC = 3;
 
 }

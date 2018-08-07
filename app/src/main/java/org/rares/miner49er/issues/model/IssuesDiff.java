@@ -12,7 +12,7 @@ public class IssuesDiff extends DiffUtil.Callback {
     IssuesDiff() {
     }
 
-    IssuesDiff(List<IssueData> p1, List<IssueData> p2) {
+    public IssuesDiff(List<IssueData> p1, List<IssueData> p2) {
         oldIssueData = p1;
         newIssueData = p2;
     }
