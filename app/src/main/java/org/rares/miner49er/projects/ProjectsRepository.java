@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Set;
 
 // TODO: 8/7/18 add abstraction layer so we could easily switch to using any other persistence layer library
+// TODO: 8/7/18 add data to the other screens/domains 
+// TODO: 8/7/18 refactor this to be used either only for projects or for all domains 
+// TODO: 8/7/18 ### this is where i left off ### 
+// if no connectivity, no data is displayed. 
 public class ProjectsRepository extends Repository
         implements
         Consumer<List<Project>>
@@ -211,7 +215,7 @@ public class ProjectsRepository extends Repository
         disposables.add(
                 projectTableObservable
                         .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .buffer(2)      // "inoffensive little hack" that allows us to only act on one change instead of two
+                        .buffer(2)      // "inoffensive little hack" that allows us to only act on one change instead of two // // FIXME? 8/7/18
                         .map(changes -> {
                             Changes change1 = changes.get(0);
                             Changes change2 = changes.get(1);

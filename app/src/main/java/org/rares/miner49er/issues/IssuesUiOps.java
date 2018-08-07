@@ -38,7 +38,6 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
         new IssuesRepository().registerSubscriber(issuesAdapter);
-        //// TODO: 8/2/18 ^ this is where i left off...
         return issuesAdapter;
     }
 }
