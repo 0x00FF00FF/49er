@@ -293,7 +293,7 @@ public class HomeScrollingActivity
             Log.d(TAG, "onStart() called: REGISTERED THE ADAPTER.");
             repository.registerSubscriber((Consumer<List>) adapter);
         } else {
-            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER AS CONSUMER.");
+            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER [" + adapter + "] AS CONSUMER.");
         }
     }
 
@@ -319,6 +319,7 @@ public class HomeScrollingActivity
         repositoryList.add(projectRepository);
 //        repositoryList.add(issuesRepository);
         registerToRepository(projectsRV, projectRepository);
+        // TODO: generalize, use some <consumer> interface instead of directly using a RV
 //        registerToRepository(issuesRV, issuesRepository);
     }
 

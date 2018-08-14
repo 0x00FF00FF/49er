@@ -1,11 +1,12 @@
 package org.rares.miner49er.projects;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
+import com.pushtorefresh.storio3.sqlite.SQLiteTypeMapping;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
-import com.pushtorefresh.storio3.sqlite.queries.RawQuery;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -16,7 +17,12 @@ import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
+import org.rares.miner49er.persistence.resolvers.IssueStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.resolvers.ProjectStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.resolvers.TimeEntryStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.resolvers.UserStorIOSQLitePutResolver;
 import org.rares.miner49er.persistence.tables.IssueTable;
+import org.rares.miner49er.persistence.tables.ProjectTable;
 import org.rares.miner49er.persistence.tables.ProjectsTable;
 import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.persistence.tables.UserTable;
@@ -26,8 +32,10 @@ import org.rares.miner49er.util.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // TODO: 8/7/18 add abstraction layer so we could easily switch to using any other persistence layer library
@@ -74,13 +82,15 @@ public class ProjectsRepository extends Repository
                 .executeAsBlocking();
     }
 
+    @SuppressLint("UseSparseArrays")
     private void persistProjects(List<Project> projects) {
         Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
             return;
         }
-        // TODO: 8/1/18 for badly written/interpreted JSON, perhaps a more refined solution would be a JsonAdapter.Factory
+        // for badly written/interpreted JSON, perhaps
+        // a more refined solution would be a JsonAdapter.Factory
         // https://github.com/square/moshi/issues/295
         if (projects.size() == 1 && projects.get(0).getName() == null) {
             Log.e(TAG, "persistProjects: EMPTY LIST FROM SERVER");
@@ -90,8 +100,56 @@ public class ProjectsRepository extends Repository
         long s = System.currentTimeMillis();
 
         StorIOSQLite.LowLevel ll = storio.lowLevel();
+
+
+        SQLiteTypeMapping<User> userTypeMapping = ll.typeMapping(User.class);
+        SQLiteTypeMapping<Project> projectTypeMapping = ll.typeMapping(Project.class);
+        SQLiteTypeMapping<Issue> issueTypeMapping = ll.typeMapping(Issue.class);
+        SQLiteTypeMapping<TimeEntry> timeEntryTypeMapping = ll.typeMapping(TimeEntry.class);
+
+        UserStorIOSQLitePutResolver userPutResolver = null;
+        ProjectStorIOSQLitePutResolver projectPutResolver = null;
+        IssueStorIOSQLitePutResolver issuePutResolver = null;
+        TimeEntryStorIOSQLitePutResolver timeEntryPutResolver = null;
+
+        if (userTypeMapping != null) {
+            userPutResolver = (UserStorIOSQLitePutResolver) userTypeMapping.putResolver();
+        }
+        if (projectTypeMapping != null) {
+            projectPutResolver = (ProjectStorIOSQLitePutResolver) projectTypeMapping.putResolver();
+        }
+        if (issueTypeMapping != null) {
+            issuePutResolver = (IssueStorIOSQLitePutResolver) issueTypeMapping.putResolver();
+        }
+        if (timeEntryTypeMapping != null) {
+            timeEntryPutResolver = (TimeEntryStorIOSQLitePutResolver) timeEntryTypeMapping.putResolver();
+        }
+
+// TODO: 8/14/18          perhaps only use usersToAdd, because all other entities do not repeat themselves
+
+        Map<Integer, User> usersToAdd = new HashMap<>();
+        Map<Integer, Issue> issuesToAdd = new HashMap<>();
+        Map<Integer, Project> projectsToAdd = new HashMap<>();
+        Map<Integer, TimeEntry> timeEntriesToAdd = new HashMap<>();
+
         try {
             ll.beginTransaction();
+
+//          for whatever reason this does not clear the database as expected…
+//            ll.executeSQL(RawQuery.builder()
+//                    .query(
+//                            "DELETE FROM " + TimeEntryTable.NAME + "; " +
+//                            "DELETE FROM " + IssueTable.NAME + "; " +
+//                            "DELETE FROM " + ProjectsTable.TABLE_NAME + "; " +
+//                            "DELETE FROM " + UserTable.NAME + "; "
+//                    ).build()
+//            );
+
+//          …but using the single instruction per line paradigm seems to do the trick
+            ll.delete(DeleteQuery.builder().table(TimeEntryTable.NAME).build());
+            ll.delete(DeleteQuery.builder().table(IssueTable.NAME).build());
+            ll.delete(DeleteQuery.builder().table(ProjectTable.NAME).build());
+            ll.delete(DeleteQuery.builder().table(UserTable.NAME).build());
 
             Set<String> affectedTables = new HashSet<>();
 
@@ -100,42 +158,30 @@ public class ProjectsRepository extends Repository
             affectedTables.add(IssueTable.NAME);
             affectedTables.add(TimeEntryTable.NAME);
 
-            // fastest way is still bundling stuff into a raw query ...
-            ll.rawQuery(RawQuery.builder()
-                    .query(
-                            "DELETE FROM " + TimeEntryTable.NAME + "; " +
-                                    "DELETE FROM " + IssueTable.NAME + "; " +
-                                    "DELETE FROM " + ProjectsTable.TABLE_NAME + "; " +
-                                    "DELETE FROM " + UserTable.NAME).build()
-            ).close();
 
             for (Project p : projects) {
-
                 List<User> users = new ArrayList<>(p.getTeam());
                 if (!users.contains(p.getOwner())) {
                     users.add(p.getOwner());
                 }
 
-                storio.put()
-                        .objects(users)
-                        .prepare()
-//                        .executeAsBlocking();
-                        .asRxCompletable()
-//                        .doOnComplete(() -> Log.d(TAG, "Successfully synced " + users.size() + " users."))
-                        .doOnError(Throwable::printStackTrace)
-//                        .doOnTerminate(() -> Log.i(TAG, "persistProjects: >>> put users terminated."))
-                        .subscribe();
+                for (User user : users) {
+                    if (!usersToAdd.keySet().contains(user.getId())) {
+                        usersToAdd.put(user.getId(), user);
+                    }
+                }
 
                 List<Issue> issues = p.getIssues();
 
                 for (Issue i : issues) {
-                    for (TimeEntry t : i.getTimeEntries()) {
-                        if (t.getUserId() == 0) {
-                            t.setUserId(t.getUser().getId());
+                    for (TimeEntry te : i.getTimeEntries()) {
+                        if (te.getUserId() == 0) {
+                            te.setUserId(te.getUser().getId());
                         }
-                        if (t.getIssueId() == 0) {
-                            t.setIssueId(t.getIssue().getId());
+                        if (te.getIssueId() == 0) {
+                            te.setIssueId(te.getIssue().getId());
                         }
+                        timeEntriesToAdd.put(te.getId(), te);
                     }
 
                     if (i.getOwnerId() == 0) {
@@ -146,51 +192,54 @@ public class ProjectsRepository extends Repository
                         i.setProjectId(i.getProject().getId());
                     }
 
-                    storio.put()
-                            .objects(i.getTimeEntries())
-                            .prepare()
-//                            .executeAsBlocking();
-                            .asRxCompletable()
-//                            .doOnComplete(() -> Log.d(TAG, "Successfully synced " + i.getTimeEntries().size() + " time entries."))
-                            .doOnError(Throwable::printStackTrace)
-//                            .doOnTerminate(() -> Log.i(TAG, "persistProjects: >>> put time entries terminated."))
-                            .subscribe();
+                    if (!usersToAdd.keySet().contains(i.getOwnerId())) {
+                        usersToAdd.put(i.getOwner().getId(), i.getOwner());
+                    }
+
+                    issuesToAdd.put(i.getId(), i);
                 }
 
-                storio.put()
-                        .objects(issues)
-                        .prepare()
-//                        .executeAsBlocking();
-                        .asRxCompletable()
-//                        .doOnComplete(() -> Log.d(TAG, "Successfully synced " + issues.size() + " issues."))
-                        .doOnError(Throwable::printStackTrace)
-//                        .doOnTerminate(() -> Log.i(TAG, "persistProjects: >>> put issues terminated."))
-                        .subscribe();
                 if (p.getOwnerId() == 0) {
                     p.setOwnerId(p.getOwner().getId());
                 }
-
-//                storio.put()      // this in fact did emit more Changes
-//                        .object(p)
-//                        .prepare()
-//                        .asRxCompletable()
-//                        .doOnError(Throwable::printStackTrace)
-//                        .subscribe();
+                projectsToAdd.put(p.getId(), p);
             }
 
-            storio
-                    .put()
-                    .objects(projects)
-                    .prepare()
-//                    .executeAsBlocking();
-                    .asRxCompletable()
-//                    .doOnComplete(() -> Log.d(TAG, "Successfully synced " + projects.size() + " projects."))
-                    .doOnError((e) -> {
-                        Log.e(TAG, "!!!!!!!!!!!!");
-                        throw new IllegalStateException(e);
-                    })
-//                    .doOnTerminate(() -> Log.i(TAG, "persistProjects: >>> put projects terminated."))
-                    .subscribe();
+
+//            List<Object> objectsToAdd = new ArrayList<>();
+//            objectsToAdd.addAll(usersToAdd.values());
+//            objectsToAdd.addAll(timeEntriesToAdd.values());
+//            objectsToAdd.addAll(issuesToAdd.values());
+//            objectsToAdd.addAll(projectsToAdd.values());
+//
+//            storio
+//                    .put()
+//                    .objects(objectsToAdd)
+//                    .prepare()
+//                    .asRxCompletable()
+//                    .doOnError((e) -> {
+//                        Log.e(TAG, "!!!!!!!!!!!!");
+//                        throw new SQLException(e);
+//                    })
+//                    .subscribe();
+
+
+            for (User user : usersToAdd.values()) {
+                ll.insert(userPutResolver.mapToInsertQuery(user), userPutResolver.mapToContentValues(user));
+            }
+
+            for (TimeEntry timeEntry : timeEntriesToAdd.values()) {
+                ll.insert(timeEntryPutResolver.mapToInsertQuery(timeEntry), timeEntryPutResolver.mapToContentValues(timeEntry));
+            }
+
+            for (Issue issue : issuesToAdd.values()) {
+                ll.insert(issuePutResolver.mapToInsertQuery(issue), issuePutResolver.mapToContentValues(issue));
+            }
+
+            for (Project project : projectsToAdd.values()) {
+                ll.insert(projectPutResolver.mapToInsertQuery(project), projectPutResolver.mapToContentValues(project));
+            }
+
 
             ll.setTransactionSuccessful();
             ll.notifyAboutChanges(Changes.newInstance(affectedTables));
@@ -198,12 +247,12 @@ public class ProjectsRepository extends Repository
             Log.e(TAG, "persistProjects: ERRRORICAAAA", x);
         } finally {
             ll.endTransaction();
-        }
 
-// TODO: 8/7/18 optimize the number of changes emitted.
-// should only be one, caused by the transaction. this may
-// mean that we won't use the cool builder/decorator
-// pattern that storio provides, instead use the low level.
+            usersToAdd.clear();
+            issuesToAdd.clear();
+            timeEntriesToAdd.clear();
+            projectsToAdd.clear();
+        }
 
         Log.w(TAG, "persistProjects: done insert/update _______________________________ " + (System.currentTimeMillis() - s));
     }
@@ -215,33 +264,12 @@ public class ProjectsRepository extends Repository
         disposables.add(
                 projectTableObservable
                         .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .buffer(2)      // "inoffensive little hack" that allows us to only act on one change instead of two // // FIXME? 8/7/18
                         .map(changes -> {
-                            Changes change1 = changes.get(0);
-                            Changes change2 = changes.get(1);
-                            Changes bigSet;
-                            Changes smallSet;
 
-                            if (change1.affectedTables().size() >= change2.affectedTables().size()) {
-                                bigSet = change1;
-                                smallSet = change2;
-                            } else {
-                                bigSet = change2;
-                                smallSet = change1;
-                            }
-
-                            for (String s : smallSet.affectedTables()) {
-                                if (!bigSet.affectedTables().contains(s)) {
-                                    bigSet.affectedTables().add(s);
-                                }
-                            }
-
-                            Changes change = bigSet;
-
-                            Log.i(TAG, "registerSubscriber: CHANGE >>> ADAPTER" + change.affectedTables().toString());
-
+                            Log.i(TAG, "registerSubscriber: CHANGE >>> ADAPTER " + changes.affectedTables().toString());
+//
                             boolean shouldConsume = false;
-                            for (String s : change.affectedTables()) {
+                            for (String s : changes.affectedTables()) {
                                 if (s.equals(ProjectsTable.TABLE_NAME)) {
                                     shouldConsume = true;
                                     break;
@@ -356,7 +384,6 @@ public class ProjectsRepository extends Repository
             "Project 17",
             "Project 18"
     };
-
 
     /**
      * Creates some fake data. <br/>
