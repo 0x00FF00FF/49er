@@ -19,16 +19,23 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     public static final String TAG = TimeEntriesUiOps.class.getSimpleName();
 
+    private TimeEntriesRepository teRepository = new TimeEntriesRepository();
+
     @Override
     public boolean onListItemClick(ResizeableViewHolder holder) {
-        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + (((TextView)((ViewGroup)holder.itemView).getChildAt(0))).getText());
+        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + (((TextView) ((ViewGroup) holder.itemView).getChildAt(0))).getText());
         return true;
     }
 
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean enlarge) {
-        getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
-//        resizeRv(!enlarge);
+        teRepository.shutdown();
+
+        if (enlarge) {
+            getRv().setAdapter(null);
+        } else {
+            getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
+        }
     }
 
     @Override
@@ -39,8 +46,14 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     private TimeEntriesAdapter createNewTimeEntriesAdapter(ItemViewProperties viewProperties) {
+
+        Log.i(TAG, "createNewTimeEntriesAdapter: " + viewProperties.toString());
+
         TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
         teAdapter.setParentColor(viewProperties.getItemBgColor());
+        teRepository.setup();
+        teRepository.setParentId(viewProperties.getId());
+        teRepository.registerSubscriber(teAdapter);
         return teAdapter;
     }
 }

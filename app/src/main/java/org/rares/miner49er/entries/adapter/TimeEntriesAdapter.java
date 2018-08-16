@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er.entries.TimeEntriesRepository;
 import org.rares.miner49er.entries.model.TimeEntryData;
 import org.rares.miner49er.entries.model.TimeEntryDiff;
 
@@ -25,13 +24,11 @@ import java.util.List;
 public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
     private List<TimeEntryData> data;
-    private TimeEntriesRepository dataProvider = new TimeEntriesRepository();
 
     public TimeEntriesAdapter(BaseInterfaces.ListItemClickListener listener) {
         data = new ArrayList<>();
         clickListener = listener;
         setMaxElevation(BaseInterfaces.MAX_ELEVATION_TIME_ENTRIES);
-        data = dataProvider.getTimeEntries();
 //        setHasStableIds(true);
     }
 
@@ -66,14 +63,15 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
         return data.get(position).toString();
     }
 
-    public void updateList(List<TimeEntryData> newData) {
+    private void updateList(List<TimeEntryData> newData) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new TimeEntryDiff(this.data, newData));
+        data = newData;
         diffResult.dispatchUpdatesTo(this);
     }
 
     @Override
     public void accept(List list) throws Exception {
-        Log.d(TAG, "accept() called with: list = [" + list + "]");
+        Log.d(TAG, "accept! called with: list = [" + list + "]");
         updateList(list);
     }
 }

@@ -15,13 +15,20 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         DomainLink {
 
     private static final String TAG = IssuesUiOps.class.getSimpleName();
+    private IssuesRepository issuesRepository = new IssuesRepository();
 
-    public IssuesUiOps(){}
+    public IssuesUiOps() {
+    }
 
     @Override
     public void onParentSelected(ItemViewProperties projectProperties, boolean enlarge) {
-        // no need to change adapter. just set new data.
-        getRv().swapAdapter(createNewIssuesAdapter(projectProperties), true);
+        issuesRepository.shutdown();
+
+        if (enlarge) {
+            getRv().setAdapter(null);
+        } else {
+            getRv().swapAdapter(createNewIssuesAdapter(projectProperties), true);
+        }
         resizeRv(!enlarge);
     }
 
@@ -37,7 +44,9 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
-        new IssuesRepository().registerSubscriber(issuesAdapter);
+        issuesRepository.setup();
+        issuesRepository.setParentId(projectViewProperties.getId());
+        issuesRepository.registerSubscriber(issuesAdapter);
         return issuesAdapter;
     }
 }

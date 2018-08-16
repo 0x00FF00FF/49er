@@ -1,7 +1,6 @@
 package org.rares.miner49er._abstract;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * @author rares
@@ -11,7 +10,9 @@ import lombok.Setter;
 // this is in fact a DTO used to transfer
 // properties from parent to child domains
 // TODO: 7/9/18 rename and clean up child classes that are not used anymore
+@Data
 public abstract class ItemViewProperties {
-    @Getter @Setter
+
     private int itemBgColor;
+    private int id;
 }

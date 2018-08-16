@@ -32,7 +32,7 @@ public interface BaseInterfaces {
          * item of the recycler view, thus changing the
          * width of the recycler view.
          */
-        enum ListState {
+        enum ListState {    // TODO: 8/16/18 refactor into ints
             SMALL,
             LARGE
         }
@@ -50,6 +50,11 @@ public interface BaseInterfaces {
          * @return - true if a click was performed on an already selected item
          */
         boolean selectItem(int selectedId);
+    }
+
+    interface RvResizeListener {
+        void onRvGrow();
+        void onRvShrink();
     }
 
     interface ListItemClickListener {
@@ -71,8 +76,9 @@ public interface BaseInterfaces {
          *
          * @param viewProperties the transient parent view properties object
          *                       containing information about the selected parent
-         * @param enlarge        determines if a reset of the parent properties has
-         *                       taken place. The child list's width should also be reset.
+         * @param enlarge        determines if the parent's width has been
+         *                       enlarged or made smaller. The child list's width
+         *                       should also be reset.
          */
         void onParentSelected(ItemViewProperties viewProperties, boolean enlarge);
 

@@ -13,8 +13,8 @@ import java.util.List;
 @Data
 public class IssueData {
 
-    private long id;
-    private long projectId;
+    private int id;
+    private int projectId;
     private String name;
     //    private User owner;
     private long dateAdded;

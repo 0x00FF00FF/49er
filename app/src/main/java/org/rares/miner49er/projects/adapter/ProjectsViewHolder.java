@@ -46,6 +46,7 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
         ProjectData data = (ProjectData) o;
         int itemBgColor = Color.parseColor(data.getColor() == null ? "#cbbeb5" : data.getColor());
         projectViewProperties.setItemBgColor(itemBgColor);
+        projectViewProperties.setId(data.getId());
         if (shortVersion) {
             projectName.setText(TextUtils.extractInitials(data.getName()));
         } else {

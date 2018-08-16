@@ -33,5 +33,6 @@ public class IssuesViewHolder extends ResizeableViewHolder
     public void bindData(Object o, boolean shortVersion) {
         IssueData data = (IssueData) o;
         issueName.setText(data.getName());
+        getItemProperties().setId(data.getId());
     }
 }

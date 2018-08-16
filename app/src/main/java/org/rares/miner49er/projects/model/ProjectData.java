@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 public class ProjectData {
 
-    private long id;
+    private int id;
 
     private String name;// = faker.zelda().character();
     private String description;

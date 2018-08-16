@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import org.rares.miner49er.persistence.entities.TimeEntry;
+import org.rares.miner49er.persistence.entities.User;
 
 /**
  * Generated resolver for Get Operation.
@@ -16,6 +17,7 @@ public class TimeEntryStorIOSQLiteGetResolver extends DefaultGetResolver<TimeEnt
     @Override
     @NonNull
     public TimeEntry mapFromCursor(@NonNull StorIOSQLite storIOSQLite, @NonNull Cursor cursor) {
+
         TimeEntry timeEntry = new TimeEntry();
 
         timeEntry.setId(cursor.getInt(cursor.getColumnIndex("_id")));
@@ -27,11 +29,11 @@ public class TimeEntryStorIOSQLiteGetResolver extends DefaultGetResolver<TimeEnt
         timeEntry.setHours(cursor.getInt(cursor.getColumnIndex("hours")));
         timeEntry.setComments(cursor.getString(cursor.getColumnIndex("comments")));
 
-//        User user = new UserStorIOSQLiteGetResolver()
-//                .getById(storIOSQLite, timeEntry.getUserId());
-//
-//        timeEntry.setUser(user);
-//
+        User user = new UserStorIOSQLiteGetResolver()
+                .getById(storIOSQLite, timeEntry.getUserId());
+
+        timeEntry.setUser(user);
+
 //        Issue issue = storIOSQLite
 //                .get()
 //                .object(Issue.class)

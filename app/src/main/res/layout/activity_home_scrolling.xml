@@ -44,15 +44,6 @@
             android:orientation="horizontal"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!--<android.support.v4.widget.NestedScrollView-->
-        <!--android:id="@+id/projects_rv_parent"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:clipChildren="false"-->
-        <!--tools:context="org.rares.miner49er.HomeScrollingActivity"-->
-        <!--tools:showIn="@layout/activity_home_scrolling">-->
-        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
-
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_projects_list"
                 android:layout_width="match_parent"
@@ -62,19 +53,6 @@
                 tools:listitem="@layout/resizeable_list_item"
                 tools:itemCount="8"
         />
-
-        <!--</android.support.v4.widget.NestedScrollView>-->
-
-
-        <!--<android.support.v4.widget.NestedScrollView-->
-        <!--android:id="@+id/issues_rv_parent"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="match_parent"-->
-        <!--tools:context="org.rares.miner49er.HomeScrollingActivity"-->
-        <!--tools:showIn="@layout/activity_home_scrolling"-->
-        <!--android:layout_weight="1"-->
-        <!--android:background="@color/villain.colorful.green"-->
-        <!--&gt;-->
 
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_issues_list"

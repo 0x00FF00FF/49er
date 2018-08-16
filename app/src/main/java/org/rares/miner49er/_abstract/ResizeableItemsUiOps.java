@@ -15,6 +15,7 @@ import org.rares.miner49er.layoutmanager.ItemAnimationDto;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,10 +26,12 @@ import java.util.List;
 public abstract class ResizeableItemsUiOps
         implements
         BaseInterfaces.ListItemClickListener,
-        BaseInterfaces.ResizeableItems,
+        BaseInterfaces.ResizeableItems,     // is this really necessary?
         ResizePostProcessor.PostProcessorConsumer {
 
     private static String TAG = ResizeableItemsUiOps.class.getSimpleName();
+
+    private List<BaseInterfaces.RvResizeListener> resizeListeners = new ArrayList<>();
 
     @Setter
     protected BaseInterfaces.DomainLink domainLink;
@@ -85,6 +88,9 @@ public abstract class ResizeableItemsUiOps
         boolean enlarge = prevSelected == selectedPosition;
 
         rvState = enlarge ? ListState.LARGE : ListState.SMALL;
+
+        dispatchResizeEvents(enlarge);
+
         Log.d(TAG, "selectItem: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
         if (enlarge) {
             resetLastSelectedId();
@@ -97,19 +103,29 @@ public abstract class ResizeableItemsUiOps
         return false;
     }
 
+    private void dispatchResizeEvents(boolean enlarge) {
+        for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
+            if (enlarge) {
+                resizeListener.onRvGrow();
+            } else {
+                resizeListener.onRvShrink();
+            }
+        }
+    }
+
     /**
      * Resize the projects recycler view based on the enlarge param
      *
      * @param enlarge if true, makes the rv as big as its parent.
      *                also determines if the parent rv gets elevated over
-     *                the issues rv (if the device supports the operation)
+     *                the child domain rv (if the device supports the operation)
      */
     protected void resizeRv(boolean enlarge) {
         boolean animationEnabled = true;
         AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
 //        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
         int width = enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth;
-        int elevation = enlarge ? 0 : _tempAdapter.getMaxElevation();
+        int elevation = enlarge ? 0 : (_tempAdapter == null ? 0 : _tempAdapter.getMaxElevation());
 
         ItemAnimationDto itemAnimationDto = new ItemAnimationDto(getRv(), elevation, width);
         if (animationEnabled) {
@@ -210,5 +226,9 @@ public abstract class ResizeableItemsUiOps
             AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
             adapter.setPreviouslySelectedPosition(-1);
         }
+    }
+
+    public final void addRvResizeListener(BaseInterfaces.RvResizeListener listener) {
+        resizeListeners.add(listener);
     }
 }
