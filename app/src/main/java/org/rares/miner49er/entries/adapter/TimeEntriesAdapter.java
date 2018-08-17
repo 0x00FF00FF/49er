@@ -3,7 +3,6 @@ package org.rares.miner49er.entries.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,7 +70,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
     @Override
     public void accept(List list) throws Exception {
-        Log.d(TAG, "accept! called with: list = [" + list + "]");
+//        Log.d(TAG, "accept! called with: list = [" + list + "]");
         updateList(list);
     }
 }

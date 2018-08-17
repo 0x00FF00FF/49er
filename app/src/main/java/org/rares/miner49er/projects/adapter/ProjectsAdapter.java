@@ -63,7 +63,6 @@ public class ProjectsAdapter
     @NonNull
     @Override
     public ProjectsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent + "], viewType = [" + viewType + "]");
         Context ctx = parent.getContext();
 
         View projectItemView =
@@ -75,12 +74,14 @@ public class ProjectsAdapter
 //        decideRotation(pvh);
         pvh.setItemClickListener(clickListener);
 //        pvh.setMaxItemElevation(getMaxElevation() + 2);
+        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh.hashCode() + "]");
         return pvh;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
+        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
             holder.bindData(data.get(position), getLastSelectedPosition() != -1);
@@ -123,32 +124,36 @@ public class ProjectsAdapter
     private void updateList(List<ProjectData> newData) {
 //       new ProjectsSort().sort(newData, ProjectsInterfaces.SORT_TYPE_ALPHA_NUM);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ProjectDiff(data, newData));
+
         data = newData;
         diffResult.dispatchUpdatesTo(this);
+
+//        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
+//            @Override
+//            public void onInserted(int position, int count) {
+//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+//            }
+//
+//            @Override
+//            public void onRemoved(int position, int count) {
+//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+//            }
+//
+//            @Override
+//            public void onMoved(int fromPosition, int toPosition) {
+//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+//            }
+//
+//            @Override
+//            public void onChanged(int position, int count, Object payload) {
+//                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
+//            }
+//        });
     }
 
     @Override
     public void accept(List list) throws Exception {
-
         updateList(list);
-
-        /*if (list != null) {
-            if (list.size() == sortedData.size()) {
-                for (int i = 0; i < list.size(); i++) {
-                    ProjectData pd = sortedData.get(i);
-                    Object newPd = list.get(i);
-                    if (newPd instanceof ProjectData && !pd.compareContents((ProjectData) newPd)) {
-                        sortedData.updateItemAt(i, (ProjectData) newPd);
-                        notifyItemChanged(i);
-                    }
-                }
-            } else {
-                sortedData = null;
-                sortedData = new SortedList<>(ProjectData.class, alphaNumSort(this));
-                sortedData.addAll(list);
-                notifyDataSetChanged();
-            }
-        }*/
     }
 
 

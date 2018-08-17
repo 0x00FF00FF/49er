@@ -167,7 +167,7 @@ public abstract class ResizeableItemsUiOps
         if (holder != null && holder.getAnimator() != null) {
             anim = (ValueAnimator) holder.getAnimator();
         } else {
-            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {
+            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {        // // FIXME: 8/17/18
                 anim = (ValueAnimator) v.getTag(BaseInterfaces.TAG_ANIMATOR);
             } else {
                 anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE);

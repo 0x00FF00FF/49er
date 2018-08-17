@@ -11,6 +11,7 @@ import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.issues.model.IssueData;
 import org.rares.miner49er.issues.model.IssuesDiff;
+import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     @NonNull
     @Override
     public IssuesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], viewType = [" + viewType + "]");
         View containerView =
                 LayoutInflater.from(parent.getContext()).
                         inflate(R.layout.resizeable_list_item, parent, false);
@@ -47,6 +49,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
+        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         holder.bindData(data.get(position), getLastSelectedPosition() != -1);
 //        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());
@@ -54,9 +57,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     @Override
     public String resolveData(int position) {
-        String data = this.data.get(position).toString();
-//        return data.get(position).toString();
-        return getLastSelectedPosition() != -1 ? data.replace("Issue", "I") : data;
+        String issueName = this.data.get(position).toString();
+        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(issueName) : issueName;
     }
 
     @Override
@@ -68,11 +70,32 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
         data = newData;
         diffResult.dispatchUpdatesTo(this);
+//        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
+//            @Override
+//            public void onInserted(int position, int count) {
+//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+//            }
+//
+//            @Override
+//            public void onRemoved(int position, int count) {
+//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+//            }
+//
+//            @Override
+//            public void onMoved(int fromPosition, int toPosition) {
+//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+//            }
+//
+//            @Override
+//            public void onChanged(int position, int count, Object payload) {
+//                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
+//            }
+//        });
     }
 
     @Override
     public void accept(List list) throws Exception {
-        Log.d(TAG, "accept() called with: list = [" + list + "]");
+//        Log.d(TAG, "accept() called with: list = [" + list + "]");
         updateData(list);
     }
 }

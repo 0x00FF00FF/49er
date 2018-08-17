@@ -30,11 +30,11 @@ public class ProjectData {
     List<IssueData> issues;
 
     public boolean compareContents(ProjectData otherData) {
-        return color.equals(otherData.getColor()) &&
-                description.equals(otherData.getDescription()) &&
-                icon.equals(otherData.getIcon()) &&
-                name.equals(otherData.getName()) &&
-                picture.equals(otherData.getPicture());
+        return (color == null ? "" : color).equals(otherData.getColor() == null ? "" : otherData.getColor()) &&
+                (description == null ? "" : description).equals(otherData.getDescription() == null ? "" : otherData.getDescription()) &&
+                (icon == null ? "" : icon).equals(otherData.getIcon() == null ? "" : otherData.getIcon()) &&
+                (name == null ? "" : name).equals(otherData.getName() == null ? "" : otherData.getName()) &&
+                (picture == null ? "" : picture).equals(otherData.getPicture() == null ? "" : otherData.getPicture());
     }
 
 }

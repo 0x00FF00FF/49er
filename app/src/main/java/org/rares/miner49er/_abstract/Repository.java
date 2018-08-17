@@ -95,9 +95,8 @@ public abstract class Repository<T>
 
     @Override
     public void accept(List<T> list) throws Exception {
-        Log.w(TAG, "[][][][][] DISPOSABLES SIZE: " + disposables.size());
-        Single<List<T>> issuesPersistSingle = Single.just(list).subscribeOn(Schedulers.io());
-        Disposable persistDisposable = issuesPersistSingle.subscribe(this::prepareEntities);
+        Single<List<T>> persistSingle = Single.just(list).subscribeOn(Schedulers.io());
+        Disposable persistDisposable = persistSingle.subscribe(this::prepareEntities);
 
         disposables.add(persistDisposable);
     }
@@ -178,7 +177,7 @@ public abstract class Repository<T>
             timeEntriesToAdd.clear();
             projectsToAdd.clear();
 
-            Log.w(TAG, "persistProjects: done insert/update _______________________________ " + (System.currentTimeMillis() - s));
+//            Log.w(TAG, "persistProjects: done insert/update _______________________________ " + (System.currentTimeMillis() - s));
         }
     }
 }

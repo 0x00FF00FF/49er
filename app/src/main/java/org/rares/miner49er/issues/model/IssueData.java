@@ -27,10 +27,11 @@ public class IssueData {
     }
 
     public boolean compareContents(IssueData other) {
-        return projectId == other.getProjectId() &&
-                name.equals(other.getName()) &&
-                dateAdded == other.dateAdded &&
+        return
+                projectId == other.getProjectId() &&
+                        (name == null ? "" : name).equals((other.getName() == null ? "" : other.name)) &&
+                        dateAdded == other.dateAdded &&
 //                owner.equals(other.getOwner()) &&
-                dateDue == other.dateDue;
+                        dateDue == other.dateDue;
     }
 }

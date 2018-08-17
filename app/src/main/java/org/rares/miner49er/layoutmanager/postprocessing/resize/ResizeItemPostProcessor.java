@@ -8,6 +8,8 @@ import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 
 public class ResizeItemPostProcessor implements ResizePostProcessor.PostProcessor {
 
+    private static final String TAG = ResizeItemPostProcessor.class.getSimpleName();
+
     private ResizePostProcessor.PostProcessorConsumer consumer = null;
 
     @Override

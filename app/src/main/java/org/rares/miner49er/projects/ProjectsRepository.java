@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 // TODO: 8/7/18 add abstraction layer so we could easily switch to using any other persistence layer library
-// TODO: 8/7/18 add data to the other screens/domains 
 
 public class ProjectsRepository extends Repository<Project> {
     private static final String TAG = ProjectsRepository.class.getSimpleName();
@@ -41,20 +40,20 @@ public class ProjectsRepository extends Repository<Project> {
 
     @Override
     public void setup() {
-        Log.d(TAG, "setup() called." + storio.hashCode());
+//        Log.d(TAG, "setup() called." + storio.hashCode());
 
         disposables = new CompositeDisposable();
         ns.registerProjectsConsumer(this);
         projectTableObservable =
                 storio
                         .observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST)
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the projects table."));
+                        .subscribeOn(Schedulers.io());
+//                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the projects table."));
     }
 
     @Override
     public void shutdown() {
-        Log.w(TAG, "shutdown() called.");
+//        Log.w(TAG, "shutdown() called.");
         disposables.dispose();
     }
 
@@ -63,7 +62,7 @@ public class ProjectsRepository extends Repository<Project> {
 
         // TODO: 8/16/18 add pagination and/or result list so we know how many entities we have
 
-        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
+//        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
             return;
@@ -152,10 +151,9 @@ public class ProjectsRepository extends Repository<Project> {
     }
 
 
-
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
-        Log.d(TAG, "registerSubscriber() called with: consumer = [" + consumer + "]");
+//        Log.d(TAG, "registerSubscriber() called with: consumer = [" + consumer + "]");
 
 
         // TODO: 8/15/18 think if this should be moved inside the consumer
@@ -170,10 +168,10 @@ public class ProjectsRepository extends Repository<Project> {
         // it can/should contain projects-specific implementations
         disposables.add(
                 projectTableObservable
-                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
+//                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
                         .map(changes -> {
 
-                            Log.i(TAG, "registerSubscriber: CHANGE >>> ADAPTER " + changes.affectedTables().toString());
+//                            Log.i(TAG, "registerSubscriber: CHANGE >>> ADAPTER " + changes.affectedTables().toString());
 
                             return storio
                                     .get()
@@ -188,7 +186,7 @@ public class ProjectsRepository extends Repository<Project> {
                         .map(this::db2vm)
 //                .toSortedList((p1, p2) -> (int) (p1.getId() - p2.getId()))    <- this will never finish|will not emit
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnTerminate(() -> Log.d(TAG, "Termination of consumer."))
+//                        .doOnTerminate(() -> Log.d(TAG, "Termination of consumer."))
                         .subscribe(consumer));
     }
 
@@ -203,15 +201,19 @@ public class ProjectsRepository extends Repository<Project> {
 
     }*/
 
+    int counter = 0;
+
     private List<ProjectData> db2vm(List<Project> pl) {
 //        Log.d(TAG, "db2vm() called with: p = [" + pl + "]");
         List<ProjectData> projectDataList = new ArrayList<>();
 
 
+        counter++;
+
         for (Project p : pl) {
             ProjectData converted = new ProjectData();
 
-            converted.setName(p.getName());
+            converted.setName((counter % 2 == 0 ? "" : "*") + p.getName());
             converted.setIcon(p.getIcon());
             converted.setId(p.getId());
             converted.setDescription(p.getDescription());
@@ -222,6 +224,9 @@ public class ProjectsRepository extends Repository<Project> {
             projectDataList.add(converted);
         }
 
+        if (counter > 10) {
+            counter = 0;
+        }
 //        if (System.currentTimeMillis() % 2 == 1) {
 //            Collections.reverse(projectDataList);
 //        }
@@ -290,9 +295,17 @@ public class ProjectsRepository extends Repository<Project> {
 
         List<Project> fakeData = new ArrayList<>();
 
-        for (int i = 0; i < dummyData.length; i++) {
+        for (int i = 0; i < 18; i++) {
             Project projectData = new Project();
             projectData.setName(dummyData[i]);
+            projectData.setId(i + 3);
+            projectData.setOwnerId(i+2);
+            projectData.setPicture("");
+            projectData.setIcon("xx");
+//            projectData.setDescription("-");
+            projectData.setLastUpdated(-1);
+            projectData.setIssues(Collections.emptyList());
+            projectData.setTeam(Collections.emptyList());
             fakeData.add(projectData);
         }
 

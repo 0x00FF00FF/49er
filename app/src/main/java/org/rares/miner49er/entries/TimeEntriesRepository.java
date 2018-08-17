@@ -31,22 +31,22 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 
     @Override
     protected void setup() {
-        Log.d(TAG, "setup() called." + storio.hashCode());
+//        Log.d(TAG, "setup() called." + storio.hashCode());
 
         disposables = new CompositeDisposable();
 //        ns.registerTimeEntriesConsumer(this);
         timeEntriesTableObservable =
                 storio
                         .observeChangesInTable(TimeEntryTable.NAME, BackpressureStrategy.LATEST)
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the time entries table."));
+                        .subscribeOn(Schedulers.io());
+//                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the time entries table."));
     }
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
         disposables.add(
                 timeEntriesTableObservable
-                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
+//                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
                         .map(changes ->
 //                                        initializeFakeData()
                                 storio
@@ -154,7 +154,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
             TimeEntryData converted = new TimeEntryData();
 
             converted.setDateAdded(entry.getDateAdded());
-            converted.setUserName(entry.getUser().getName() + (addStar ? " *" : ""));
+            converted.setUserName((addStar ? "*" : "") + entry.getUser().getName());
             converted.setId(entry.getId());
             converted.setWorkDate(entry.getWorkDate());
             converted.setComments(entry.getComments());

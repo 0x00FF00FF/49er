@@ -6,6 +6,7 @@ import butterknife.BindView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.model.IssueData;
+import org.rares.miner49er.util.TextUtils;
 
 /**
  * @author rares
@@ -32,7 +33,11 @@ public class IssuesViewHolder extends ResizeableViewHolder
     @Override
     public void bindData(Object o, boolean shortVersion) {
         IssueData data = (IssueData) o;
-        issueName.setText(data.getName());
+        if (shortVersion) {
+            issueName.setText(TextUtils.extractInitials(data.getName()));
+        } else {
+            issueName.setText(data.getName());
+        }
         getItemProperties().setId(data.getId());
     }
 }

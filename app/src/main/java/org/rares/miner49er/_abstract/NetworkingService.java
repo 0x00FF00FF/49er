@@ -192,7 +192,7 @@ public enum NetworkingService {
     }
 
     public void registerProjectsConsumer(Consumer<List<Project>> consumer) {
-        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> disposables.add(projectsObs.subscribe(consumer)))
@@ -200,7 +200,7 @@ public enum NetworkingService {
     }
 
     public void registerProjectsConsumer(SingleObserver<List<Project>> consumer) {
-        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> projectsObs.subscribe(consumer))
@@ -208,7 +208,7 @@ public enum NetworkingService {
     }
 
     public void registerIssuesConsumer(Consumer<List<Issue>> consumer) {
-        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> disposables.add(issuesObs.subscribe(consumer)))
@@ -216,7 +216,7 @@ public enum NetworkingService {
     }
 
     public void registerTimeEntriesConsumer(Consumer<List<TimeEntry>> consumer) {
-        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> disposables.add(timeEntriesObs.subscribe(consumer)))

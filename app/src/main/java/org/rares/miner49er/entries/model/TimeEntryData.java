@@ -33,9 +33,9 @@ public class TimeEntryData {
                 hours == otherTimeEntry.getHours() &&
                 workDate == otherTimeEntry.getWorkDate() &&
                 dateAdded == otherTimeEntry.getDateAdded() &&
-                otherTimeEntry.getComments().equals(comments) &&
-                otherTimeEntry.getUserPhoto().equals(userPhoto) &&
-                otherTimeEntry.getUserName().equals(userName);
+                (otherTimeEntry.getComments() == null ? "" : otherTimeEntry.getComments()).equals(comments == null ? "" : comments) &&
+                (otherTimeEntry.getUserPhoto() == null ? "" : otherTimeEntry.getUserPhoto()).equals(userPhoto == null ? "" : userPhoto) &&
+                (otherTimeEntry.getUserName() == null ? "" : otherTimeEntry.getUserName()).equals(userName == null ? "" : userName);
     }
 
     public String toString() {

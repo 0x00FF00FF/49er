@@ -39,8 +39,8 @@ public class IssuesRepository extends Repository<Issue> {
         issueTableObservable =
                 storio
                         .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the issues table."));
+                        .subscribeOn(Schedulers.io());
+//                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the issues table."));
     }
 
     @Override
@@ -123,7 +123,7 @@ public class IssuesRepository extends Repository<Issue> {
     public void registerSubscriber(Consumer<List> consumer) {
         disposables.add(
                 issueTableObservable
-                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
+//                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
                         .map(changes -> storio
                                 .get()
                                 .listOfObjects(Issue.class)
@@ -176,7 +176,7 @@ public class IssuesRepository extends Repository<Issue> {
             counter = 0;
         }
 
-        Log.d(TAG, "db2vm() called with: p = [" + issues + "]");
+//        Log.d(TAG, "db2vm() called with: p = [" + issues + "]");
         List<IssueData> projectDataList = new ArrayList<>();
 
         for (Issue i : issues) {
@@ -185,7 +185,7 @@ public class IssuesRepository extends Repository<Issue> {
             converted.setDateAdded(i.getDateAdded());
             converted.setDateDue(i.getDateDue());
             converted.setId(i.getId());
-            converted.setName(i.getName() + (addStar ? " *" : ""));
+            converted.setName((addStar ? " *" : "") + i.getName());
             converted.setProjectId(i.getProjectId());
             projectDataList.add(converted);
         }
