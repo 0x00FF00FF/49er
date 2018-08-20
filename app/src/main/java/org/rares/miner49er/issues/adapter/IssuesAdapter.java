@@ -2,7 +2,6 @@ package org.rares.miner49er.issues.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     @NonNull
     @Override
     public IssuesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], viewType = [" + viewType + "]");
+//        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], viewType = [" + viewType + "]");
         View containerView =
                 LayoutInflater.from(parent.getContext()).
                         inflate(R.layout.resizeable_list_item, parent, false);
@@ -49,7 +48,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
+//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         holder.bindData(data.get(position), getLastSelectedPosition() != -1);
 //        Log.i(TAG, "onBindViewHolder: holder adapter position" + holder.getAdapterPosition());

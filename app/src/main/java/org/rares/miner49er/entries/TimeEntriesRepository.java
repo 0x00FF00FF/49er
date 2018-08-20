@@ -15,7 +15,6 @@ import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
-import org.rares.miner49er.persistence.resolvers.TimeEntryStorIOSQLiteGetResolver;
 import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
 
@@ -29,8 +28,14 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 
     private Flowable<Changes> timeEntriesTableObservable;
 
+    private Query timeEntriesQuery = Query.builder()
+            .table(TimeEntryTable.NAME)
+            .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
+            .whereArgs(parentId)
+            .build();
+
     @Override
-    protected void setup() {
+    protected TimeEntriesRepository setup() {
 //        Log.d(TAG, "setup() called." + storio.hashCode());
 
         disposables = new CompositeDisposable();
@@ -40,37 +45,36 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                         .observeChangesInTable(TimeEntryTable.NAME, BackpressureStrategy.LATEST)
                         .subscribeOn(Schedulers.io());
 //                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the time entries table."));
+
+        return this;
     }
 
     @Override
-    public void registerSubscriber(Consumer<List> consumer) {
+    public TimeEntriesRepository registerSubscriber(Consumer<List> consumer) {
         disposables.add(
                 timeEntriesTableObservable
 //                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .map(changes ->
-//                                        initializeFakeData()
-                                storio
-                                .get()
-                                .listOfObjects(TimeEntry.class)
-                                .withQuery(Query.builder()
-                                        .table(TimeEntryTable.NAME)
-                                        .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
-                                        .whereArgs(parentId)
-                                        .build())
-                                .withGetResolver(new TimeEntryStorIOSQLiteGetResolver())
-                                .prepare()
-                                .executeAsBlocking()
-                        )
-                        .startWith(initializeFakeData())
+                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
                         .map(this::db2vm)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer));
+
+        disposables.add(
+                userActionsObservable
+                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
+                        .map(this::db2vm)
+                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(consumer));
+
+        return this;
     }
 
     @Override
-    protected void prepareEntities(List<TimeEntry> entityList) {
+    protected TimeEntriesRepository prepareEntities(List<TimeEntry> entityList) {
         for (TimeEntry te : entityList) {
             if (te.getUserId() == 0) {
                 te.setUserId(te.getUser().getId());
@@ -98,16 +102,34 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                 .prepare()
                 .asRxCompletable()
                 .subscribe();
+
+        return this;
     }
 
     @Override
-    protected void clearTables(StorIOSQLite.LowLevel ll) {
-
+    protected TimeEntriesRepository clearTables(StorIOSQLite.LowLevel ll) {
+        return this;
     }
 
     @Override
-    public void shutdown() {
+    public TimeEntriesRepository shutdown() {
         disposables.dispose();
+        return this;
+    }
+
+    @Override
+    protected TimeEntriesRepository refreshQuery() {
+        timeEntriesQuery = Query.builder()
+                .table(TimeEntryTable.NAME)
+                .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
+                .whereArgs(parentId)
+                .build();
+        return this;
+    }
+
+    public Query getTimeEntriesQuery() {
+        Log.d(TAG, "getTimeEntriesQuery(): " + parentId);
+        return timeEntriesQuery;
     }
 
     private List<TimeEntry> initializeFakeData() {
@@ -139,6 +161,8 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     private int counter = 0;
 
     private List<TimeEntryData> db2vm(List<TimeEntry> timeEntries) {
+
+        Log.i(TAG, "db2vm: called." + timeEntries.size());
 
         boolean addStar = false;
         if (++counter % 2 == 0) {

@@ -1,7 +1,6 @@
 package org.rares.miner49er.projects.adapter;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -48,7 +47,6 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
         int itemBgColor = Color.parseColor(data.getColor() == null ? "#cbbeb5" : data.getColor());
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setId(data.getId());
-        Log.i(TAG, "bindData: " + data.getId());
         if (shortVersion) {
             projectName.setText(TextUtils.extractInitials(data.getName()));
         } else {

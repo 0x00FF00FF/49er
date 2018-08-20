@@ -7,6 +7,7 @@ import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -169,6 +170,8 @@ public enum NetworkingService {
                         .subscribeOn(Schedulers.io());
     }
 
+    private PublishProcessor<Long> onDemandPublisher = PublishProcessor.create();
+    private Flowable<Long> onDemandFlowable = onDemandPublisher.subscribeOn(Schedulers.io());
     private Flowable<Long> timerFlowable;// = Flowable.interval(60L, TimeUnit.SECONDS).share();
 
     private CompositeDisposable disposables = new CompositeDisposable();
@@ -183,7 +186,7 @@ public enum NetworkingService {
 
     public void start() {
         disposables = new CompositeDisposable();
-        setTimerInterval(2);
+        setTimerInterval(2000);
     }
 
     public void end() {
@@ -226,7 +229,11 @@ public enum NetworkingService {
 
     public void setTimerInterval(long seconds) {
         Log.w(TAG, "setTimerInterval: " + seconds + " seconds.");
-        timerFlowable = Flowable.interval(seconds, TimeUnit.SECONDS).share().doOnNext(x -> Log.i(TAG, ">TICK!<"));
+        timerFlowable = Flowable.merge(onDemandFlowable, Flowable.interval(seconds, TimeUnit.SECONDS)).share().doOnNext(x -> Log.i(TAG, ">TICK!<"));
+    }
+
+    public void refreshData() {
+        onDemandPublisher.onNext(System.currentTimeMillis());
     }
 
 }

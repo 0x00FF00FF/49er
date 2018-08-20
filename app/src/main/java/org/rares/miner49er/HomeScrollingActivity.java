@@ -21,11 +21,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.NetworkingService;
-import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.entries.TimeEntriesUiOps;
-import org.rares.miner49er.issues.IssuesRepository;
 import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
@@ -33,7 +30,6 @@ import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.resize.ResizeItemPostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
-import org.rares.miner49er.projects.ProjectsRepository;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.util.BehaviorFix;
@@ -54,10 +50,6 @@ public class HomeScrollingActivity
     private float px2dp;
 
     List<Unbinder> unbinderList = new ArrayList<>();
-    List<Repository> repositoryList = new ArrayList<>();
-
-    ProjectsRepository projectRepository = new ProjectsRepository();
-    IssuesRepository issuesRepository = new IssuesRepository();
 
     @BindView(R.id.app_bar)
     AppBarLayout appBarLayout;
@@ -122,7 +114,8 @@ public class HomeScrollingActivity
 
             @Override
             public void onClick(View v) {
-                projectsUiOps.removeItem();
+                Log.d(TAG, "onClick: USER ACTION: REFRESH DATA");
+                projectsUiOps.getProjectsRepository().refreshData();
             }
         });
 
@@ -248,6 +241,7 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
         // supportsPredictiveItemAnimations
+        Log.e(TAG, "setupRV: DONE ON CREATE" );
     }
 
     private void setupResizeableManager(RecyclerView.LayoutManager manager, int itemElevation) {
@@ -287,50 +281,33 @@ public class HomeScrollingActivity
                         && unbinderList.remove(unbinder);
     }
 
-    private void registerToRepository(RecyclerView rv, Repository repository) {
-        RecyclerView.Adapter adapter = rv.getAdapter();
-        if (adapter instanceof Consumer) {
-            Log.d(TAG, "onStart() called: REGISTERED THE ADAPTER.");
-            repository.registerSubscriber((Consumer<List>) adapter);
-        } else {
-            Log.w(TAG, "onStart: CANNOT REGISTER ADAPTER [" + adapter + "] AS CONSUMER.");
-        }
-    }
-
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause() called");
+        Log.e(TAG, "onPause() called");
         super.onPause();
     }
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume() called");
+        Log.e(TAG, "onResume() called");
         super.onResume();
     }
 
     @Override
     protected void onStart() {
-        Log.d(TAG, "onStart() called");
+        Log.e(TAG, "onStart() called");
         super.onStart();
+
         NetworkingService.INSTANCE.start();
-        projectRepository.setup();
-//        issuesRepository.setup();
-        repositoryList.add(projectRepository);
-//        repositoryList.add(issuesRepository);
-        registerToRepository(projectsRV, projectRepository);
-        // TODO: generalize, use some <consumer> interface instead of directly using a RV
-//        registerToRepository(issuesRV, issuesRepository);
+        projectsUiOps.setupRepository();
     }
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop() called");
+        Log.e(TAG, "onStop() called");
         super.onStop();
-        for (Repository repository : repositoryList) {
-            repository.shutdown();
-        }
-        repositoryList.clear();
+
+        projectsUiOps.shutdown();
         NetworkingService.INSTANCE.end();
     }
 

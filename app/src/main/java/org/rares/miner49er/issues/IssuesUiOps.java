@@ -44,9 +44,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
-        issuesRepository.setup();
-        issuesRepository.setParentId(projectViewProperties.getId());
-        issuesRepository.registerSubscriber(issuesAdapter);
+        issuesRepository
+                .setup()
+                .setParentId(projectViewProperties.getId())
+                .registerSubscriber(issuesAdapter)
+                .refreshData();
         return issuesAdapter;
     }
 }

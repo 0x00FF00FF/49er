@@ -1,10 +1,15 @@
 package org.rares.miner49er.projects;
 
+import android.util.Log;
+import io.reactivex.functions.Consumer;
+import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
+
+import java.util.List;
 
 
 /**
@@ -19,8 +24,12 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 
     private static final String TAG = ProjectsUiOps.class.getSimpleName();
 
+    @Getter
+    private ProjectsRepository projectsRepository;
+
     public ProjectsUiOps() {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
+        projectsRepository = new ProjectsRepository();
     }
 
     @Override
@@ -31,6 +40,25 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         }
         return enlarge;
     }
+
+    /**
+     * Should be called on activity start.
+     */
+    public void setupRepository() {
+        Log.e(TAG, "setupRepository() called");
+        projectsRepository
+                .setup()
+                .registerSubscriber((Consumer<List>) getRv().getAdapter())
+                .refreshData();
+    }
+
+    /**
+     * Should be called on activity stop.
+     */
+    public void shutdown() {
+        projectsRepository.shutdown();
+    }
+
 
     /**
      * Removes a project from the list.

@@ -51,9 +51,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
         TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
         teAdapter.setParentColor(viewProperties.getItemBgColor());
-        teRepository.setup();
-        teRepository.setParentId(viewProperties.getId());
-        teRepository.registerSubscriber(teAdapter);
+        teRepository
+                .setup()
+                .setParentId(viewProperties.getId())
+                .registerSubscriber(teAdapter)
+                .refreshData();
         return teAdapter;
     }
 }

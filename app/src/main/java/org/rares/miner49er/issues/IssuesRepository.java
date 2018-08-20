@@ -20,6 +20,7 @@ import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class IssuesRepository extends Repository<Issue> {
@@ -27,11 +28,11 @@ public class IssuesRepository extends Repository<Issue> {
     private static final String TAG = IssuesRepository.class.getSimpleName();
 
     private Flowable<Changes> issueTableObservable;
-//    private List<DeleteQuery> queries = new ArrayList<>();
+    private Query issuesQuery;
 
 
     @Override
-    public void setup() {
+    public IssuesRepository setup() {
         Log.d(TAG, "setup() called." + storio.hashCode());
 
         disposables = new CompositeDisposable();
@@ -41,15 +42,19 @@ public class IssuesRepository extends Repository<Issue> {
                         .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
                         .subscribeOn(Schedulers.io());
 //                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the issues table."));
+        refreshQuery();
+
+        return this;
     }
 
     @Override
-    public void shutdown() {
+    public IssuesRepository shutdown() {
         disposables.dispose();
+        return this;
     }
 
     @Override
-    protected void prepareEntities(List<Issue> entityList) {
+    protected IssuesRepository prepareEntities(List<Issue> entityList) {
 
         for (Issue i : entityList) {
             if (i.getTimeEntries() != null) {
@@ -109,37 +114,53 @@ public class IssuesRepository extends Repository<Issue> {
                 .prepare()
                 .asRxCompletable()
                 .subscribe();
+
+        return this;
     }
 
     @Override
-    protected void clearTables(StorIOSQLite.LowLevel ll) {
+    protected IssuesRepository clearTables(StorIOSQLite.LowLevel ll) {
 //        for (DeleteQuery query : queries) {
 //            Log.i(TAG, "clearTables: " + query);
 //            ll.delete(query);
 //        }
+        return this;
     }
 
     @Override
-    public void registerSubscriber(Consumer<List> consumer) {
+    public IssuesRepository registerSubscriber(Consumer<List> consumer) {
         disposables.add(
                 issueTableObservable
 //                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .map(changes -> storio
-                                .get()
-                                .listOfObjects(Issue.class)
-                                .withQuery(Query.builder()
-                                        .table(IssueTable.NAME)
-                                        .where(IssueTable.PROJECT_ID_COLUMN + " = ? ")
-                                        .whereArgs(parentId)
-                                        .build())
-                                .prepare()
-                                .executeAsBlocking())
-                        .startWith(initializeFakeData())
+                        .map(changes -> getDbItems(issuesQuery, Issue.class))
                         .map(this::db2vm)
+                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer));
+
+        disposables.add(
+                userActionsObservable
+                        .map(event -> getDbItems(issuesQuery, Issue.class))
+                        .map(this::db2vm)
+                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(consumer)
+        );
+
+        return this;
     }
 
+    @Override
+    protected IssuesRepository refreshQuery() {
+        issuesQuery = Query.builder()
+                .table(IssueTable.NAME)
+                .where(IssueTable.PROJECT_ID_COLUMN + " = ? ")
+                .whereArgs(parentId)
+                .build();
+        return this;
+    }
 
     private DeleteQuery.CompleteBuilder newTimeEntriesQuery() {
         return DeleteQuery.builder()

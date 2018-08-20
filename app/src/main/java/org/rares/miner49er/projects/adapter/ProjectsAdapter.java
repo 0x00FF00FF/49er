@@ -57,6 +57,7 @@ public class ProjectsAdapter
 //           new views, but creates new view holders on each data set
 //           change. rv also can't figure out where items are and can't
 //           update them properly.
+        Log.e(TAG, "ProjectsAdapter: STARTED");
     }
 
 
@@ -74,14 +75,14 @@ public class ProjectsAdapter
 //        decideRotation(pvh);
         pvh.setItemClickListener(clickListener);
 //        pvh.setMaxItemElevation(getMaxElevation() + 2);
-        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh.hashCode() + "]");
+//        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh.hashCode() + "]");
         return pvh;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
+//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
             holder.bindData(data.get(position), getLastSelectedPosition() != -1);

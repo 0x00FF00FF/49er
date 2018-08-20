@@ -5,12 +5,14 @@ import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.SQLiteTypeMapping;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
+import com.pushtorefresh.storio3.sqlite.queries.Query;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
-import lombok.Setter;
 import org.rares.miner49er.persistence.StorioFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
@@ -34,20 +36,21 @@ import java.util.Set;
 @SuppressLint("UseSparseArrays")
 public abstract class Repository<T>
         implements
-        Consumer<List<T>>
-{
+        Consumer<List<T>> {
 
     private static final String TAG = Repository.class.getSimpleName();
 
     protected StorIOSQLite storio = StorioFactory.INSTANCE.get();
     protected NetworkingService ns = NetworkingService.INSTANCE;
     protected CompositeDisposable disposables = new CompositeDisposable();
+    private PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
+    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
 
-    protected abstract void setup();
+    protected abstract Repository<T> setup();
 
-    public abstract void registerSubscriber(Consumer<List> consumer);
+    public abstract Repository<T> registerSubscriber(Consumer<List> consumer);
 
-    protected abstract void prepareEntities(List<T> entityList);
+    protected abstract Repository<T> prepareEntities(List<T> entityList);
 
     /**
      * Implementation specific clearing of tables.
@@ -58,9 +61,9 @@ public abstract class Repository<T>
      * @param ll the {@link com.pushtorefresh.storio3.sqlite.StorIOSQLite.LowLevel}
      *           that knows about the transaction
      */
-    protected abstract void clearTables(StorIOSQLite.LowLevel ll);
+    protected abstract Repository<T> clearTables(StorIOSQLite.LowLevel ll);
 
-    public abstract void shutdown();
+    public abstract Repository<T> shutdown();
 
     protected Map<Integer, User> usersToAdd = new HashMap<>();
     protected Map<Integer, Issue> issuesToAdd = new HashMap<>();
@@ -74,8 +77,15 @@ public abstract class Repository<T>
 
     private Set<String> affectedTables = new HashSet<>();
 
-    @Setter
     protected int parentId = 0;
+
+    public Repository<T> setParentId(int parentId) {
+        this.parentId = parentId;
+        refreshQuery();
+        return this;
+    }
+
+    protected abstract Repository<T> refreshQuery();
 
     private void insertIssue(IssueStorIOSQLitePutResolver putResolver, StorIOSQLite.LowLevel ll, Issue entity) {
         ll.insert(putResolver.mapToInsertQuery(entity), putResolver.mapToContentValues(entity));
@@ -92,6 +102,16 @@ public abstract class Repository<T>
     private void insertUser(UserStorIOSQLitePutResolver putResolver, StorIOSQLite.LowLevel ll, User entity) {
         ll.insert(putResolver.mapToInsertQuery(entity), putResolver.mapToContentValues(entity));
     }
+
+    protected List<T> getDbItems(Query getQuery, Class<T> resultsClass) {
+        return storio
+                .get()
+                .listOfObjects(resultsClass)
+                .withQuery(getQuery)
+                .prepare()
+                .executeAsBlocking();
+    }
+
 
     @Override
     public void accept(List<T> list) throws Exception {
@@ -177,7 +197,17 @@ public abstract class Repository<T>
             timeEntriesToAdd.clear();
             projectsToAdd.clear();
 
-//            Log.w(TAG, "persistProjects: done insert/update _______________________________ " + (System.currentTimeMillis() - s));
+            Log.w(TAG, "persistProjects: done insert/update _______________________________ " + (System.currentTimeMillis() - s));
         }
+    }
+
+    public void refreshData() {
+        Log.d(TAG, "refreshData: HERE >>>>>>>>>>>>>> ");
+        Log.i(TAG, "refreshData: userActionProcessor has subscribers?"  + userActionProcessor.hasSubscribers());
+        while(!userActionProcessor.hasSubscribers()){
+            Log.i(TAG, "refreshData: waiting..");   // FIXME: 8/20/18 AICI AM RAMAS!
+        }
+        userActionProcessor.onNext(UiEvent.TYPE_CLICK);
+//        ns.refreshData();
     }
 }

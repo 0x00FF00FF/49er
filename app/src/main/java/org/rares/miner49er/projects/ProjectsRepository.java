@@ -4,7 +4,6 @@ import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery;
-import com.pushtorefresh.storio3.sqlite.queries.Query;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -23,7 +22,6 @@ import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.persistence.tables.UserTable;
 import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.projects.model.ProjectsSort;
-import org.rares.miner49er.util.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +37,7 @@ public class ProjectsRepository extends Repository<Project> {
     private ProjectsSort projectsSort = new ProjectsSort();
 
     @Override
-    public void setup() {
+    public ProjectsRepository setup() {
 //        Log.d(TAG, "setup() called." + storio.hashCode());
 
         disposables = new CompositeDisposable();
@@ -49,30 +47,33 @@ public class ProjectsRepository extends Repository<Project> {
                         .observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST)
                         .subscribeOn(Schedulers.io());
 //                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the projects table."));
+        return this;
     }
 
     @Override
-    public void shutdown() {
+    public ProjectsRepository shutdown() {
 //        Log.w(TAG, "shutdown() called.");
         disposables.dispose();
+
+        return this;
     }
 
     @Override
-    protected void prepareEntities(List<Project> projects) {
+    protected ProjectsRepository prepareEntities(List<Project> projects) {
 
         // TODO: 8/16/18 add pagination and/or result list so we know how many entities we have
 
 //        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
-            return;
+            return this;
         }
         // for badly written/interpreted JSON, perhaps
         // a more refined solution would be a JsonAdapter.Factory
         // https://github.com/square/moshi/issues/295
         if (projects.size() == 1 && projects.get(0).getName() == null) {
             Log.e(TAG, "persistProjects: EMPTY LIST FROM SERVER");
-            return;
+            return this;
         }
 
         for (Project p : projects) {
@@ -128,10 +129,12 @@ public class ProjectsRepository extends Repository<Project> {
         }
 
         persistEntities();
+
+        return this;
     }
 
     @Override
-    protected void clearTables(StorIOSQLite.LowLevel ll) {
+    protected ProjectsRepository clearTables(StorIOSQLite.LowLevel ll) {
         //          for whatever reason this does not clear the database as expected…
 //            ll.executeSQL(RawQuery.builder()
 //                    .query(
@@ -148,11 +151,13 @@ public class ProjectsRepository extends Repository<Project> {
         ll.delete(DeleteQuery.builder().table(ProjectTable.NAME).build());
         ll.delete(DeleteQuery.builder().table(UserTable.NAME).build());
         // TODO: 8/16/18  ^ should use cascade delete
+
+        return this;
     }
 
 
     @Override
-    public void registerSubscriber(Consumer<List> consumer) {
+    public ProjectsRepository registerSubscriber(Consumer<List> consumer) {
 //        Log.d(TAG, "registerSubscriber() called with: consumer = [" + consumer + "]");
 
 
@@ -166,28 +171,33 @@ public class ProjectsRepository extends Repository<Project> {
         // source of data for the rv adapter, which expects a
         // list of items. since this is the PROJECTS repository,
         // it can/should contain projects-specific implementations
+        Log.d(TAG, "registerSubscriber: called");
         disposables.add(
                 projectTableObservable
-//                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .map(changes -> {
-
-//                            Log.i(TAG, "registerSubscriber: CHANGE >>> ADAPTER " + changes.affectedTables().toString());
-
-                            return storio
-                                    .get()
-                                    .listOfObjects(Project.class)
-                                    .withQuery(Query.builder().table(ProjectsTable.TABLE_NAME).build())
-                                    .prepare()
-                                    .executeAsBlocking();
-                        })
-                        .startWith(initializeFakeData())
-//        )
-//                .flatMap(Flowable::fromIterable)
-                        .map(this::db2vm)
-//                .toSortedList((p1, p2) -> (int) (p1.getId() - p2.getId()))    <- this will never finish|will not emit
+                        .map(changes -> getDbProjects())
+//                      .flatMap(Flowable::fromIterable)
+                        .map(data -> db2vm(data, false))
+                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+//                      .toSortedList((p1, p2) -> (int) (p1.getId() - p2.getId()))    <- this will never finish|will not emit
                         .observeOn(AndroidSchedulers.mainThread())
 //                        .doOnTerminate(() -> Log.d(TAG, "Termination of consumer."))
                         .subscribe(consumer));
+
+        disposables.add(
+                userActionsObservable
+                        .doOnEach((x)-> Log.i(TAG, "registerSubscriber: ccccccccccccccccccccc"))
+                        .map(b -> getDbProjects())
+//                        .delay(10, TimeUnit.MILLISECONDS)
+//                        .startWith(initializeFakeData())
+                        .map(data -> db2vm(data, true))
+                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(consumer)
+        );
+
+        return this;
     }
 
 /*    @Override
@@ -201,18 +211,19 @@ public class ProjectsRepository extends Repository<Project> {
 
     }*/
 
-    int counter = 0;
+    private int counter = 0;
 
-    private List<ProjectData> db2vm(List<Project> pl) {
-//        Log.d(TAG, "db2vm() called with: p = [" + pl + "]");
+    private List<ProjectData> db2vm(List<Project> pl, boolean local) {
+        Log.d(TAG, "db2vm() called with: p = [" + pl + "]");
         List<ProjectData> projectDataList = new ArrayList<>();
 
 
         counter++;
+        int i = 0;
 
         for (Project p : pl) {
+            ++i;
             ProjectData converted = new ProjectData();
-
             converted.setName((counter % 2 == 0 ? "" : "*") + p.getName());
             converted.setIcon(p.getIcon());
             converted.setId(p.getId());
@@ -220,11 +231,12 @@ public class ProjectsRepository extends Repository<Project> {
             converted.setDateAdded(p.getDateAdded());
             converted.setPicture(p.getPicture());
             converted.setIcon(p.getIcon());
-            converted.setColor(projectsColors[NumberUtils.getRandomInt(0, projectsColors.length - 1)]);
+            converted.setColor(local ? redColors[i % 2] : blueColors[i % 2]);
             projectDataList.add(converted);
         }
 
-        if (counter > 10) {
+        if (counter > 100) {
+            i = 0;
             counter = 0;
         }
 //        if (System.currentTimeMillis() % 2 == 1) {
@@ -234,6 +246,19 @@ public class ProjectsRepository extends Repository<Project> {
 
         return projectDataList;// projectsSort.sort(projectDataList);
     }
+
+    @Override
+    protected ProjectsRepository refreshQuery() {
+        return this;
+    }
+
+    private List<Project> getDbProjects() {
+        Log.d(TAG, "getDbProjects() called");
+        return getDbItems(ProjectsTable.AllProjectsQuery, Project.class);
+    }
+
+    private final String[] redColors = {"#e9aac8", "#c9aac8"};
+    private final String[] blueColors = {"#96c7cf", "#96a7cf"};
 
     private final String[] projectsColors = {
             "#cbbeb5",
@@ -299,7 +324,7 @@ public class ProjectsRepository extends Repository<Project> {
             Project projectData = new Project();
             projectData.setName(dummyData[i]);
             projectData.setId(i + 3);
-            projectData.setOwnerId(i+2);
+            projectData.setOwnerId(i + 2);
             projectData.setPicture("");
             projectData.setIcon("xx");
 //            projectData.setDescription("-");
