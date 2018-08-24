@@ -18,8 +18,17 @@ public abstract class AbstractItemRotator
     PostProcessorConsumer postProcessorConsumer = null;
 
     @Override
-    public void postProcess(RecyclerView viewGroup) {
-        rotateItems(viewGroup);
+    public void postProcess(RecyclerView rv) {
+        RecyclerView.Adapter _tempAdapter = rv.getAdapter();
+        int ic = _tempAdapter.getItemCount();
+        int cc = rv.getChildCount();
+        if (ic < cc) {
+            Log.w(TAG, "rotateItems: skipping rotation. " +
+                    "adapter item count does not match rv child count! " +
+                    "(" + ic + " vs " + cc + ")");
+        } else {
+            rotateItems(rv);
+        }
     }
 
     @Override

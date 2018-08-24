@@ -25,7 +25,7 @@ import java.util.List;
 
 public abstract class ResizeableItemsUiOps
         implements
-        BaseInterfaces.ListItemClickListener,
+        BaseInterfaces.ListItemEventListener,
         BaseInterfaces.ResizeableItems,     // is this really necessary?
         ResizePostProcessor.PostProcessorConsumer {
 
@@ -47,6 +47,8 @@ public abstract class ResizeableItemsUiOps
     private ListState rvState = ListState.LARGE;
 
     private ResizePostProcessor.PostProcessor resizePostProcessor;
+
+    protected Repository repository;
 
     @Override
     public void resetLastSelectedId() {
@@ -77,13 +79,16 @@ public abstract class ResizeableItemsUiOps
         return enlarge;
     }
 
+    @Override
+    public void onListItemChanged(ItemViewProperties ivp) {
+        domainLink.onParentChanged(ivp);
+    }
+
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
         AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
         final int prevSelected = _tempAdapter.getLastSelectedPosition();
         _tempAdapter.setPreviouslySelectedPosition(prevSelected);
-
-        Log.v(TAG, "selectItem: >>>>  " + prevSelected + "|" + selectedPosition);
 
         boolean enlarge = prevSelected == selectedPosition;
 
@@ -152,7 +157,6 @@ public abstract class ResizeableItemsUiOps
         final int endWidth = animatedItem.getWidth();
         final int parentWidth = getParentWidth(v);
         int startAnimationWidth = endWidth == ViewGroup.LayoutParams.MATCH_PARENT ? parentWidth : endWidth;
-
         int startWidth = v.getWidth();
         float startElevation = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -230,5 +234,20 @@ public abstract class ResizeableItemsUiOps
 
     public final void addRvResizeListener(BaseInterfaces.RvResizeListener listener) {
         resizeListeners.add(listener);
+    }
+
+    /**
+     * Convenience method to ease up on demand data refresh.
+     */
+    public void refreshData(boolean onlyLocal) {
+        if (repository != null) {
+            repository.refreshData(onlyLocal);
+        }
+    }
+
+    public void shutdown() {
+        if (repository != null) {
+            repository.shutdown();
+        }
     }
 }

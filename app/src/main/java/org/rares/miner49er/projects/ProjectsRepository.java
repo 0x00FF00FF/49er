@@ -1,5 +1,6 @@
 package org.rares.miner49er.projects;
 
+import android.graphics.Color;
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
@@ -36,17 +37,22 @@ public class ProjectsRepository extends Repository<Project> {
 
     private ProjectsSort projectsSort = new ProjectsSort();
 
-    @Override
-    public ProjectsRepository setup() {
-//        Log.d(TAG, "setup() called." + storio.hashCode());
+    ProjectsRepository() {
 
-        disposables = new CompositeDisposable();
         ns.registerProjectsConsumer(this);
         projectTableObservable =
                 storio
                         .observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST)
                         .subscribeOn(Schedulers.io());
-//                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the projects table."));
+    }
+
+    @Override
+    public ProjectsRepository setup() {
+
+        if (disposables.isDisposed()) {
+            disposables = new CompositeDisposable();
+        }
+
         return this;
     }
 
@@ -66,6 +72,9 @@ public class ProjectsRepository extends Repository<Project> {
 //        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
+            if (getDbProjects().size() == 0) {
+                demoProcessor.onNext(initializeFakeData());
+            }
             return this;
         }
         // for badly written/interpreted JSON, perhaps
@@ -171,31 +180,23 @@ public class ProjectsRepository extends Repository<Project> {
         // source of data for the rv adapter, which expects a
         // list of items. since this is the PROJECTS repository,
         // it can/should contain projects-specific implementations
-        Log.d(TAG, "registerSubscriber: called");
         disposables.add(
-                projectTableObservable
-                        .map(changes -> getDbProjects())
-//                      .flatMap(Flowable::fromIterable)
-                        .map(data -> db2vm(data, false))
+                Flowable.merge(
+                        projectTableObservable
+                                .map(changes -> getDbProjects())
+                                .map(data -> db2vm(data, false)),
+                        userActionsObservable
+                                .map(b -> getDbProjects())
+                                .startWith(getDbProjects())
+                                .map(data -> db2vm(data, true)),
+                        demoProcessor
+                                .subscribeOn(Schedulers.io())
+                                .map(data -> db2vm(data, true))
+                )
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-//                      .toSortedList((p1, p2) -> (int) (p1.getId() - p2.getId()))    <- this will never finish|will not emit
                         .observeOn(AndroidSchedulers.mainThread())
-//                        .doOnTerminate(() -> Log.d(TAG, "Termination of consumer."))
                         .subscribe(consumer));
-
-        disposables.add(
-                userActionsObservable
-                        .doOnEach((x)-> Log.i(TAG, "registerSubscriber: ccccccccccccccccccccc"))
-                        .map(b -> getDbProjects())
-//                        .delay(10, TimeUnit.MILLISECONDS)
-//                        .startWith(initializeFakeData())
-                        .map(data -> db2vm(data, true))
-                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(consumer)
-        );
 
         return this;
     }
@@ -214,7 +215,6 @@ public class ProjectsRepository extends Repository<Project> {
     private int counter = 0;
 
     private List<ProjectData> db2vm(List<Project> pl, boolean local) {
-        Log.d(TAG, "db2vm() called with: p = [" + pl + "]");
         List<ProjectData> projectDataList = new ArrayList<>();
 
 
@@ -224,14 +224,14 @@ public class ProjectsRepository extends Repository<Project> {
         for (Project p : pl) {
             ++i;
             ProjectData converted = new ProjectData();
-            converted.setName((counter % 2 == 0 ? "" : "*") + p.getName());
+            converted.setName((local ? "" : "*") + p.getName());
             converted.setIcon(p.getIcon());
             converted.setId(p.getId());
             converted.setDescription(p.getDescription());
             converted.setDateAdded(p.getDateAdded());
             converted.setPicture(p.getPicture());
             converted.setIcon(p.getIcon());
-            converted.setColor(local ? redColors[i % 2] : blueColors[i % 2]);
+            converted.setColor(Color.parseColor(local ? redColors[i % 2] : blueColors[i % 2]));
             projectDataList.add(converted);
         }
 
@@ -253,7 +253,6 @@ public class ProjectsRepository extends Repository<Project> {
     }
 
     private List<Project> getDbProjects() {
-        Log.d(TAG, "getDbProjects() called");
         return getDbItems(ProjectsTable.AllProjectsQuery, Project.class);
     }
 
@@ -313,17 +312,15 @@ public class ProjectsRepository extends Repository<Project> {
             "Project 18"
     };
 
-    /**
-     * Creates some fake data. <br/>
-     */
-    private List<Project> initializeFakeData() {
+    @Override
+    protected final List<Project> initializeFakeData() {
 
         List<Project> fakeData = new ArrayList<>();
 
         for (int i = 0; i < 18; i++) {
             Project projectData = new Project();
             projectData.setName(dummyData[i]);
-            projectData.setId(i + 3);
+            projectData.setId(-1);
             projectData.setOwnerId(i + 2);
             projectData.setPicture("");
             projectData.setIcon("xx");

@@ -54,8 +54,8 @@ public class ProjectDiff extends DiffUtil.Callback {
         if (!newData.getName().equals(oldData.getName())) {
             diffBundle.putString(ProjectsInterfaces.KEY_NAME, newData.getName());
         }
-        if (!newData.getColor().equals(oldData.getColor())) {
-            diffBundle.putString(ProjectsInterfaces.KEY_COLOR, newData.getColor());
+        if (newData.getColor() != oldData.getColor()) {
+            diffBundle.putInt(ProjectsInterfaces.KEY_COLOR, newData.getColor());
         }
         if (!newData.getIcon().equals(oldData.getIcon())) {
             diffBundle.putString(ProjectsInterfaces.KEY_ICON, newData.getIcon());
@@ -63,7 +63,11 @@ public class ProjectDiff extends DiffUtil.Callback {
         if (!newData.getPicture().equals(oldData.getPicture())) {
             diffBundle.putString(ProjectsInterfaces.KEY_PICTURE, newData.getPicture());
         }
-        if (diffBundle.size() == 0) return null;
+        if (diffBundle.size() == 0) {
+            return null;
+        } else {
+            diffBundle.putInt("id", newData.getId());
+        }
         return diffBundle;
 
     }

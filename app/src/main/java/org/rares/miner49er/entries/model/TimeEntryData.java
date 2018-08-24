@@ -23,19 +23,21 @@ public class TimeEntryData {
     private long userId;
     private String userName;
     private String userPhoto;
+    private int color;
 
     @IntRange(from = 0, to = 10)
     private int hours;
 
     public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {
-        return id == otherTimeEntry.getId() &&
-                issueId == otherTimeEntry.getIssueId() &&
-                hours == otherTimeEntry.getHours() &&
-                workDate == otherTimeEntry.getWorkDate() &&
-                dateAdded == otherTimeEntry.getDateAdded() &&
-                (otherTimeEntry.getComments() == null ? "" : otherTimeEntry.getComments()).equals(comments == null ? "" : comments) &&
-                (otherTimeEntry.getUserPhoto() == null ? "" : otherTimeEntry.getUserPhoto()).equals(userPhoto == null ? "" : userPhoto) &&
-                (otherTimeEntry.getUserName() == null ? "" : otherTimeEntry.getUserName()).equals(userName == null ? "" : userName);
+        return id == otherTimeEntry.id &&
+                issueId == otherTimeEntry.issueId &&
+                hours == otherTimeEntry.hours &&
+                workDate == otherTimeEntry.workDate &&
+                dateAdded == otherTimeEntry.dateAdded &&
+                color == otherTimeEntry.color &&
+                (otherTimeEntry.comments == null ? "" : otherTimeEntry.comments).equals(comments == null ? "" : comments) &&
+                (otherTimeEntry.userPhoto == null ? "" : otherTimeEntry.userPhoto).equals(userPhoto == null ? "" : userPhoto) &&
+                (otherTimeEntry.userName == null ? "" : otherTimeEntry.userName).equals(userName == null ? "" : userName);
     }
 
     public String toString() {

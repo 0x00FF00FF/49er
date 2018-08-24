@@ -57,7 +57,7 @@ public interface BaseInterfaces {
         void onRvShrink();
     }
 
-    interface ListItemClickListener {
+    interface ListItemEventListener {
         int ITEM_CLICK_TAG = -9999;
 
         /**
@@ -68,6 +68,7 @@ public interface BaseInterfaces {
          */
 //        void onListItemClick(ItemViewProperties itemViewProperties);
         boolean onListItemClick(ResizeableViewHolder holder);
+        void onListItemChanged( ItemViewProperties itemViewProperties);
     }
 
     interface DomainLink {
@@ -89,5 +90,7 @@ public interface BaseInterfaces {
          *                       containing information about the selected parent
          */
         void onParentRemoved(ItemViewProperties viewProperties);
+
+        void onParentChanged(ItemViewProperties itemViewProperties);
     }
 }

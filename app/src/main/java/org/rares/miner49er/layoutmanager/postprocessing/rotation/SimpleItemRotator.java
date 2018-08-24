@@ -29,7 +29,9 @@ public class SimpleItemRotator extends AbstractItemRotator {
             int itemPosition = vh.getAdapterPosition();
 
             String text = _tempAdapter.resolveData(vh.getAdapterPosition());
-            tv.setText(text);
+            if (text != null) {
+                tv.setText(text);
+            }
 
             validateViewRotation(v,
                     closedState,

@@ -7,7 +7,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 import org.rares.miner49er.BaseInterfaces.UnbinderHost;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
@@ -31,7 +31,7 @@ public abstract class ResizeableViewHolder
     Animator animator = null;   // perhaps extend valueAnimator and provide only ofPVH + rename to avoid confusion
 
     @Setter
-    private ListItemClickListener itemClickListener;
+    private ListItemEventListener itemClickListener;
 
     @Getter
     @Setter

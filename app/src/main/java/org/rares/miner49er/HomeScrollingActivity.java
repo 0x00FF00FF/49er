@@ -27,13 +27,12 @@ import org.rares.miner49er.issues.IssuesUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
-import org.rares.miner49er.layoutmanager.postprocessing.resize.ResizeItemPostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
+import org.rares.miner49er.layoutmanager.postprocessing.rotation.SimpleItemRotator;
 import org.rares.miner49er.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.projects.ProjectsUiOps;
 import org.rares.miner49er.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.util.BehaviorFix;
-import org.rares.miner49er.util.DisplayUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +86,7 @@ public class HomeScrollingActivity
     @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width)
     int itemCollapsedSelectedWidth;
 
+    private TimeEntriesUiOps timeEntriesUiOps;
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
 
@@ -96,10 +96,11 @@ public class HomeScrollingActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        NetworkingService.INSTANCE.start();
 
-        px2dp = DisplayUtil.dpFromPx(this, 100);
-        dp2px = DisplayUtil.pxFromDp(this, 100);
-        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
+//        px2dp = DisplayUtil.dpFromPx(this, 100);
+//        dp2px = DisplayUtil.pxFromDp(this, 100);
+//        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
         setContentView(R.layout.activity_home_scrolling);
 
@@ -114,8 +115,10 @@ public class HomeScrollingActivity
 
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: USER ACTION: REFRESH DATA");
-                projectsUiOps.getProjectsRepository().refreshData();
+                Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
+                projectsUiOps.refreshData(false);
+//                issuesUiOps.refreshData();
+//                timeEntriesUiOps.refreshData();
             }
         });
 
@@ -194,25 +197,27 @@ public class HomeScrollingActivity
         timeEntriesRv.setItemViewCacheSize(4);
 
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
-        TimeEntriesUiOps timeEntriesOps = new TimeEntriesUiOps();
-        timeEntriesOps.setRv(timeEntriesRv);
+        timeEntriesUiOps = new TimeEntriesUiOps();
+        timeEntriesUiOps.setRv(timeEntriesRv);
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
         setupResizeableManager(issuesManager, BaseInterfaces.MAX_ELEVATION_ISSUES);
         issuesRV.setLayoutManager(issuesManager);
         issuesUiOps = new IssuesUiOps();
-        issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);  /////// dagger here? or maybe just butterKnife?
+        issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);
         issuesUiOps.setRv(issuesRV);
-        issuesUiOps.setDomainLink(timeEntriesOps);
-        issuesUiOps.setResizePostProcessor(new ResizeItemPostProcessor());
+        issuesUiOps.setDomainLink(timeEntriesUiOps);
+//        issuesUiOps.setResizePostProcessor(new ResizeItemPostProcessor());
+//        issuesUiOps.setResizePostProcessor(new AnimatedItemRotator());
+        issuesUiOps.setResizePostProcessor(new SimpleItemRotator());
 
         projectsUiOps = new ProjectsUiOps();
         projectsUiOps.setRv(projectsRV);
         projectsUiOps.setProjectsListResizeListener(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
-        projectsUiOps.setRvCollapsedWidth(rvCollapsedWidth); /////// dagger here? or maybe just butterKnife?
+        projectsUiOps.setRvCollapsedWidth(rvCollapsedWidth);
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
@@ -298,7 +303,6 @@ public class HomeScrollingActivity
         Log.e(TAG, "onStart() called");
         super.onStart();
 
-        NetworkingService.INSTANCE.start();
         projectsUiOps.setupRepository();
     }
 
@@ -308,12 +312,14 @@ public class HomeScrollingActivity
         super.onStop();
 
         projectsUiOps.shutdown();
-        NetworkingService.INSTANCE.end();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        NetworkingService.INSTANCE.end();
+
         Log.i(TAG, "onDestroy: " + unbinderList.size());
         for (Unbinder u : unbinderList) {
             Log.i(TAG, "onDestroy: " + u);
@@ -321,10 +327,16 @@ public class HomeScrollingActivity
         }
         unbinderList.clear();
 
-        projectsUiOps = null;
-//        projectsRV.setAdapter(null);
-        projectsRV = null;
+        timeEntriesUiOps.shutdown();
+        timeEntriesUiOps = null;
+        timeEntriesRv = null;
+
+        issuesUiOps.shutdown();
         issuesUiOps = null;
         issuesRV = null;
+
+        projectsUiOps.shutdown();
+        projectsUiOps = null;
+        projectsRV = null;
     }
 }

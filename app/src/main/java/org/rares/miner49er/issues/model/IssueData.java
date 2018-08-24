@@ -20,6 +20,7 @@ public class IssueData {
     private long dateAdded;
     private long dateDue;
     private List<TimeEntryData> timeEntries;
+    private int color;
 //    List<User> assignedUsers;
 
     public String toString() {
@@ -30,6 +31,7 @@ public class IssueData {
         return
                 projectId == other.getProjectId() &&
                         (name == null ? "" : name).equals((other.getName() == null ? "" : other.name)) &&
+                        color == other.color &&
                         dateAdded == other.dateAdded &&
 //                owner.equals(other.getOwner()) &&
                         dateDue == other.dateDue;

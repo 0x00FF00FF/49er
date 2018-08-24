@@ -38,6 +38,8 @@ public class IssuesViewHolder extends ResizeableViewHolder
         } else {
             issueName.setText(data.getName());
         }
+        itemView.setBackgroundColor(data.getColor());
+        getItemProperties().setItemBgColor(data.getColor());
         getItemProperties().setId(data.getId());
     }
 }

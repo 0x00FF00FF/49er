@@ -43,8 +43,14 @@ public abstract class Repository<T>
     protected StorIOSQLite storio = StorioFactory.INSTANCE.get();
     protected NetworkingService ns = NetworkingService.INSTANCE;
     protected CompositeDisposable disposables = new CompositeDisposable();
-    private PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
-    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
+    protected PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
+    protected Flowable<Byte>
+            userActionsObservable =
+            userActionProcessor
+                    .subscribeOn(Schedulers.io())
+                    .doOnSubscribe((action) -> refreshData(false)); // TODO: 8/24/18 see if refresh data actually does anything now
+
+    protected PublishProcessor<List<T>> demoProcessor = PublishProcessor.create();
 
     protected abstract Repository<T> setup();
 
@@ -65,6 +71,11 @@ public abstract class Repository<T>
 
     public abstract Repository<T> shutdown();
 
+    /**
+     * Creates some fake data. <br/>
+     */
+    protected abstract List<T> initializeFakeData();
+
     protected Map<Integer, User> usersToAdd = new HashMap<>();
     protected Map<Integer, Issue> issuesToAdd = new HashMap<>();
     protected Map<Integer, Project> projectsToAdd = new HashMap<>();
@@ -77,10 +88,15 @@ public abstract class Repository<T>
 
     private Set<String> affectedTables = new HashSet<>();
 
-    protected int parentId = 0;
+//    protected int parentId = 0;
+    protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class);
 
-    public Repository<T> setParentId(int parentId) {
-        this.parentId = parentId;
+    public Repository<T> setParentProperties(ItemViewProperties ivp) {
+        if (ivp.getId() != 0) {
+            parentProperties.setId(ivp.getId());
+        }
+        parentProperties.setItemBgColor(ivp.getItemBgColor());
+
         refreshQuery();
         return this;
     }
@@ -104,6 +120,9 @@ public abstract class Repository<T>
     }
 
     protected List<T> getDbItems(Query getQuery, Class<T> resultsClass) {
+        if (parentProperties.getId() == -1) {
+            return initializeFakeData();
+        }
         return storio
                 .get()
                 .listOfObjects(resultsClass)
@@ -137,6 +156,13 @@ public abstract class Repository<T>
         }
     }
 
+    /**
+     * Persists the &lt;entities&gt;ToAdd using
+     * storio low level api. protected because
+     * it can be called by child classes; final
+     * because it should not be overridden by
+     * child classes.
+     */
     protected final void persistEntities() {
 
         long s = System.currentTimeMillis();
@@ -201,13 +227,23 @@ public abstract class Repository<T>
         }
     }
 
-    public void refreshData() {
-        Log.d(TAG, "refreshData: HERE >>>>>>>>>>>>>> ");
-        Log.i(TAG, "refreshData: userActionProcessor has subscribers?"  + userActionProcessor.hasSubscribers());
-        while(!userActionProcessor.hasSubscribers()){
-            Log.i(TAG, "refreshData: waiting..");   // FIXME: 8/20/18 AICI AM RAMAS!
-        }
+
+    // enqueue refresh data
+    public void refreshData(boolean onlyLocal) {
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
-//        ns.refreshData();
+        if (!onlyLocal) {
+            ns.refreshData();
+        }
+    }
+
+    /**
+     * Convenience method to show the state of the observables/observers.
+     *
+     * @return <code>true</code> if the disposables were disposed of.
+     * in this case, the disposables should be
+     * refreshed and resubscribed if this instance should be reused.
+     */
+    public boolean isDisposed() {
+        return disposables.isDisposed();
     }
 }

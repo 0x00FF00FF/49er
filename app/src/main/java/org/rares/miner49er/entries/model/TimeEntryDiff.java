@@ -70,6 +70,9 @@ public class TimeEntryDiff extends DiffUtil.Callback {
         if (newData.getUserId() != oldData.getUserId()) {
             bundle.putLong("UserId", newData.getUserId());
         }
+        if (newData.getColor() != oldData.getColor()) {
+            bundle.putInt("Color", newData.getColor());
+        }
 
         if (bundle.size() == 0) {
             return null;

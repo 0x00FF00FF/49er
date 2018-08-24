@@ -3,6 +3,7 @@ package org.rares.miner49er.issues;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.adapter.IssuesAdapter;
 
 /**
@@ -18,18 +19,46 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private IssuesRepository issuesRepository = new IssuesRepository();
 
     public IssuesUiOps() {
+        issuesRepository.setup();
+        repository = issuesRepository;
     }
 
     @Override
-    public void onParentSelected(ItemViewProperties projectProperties, boolean enlarge) {
-        issuesRepository.shutdown();
+    public void onParentSelected(ItemViewProperties projectProperties, boolean parentWasEnlarged) {
 
-        if (enlarge) {
-            getRv().setAdapter(null);
-        } else {
-            getRv().swapAdapter(createNewIssuesAdapter(projectProperties), true);
+        IssuesAdapter issuesAdapter = (IssuesAdapter) getRv().getAdapter();
+
+        // the following (if) block is here to resize issue items
+        // after selecting another project while one of the
+        // issues was selected
+        if (issuesAdapter != null) {
+            int selected = issuesAdapter.getLastSelectedPosition();
+            if (selected != -1) {
+                onListItemClick((ResizeableViewHolder)
+                        getRv().findViewHolderForAdapterPosition(selected));
+                resetLastSelectedId();
+                issuesAdapter.setPreviouslySelectedPosition(-1);
+            }
         }
-        resizeRv(!enlarge);
+
+        if (parentWasEnlarged) {
+            if (issuesAdapter != null) {
+                issuesAdapter.clearData();
+            }
+        } else {
+            if (issuesAdapter != null) {
+                onParentChanged(projectProperties);
+            } else {
+                getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+            }
+        }
+        resizeRv(!parentWasEnlarged);
+    }
+
+    @Override
+    public void onParentChanged(ItemViewProperties itemViewProperties) {
+        issuesRepository.setParentProperties(itemViewProperties);
+        issuesRepository.refreshData(true);
     }
 
     @Override
@@ -46,9 +75,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
         issuesRepository
                 .setup()
-                .setParentId(projectViewProperties.getId())
-                .registerSubscriber(issuesAdapter)
-                .refreshData();
+                .setParentProperties(projectViewProperties)
+                .registerSubscriber(issuesAdapter);
         return issuesAdapter;
     }
 }

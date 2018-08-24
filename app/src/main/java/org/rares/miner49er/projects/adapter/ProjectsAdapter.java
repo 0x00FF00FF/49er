@@ -1,21 +1,25 @@
 package org.rares.miner49er.projects.adapter;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
+import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import org.rares.miner49er.BaseInterfaces;
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
+import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.projects.model.ProjectData;
 import org.rares.miner49er.projects.model.ProjectDiff;
 import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -44,8 +48,8 @@ public class ProjectsAdapter
     // but that is a very poor choice memory-wise.
     private List<ProjectData> data = new ArrayList<>();
 
-    public ProjectsAdapter(final ListItemClickListener listener) {
-        clickListener = listener;
+    public ProjectsAdapter(final ListItemEventListener listener) {
+        eventListener = listener;
 
         setMaxElevation(BaseInterfaces.MAX_ELEVATION_PROJECTS);
 
@@ -73,7 +77,7 @@ public class ProjectsAdapter
         final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
 
 //        decideRotation(pvh);
-        pvh.setItemClickListener(clickListener);
+        pvh.setItemClickListener(eventListener);
 //        pvh.setMaxItemElevation(getMaxElevation() + 2);
 //        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh.hashCode() + "]");
         return pvh;
@@ -87,6 +91,11 @@ public class ProjectsAdapter
         if (holder.isToBeRebound()) {
             holder.bindData(data.get(position), getLastSelectedPosition() != -1);
         }
+    }
+
+    @Override
+    public void clearData() {
+        updateList(Collections.emptyList());
     }
 
     @Override
@@ -129,27 +138,48 @@ public class ProjectsAdapter
         data = newData;
         diffResult.dispatchUpdatesTo(this);
 
-//        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
-//            @Override
-//            public void onInserted(int position, int count) {
-//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
-//            }
-//
-//            @Override
-//            public void onRemoved(int position, int count) {
-//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
-//            }
-//
-//            @Override
-//            public void onMoved(int fromPosition, int toPosition) {
-//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-//            }
-//
-//            @Override
-//            public void onChanged(int position, int count, Object payload) {
-//                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
-//            }
-//        });
+        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
+            @Override
+            public void onInserted(int position, int count) {
+                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+            }
+
+            @Override
+            public void onRemoved(int position, int count) {
+                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+            }
+
+            @Override
+            public void onMoved(int fromPosition, int toPosition) {
+                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+            }
+
+            @Override
+            public void onChanged(int position, int count, Object payload) {
+                int sp = getLastSelectedPosition();
+                ItemViewProperties vp = new ProjectViewProperties();
+//                Log.i(TAG, "zonChanged() called with: " +
+//                        "selectedPos = [" + sp + "], " +
+//                        "position = [" + position + "], " +
+//                        "count = [" + count + "], " +
+//                        "payload = [" + payload + "]");
+                if (position == sp) {
+                    if (payload instanceof Bundle) {
+                        Bundle p = (Bundle) payload;
+                        int id = p.getInt("id");
+                        int color = p.getInt("color", 0);
+                        Log.e(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
+                        if (color != 0) {
+                            vp.setItemBgColor(color);
+                        }
+                        if (id != 0) {
+                            vp.setId(id);
+                        }
+                        eventListener.onListItemChanged(vp);
+                    }
+                }
+            }
+        });
     }
 
     @Override

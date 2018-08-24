@@ -52,11 +52,16 @@ public class IssuesDiff extends DiffUtil.Callback {
         if (newData.getDateAdded() != (oldData.getDateAdded())) {
             bundle.putLong("DateAdded", newData.getDateAdded());
         }
-        if (newData.getProjectId()!=(oldData.getProjectId())) {
+        if (newData.getProjectId() != (oldData.getProjectId())) {
             bundle.putInt("ProjectId", newData.getProjectId());
+        }
+        if (newData.getColor() != oldData.getColor()) {
+            bundle.putInt("Color", newData.getColor());
         }
         if (bundle.size() == 0) {
             return null;
+        } else {
+            bundle.putInt("id", newData.getId());
         }
         return bundle;
     }

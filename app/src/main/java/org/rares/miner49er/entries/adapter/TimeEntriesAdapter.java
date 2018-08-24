@@ -13,6 +13,7 @@ import org.rares.miner49er.entries.model.TimeEntryData;
 import org.rares.miner49er.entries.model.TimeEntryDiff;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,11 +23,10 @@ import java.util.List;
 
 public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
-    private List<TimeEntryData> data;
+    private List<TimeEntryData> data = new ArrayList<>();
 
-    public TimeEntriesAdapter(BaseInterfaces.ListItemClickListener listener) {
-        data = new ArrayList<>();
-        clickListener = listener;
+    public TimeEntriesAdapter(BaseInterfaces.ListItemEventListener listener) {
+        eventListener = listener;
         setMaxElevation(BaseInterfaces.MAX_ELEVATION_TIME_ENTRIES);
 //        setHasStableIds(true);
     }
@@ -42,7 +42,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
                         .inflate(R.layout.resizeable_list_item, parent, false);
 
         final TimeEntriesViewHolder tevh = new TimeEntriesViewHolder(projectItemView);
-        tevh.setItemClickListener(clickListener);
+        tevh.setItemClickListener(eventListener);
 //        tevh.setMaxItemElevation(getMaxElevation() + 2);
         return tevh;
     }
@@ -55,6 +55,11 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     public void onBindViewHolder(@NonNull TimeEntriesViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+    }
+
+    @Override
+    public void clearData() {
+        updateList(Collections.emptyList());
     }
 
     @Override

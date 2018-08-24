@@ -2,7 +2,6 @@ package org.rares.miner49er.projects;
 
 import android.util.Log;
 import io.reactivex.functions.Consumer;
-import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
@@ -24,12 +23,12 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 
     private static final String TAG = ProjectsUiOps.class.getSimpleName();
 
-    @Getter
     private ProjectsRepository projectsRepository;
 
     public ProjectsUiOps() {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
         projectsRepository = new ProjectsRepository();
+        repository = projectsRepository;
     }
 
     @Override
@@ -48,8 +47,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         Log.e(TAG, "setupRepository() called");
         projectsRepository
                 .setup()
-                .registerSubscriber((Consumer<List>) getRv().getAdapter())
-                .refreshData();
+                .registerSubscriber((Consumer<List>) getRv().getAdapter());
     }
 
     /**

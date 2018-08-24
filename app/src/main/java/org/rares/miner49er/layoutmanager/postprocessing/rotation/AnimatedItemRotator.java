@@ -25,11 +25,12 @@ public class AnimatedItemRotator extends AbstractItemRotator {
             final int prevPos = _tempAdapter.getPreviouslySelectedPosition();
             final int lastPos = _tempAdapter.getLastSelectedPosition();
             final int vhPos = vh.getAdapterPosition();
-
             TextView animatedView = (TextView) ((ViewGroup) itemView).getChildAt(0);
 
             String text = _tempAdapter.resolveData(vh.getAdapterPosition());
-            animatedView.setText(text);
+            if (text != null) {
+                animatedView.setText(text);
+            }
 
             if (prevPos == -1 && lastPos != -1) {   // from big to small, no prev item selected
                 if (vhPos != lastPos) {
@@ -119,7 +120,7 @@ public class AnimatedItemRotator extends AbstractItemRotator {
         public void onAnimationEnd(Animator animation) {
             if (!clockwise) {
                 TextUtils.setCenterGravity((TextView) animatedView);
-            } else{
+            } else {
                 TextUtils.setCenterStartGravity((TextView) animatedView);
             }
         }

@@ -5,13 +5,12 @@ import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
+import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.issues.model.IssueData;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
@@ -30,19 +29,20 @@ public class IssuesRepository extends Repository<Issue> {
     private Flowable<Changes> issueTableObservable;
     private Query issuesQuery;
 
+    IssuesRepository() {
+//        ns.registerIssuesConsumer(this);
+//        issueTableObservable =
+//                storio
+//                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
+//                        .subscribeOn(Schedulers.io());
+    }
 
     @Override
     public IssuesRepository setup() {
-        Log.d(TAG, "setup() called." + storio.hashCode());
 
-        disposables = new CompositeDisposable();
-//        ns.registerIssuesConsumer(this);
-        issueTableObservable =
-                storio
-                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
-                        .subscribeOn(Schedulers.io());
-//                        .doOnNext(d -> Log.i(TAG, "   >>>   : changes happened inside the issues table."));
-        refreshQuery();
+        if (disposables.isDisposed()) {
+            disposables = new CompositeDisposable();
+        }
 
         return this;
     }
@@ -129,20 +129,22 @@ public class IssuesRepository extends Repository<Issue> {
 
     @Override
     public IssuesRepository registerSubscriber(Consumer<List> consumer) {
-        disposables.add(
-                issueTableObservable
-//                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: change: " + x.affectedTables()))
-                        .map(changes -> getDbItems(issuesQuery, Issue.class))
-                        .map(this::db2vm)
-                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(consumer));
 
         disposables.add(
-                userActionsObservable
-                        .map(event -> getDbItems(issuesQuery, Issue.class))
-                        .map(this::db2vm)
+//                Flowable.merge(
+//                        issueTableObservable
+//                                .doOnNext((a) -> Log.d(TAG, "NET-- ON NEXT"))
+//                                .map(changes -> getDbItems(issuesQuery, Issue.class))
+//                                .map(list -> db2vm(list, false)),
+                        userActionsObservable
+                                .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
+                                .map(event -> getDbItems(issuesQuery, Issue.class))
+                                .startWith(getDbItems(issuesQuery, Issue.class))
+                                .map(list -> db2vm(list, true))
+//        )
+//                        .onBackpressureLatest()
+                        .onBackpressureBuffer(2, () -> Log.i(TAG, "registerSubscriber: BACK PRESSURE BUFFER"))
+//                        .delay(200, TimeUnit.MILLISECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
@@ -157,9 +159,14 @@ public class IssuesRepository extends Repository<Issue> {
         issuesQuery = Query.builder()
                 .table(IssueTable.NAME)
                 .where(IssueTable.PROJECT_ID_COLUMN + " = ? ")
-                .whereArgs(parentId)
+                .whereArgs(parentProperties.getId())
                 .build();
         return this;
+    }
+
+    @Override
+    public void refreshData(boolean onlyLocal) {
+        userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 
     private DeleteQuery.CompleteBuilder newTimeEntriesQuery() {
@@ -174,43 +181,36 @@ public class IssuesRepository extends Repository<Issue> {
                 .where(IssueTable.PROJECT_ID_COLUMN + " = ? ");
     }
 
-    private List<Issue> initializeFakeData() {
-        List<Issue> dataList = new ArrayList<>();
-        for (int i = 0; i < NumberUtils.getRandomInt(5, 30); i++) {
-            Issue data = new Issue();
-            data.setId(NumberUtils.getNextProjectId());
-            data.setName("Issue #" + i);
-            dataList.add(data);
-        }
-        return dataList;
-    }
-
-    private int counter = 0;
-
-    private List<IssueData> db2vm(List<Issue> issues) {
-
-        boolean addStar = false;
-        if (++counter % 2 == 0) {
-            addStar = true;
-        }
-        if (counter > 10) {
-            counter = 0;
-        }
+    private List<IssueData> db2vm(List<Issue> issues, boolean local) {
 
 //        Log.d(TAG, "db2vm() called with: p = [" + issues + "]");
         List<IssueData> projectDataList = new ArrayList<>();
-
+        int count = 0;
         for (Issue i : issues) {
             IssueData converted = new IssueData();
 
             converted.setDateAdded(i.getDateAdded());
             converted.setDateDue(i.getDateDue());
             converted.setId(i.getId());
-            converted.setName((addStar ? " *" : "") + i.getName());
+            converted.setName((local ? "" : "*") + i.getName());
             converted.setProjectId(i.getProjectId());
+            converted.setColor(parentProperties.getItemBgColor() + (count++ % 2 == 0 ? 1 : -1) * 15);
             projectDataList.add(converted);
         }
 
         return projectDataList;
     }
+
+    @Override
+    protected final List<Issue> initializeFakeData() {
+        List<Issue> dataList = new ArrayList<>();
+        for (int i = 0; i < NumberUtils.getRandomInt(5, 30); i++) {
+            Issue data = new Issue();
+            data.setId(-1);
+            data.setName("Issue #" + i);
+            dataList.add(data);
+        }
+        return dataList;
+    }
+
 }

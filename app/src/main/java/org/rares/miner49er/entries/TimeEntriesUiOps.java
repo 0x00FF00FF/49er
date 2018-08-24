@@ -4,6 +4,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
@@ -21,6 +22,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     private TimeEntriesRepository teRepository = new TimeEntriesRepository();
 
+    public TimeEntriesUiOps() {
+        teRepository.setup();
+        repository = teRepository;
+    }
+
     @Override
     public boolean onListItemClick(ResizeableViewHolder holder) {
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + (((TextView) ((ViewGroup) holder.itemView).getChildAt(0))).getText());
@@ -28,13 +34,26 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void onParentSelected(ItemViewProperties viewProperties, boolean enlarge) {
-        teRepository.shutdown();
+    public void onParentChanged(ItemViewProperties itemViewProperties) {
+        teRepository.setParentProperties(itemViewProperties);
+        teRepository.refreshData(true);
+    }
 
-        if (enlarge) {
-            getRv().setAdapter(null);
+    @Override
+    public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
+
+        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+
+        if (parentWasEnlarged) {
+            if (adapter != null) {
+                adapter.clearData();
+            }
         } else {
-            getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
+            if (adapter != null) {
+                onParentChanged(viewProperties);
+            } else {
+                getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
+            }
         }
     }
 
@@ -50,12 +69,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         Log.i(TAG, "createNewTimeEntriesAdapter: " + viewProperties.toString());
 
         TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
-        teAdapter.setParentColor(viewProperties.getItemBgColor());
+//        teAdapter.setParentColor(viewProperties.getItemBgColor());
         teRepository
                 .setup()
-                .setParentId(viewProperties.getId())
-                .registerSubscriber(teAdapter)
-                .refreshData();
+                .setParentProperties(viewProperties)
+                .registerSubscriber(teAdapter);
         return teAdapter;
     }
 }

@@ -21,7 +21,7 @@ public class TimeEntriesViewHolder extends ResizeableViewHolder {
     @Override
     public void bindData(Object data, boolean shortVersion) {
         TimeEntryData entryData = (TimeEntryData) data;
-
+        itemView.setBackgroundColor(entryData.getColor());
         teTextView.setText(entryData.toString());
     }
 

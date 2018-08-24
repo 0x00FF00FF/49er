@@ -22,7 +22,7 @@ public class ProjectData {
     private String description;
     private String icon;
     private String picture;
-    private String color;
+    private int color;
     private long dateAdded;
 
     //    User owner;
@@ -30,7 +30,8 @@ public class ProjectData {
     List<IssueData> issues;
 
     public boolean compareContents(ProjectData otherData) {
-        return (color == null ? "" : color).equals(otherData.getColor() == null ? "" : otherData.getColor()) &&
+        return (color == otherData.color) &&
+                (dateAdded == otherData.dateAdded) && 
                 (description == null ? "" : description).equals(otherData.getDescription() == null ? "" : otherData.getDescription()) &&
                 (icon == null ? "" : icon).equals(otherData.getIcon() == null ? "" : otherData.getIcon()) &&
                 (name == null ? "" : name).equals(otherData.getName() == null ? "" : otherData.getName()) &&

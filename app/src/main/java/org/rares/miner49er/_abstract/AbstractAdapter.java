@@ -9,7 +9,7 @@ import android.widget.TextView;
 import io.reactivex.functions.Consumer;
 import lombok.Getter;
 import lombok.Setter;
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
     @Setter
     private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
 
-    protected ListItemClickListener clickListener;
+    protected ListItemEventListener eventListener;
 
 
     /**
@@ -53,13 +53,10 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
     @Override
     @CallSuper
     public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
-//        Log.i(TAG, "onBindViewHolder: ");
-//        if (!viewHolders.contains(holder)) {
-//            viewHolders.add(holder);
-//        }
-        int bgColor = parentColor + ((position % 2 == 0 ? 1 : -1) * 15);
-        holder.itemView.setBackgroundColor(bgColor);
-        holder.getItemProperties().setItemBgColor(bgColor);
+//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+//        int bgColor = parentColor + ((position % 2 == 0 ? 1 : -1) * 15);
+//        holder.itemView.setBackgroundColor(bgColor);
+//        holder.getItemProperties().setItemBgColor(bgColor);
         // TODO: 07.03.2018 use a more intelligent compare mechanism + check if adapter has fixed ids
 //        if (holder.getItemProperties().getData().equals(getData(position))) {
 //            holder.setToBeRebound(false);
@@ -98,6 +95,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
 
     }
 
-    public abstract String resolveData(int position);
+    public abstract void clearData();
 
+    public abstract String resolveData(int position);
 }

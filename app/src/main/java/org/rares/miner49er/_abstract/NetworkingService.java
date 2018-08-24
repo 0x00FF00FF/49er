@@ -177,8 +177,8 @@ public enum NetworkingService {
     private CompositeDisposable disposables = new CompositeDisposable();
 
     private Single<List<Project>> projectsObs = getProjects();
-    private Single<List<Issue>> issuesObs = getIssues(111);
-    private Single<List<TimeEntry>> timeEntriesObs = getTimeEntries(111);
+//    private Single<List<Issue>> issuesObs = getIssues(111);
+//    private Single<List<TimeEntry>> timeEntriesObs = getTimeEntries(111);
 
     private void cleanDisposables() {
         disposables.dispose();
@@ -186,7 +186,7 @@ public enum NetworkingService {
 
     public void start() {
         disposables = new CompositeDisposable();
-        setTimerInterval(2000);
+        setTimerInterval(60000);
     }
 
     public void end() {
@@ -195,7 +195,6 @@ public enum NetworkingService {
     }
 
     public void registerProjectsConsumer(Consumer<List<Project>> consumer) {
-//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> disposables.add(projectsObs.subscribe(consumer)))
@@ -210,21 +209,21 @@ public enum NetworkingService {
         );
     }
 
-    public void registerIssuesConsumer(Consumer<List<Issue>> consumer) {
-//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
-        disposables.add(
-                timerFlowable.subscribe(
-                        timer -> disposables.add(issuesObs.subscribe(consumer)))
-        );
-    }
-
-    public void registerTimeEntriesConsumer(Consumer<List<TimeEntry>> consumer) {
-//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
-        disposables.add(
-                timerFlowable.subscribe(
-                        timer -> disposables.add(timeEntriesObs.subscribe(consumer)))
-        );
-    }
+//    public void registerIssuesConsumer(Consumer<List<Issue>> consumer) {
+////        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        disposables.add(
+//                timerFlowable.subscribe(
+//                        timer -> disposables.add(issuesObs.subscribe(consumer)))
+//        );
+//    }
+//
+//    public void registerTimeEntriesConsumer(Consumer<List<TimeEntry>> consumer) {
+////        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
+//        disposables.add(
+//                timerFlowable.subscribe(
+//                        timer -> disposables.add(timeEntriesObs.subscribe(consumer)))
+//        );
+//    }
 
 
     public void setTimerInterval(long seconds) {
