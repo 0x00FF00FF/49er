@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.util.ListUpdateCallback;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +60,6 @@ public class ProjectsAdapter
 //           new views, but creates new view holders on each data set
 //           change. rv also can't figure out where items are and can't
 //           update them properly.
-        Log.e(TAG, "ProjectsAdapter: STARTED");
     }
 
 
@@ -79,17 +77,18 @@ public class ProjectsAdapter
 //        decideRotation(pvh);
         pvh.setItemClickListener(eventListener);
 //        pvh.setMaxItemElevation(getMaxElevation() + 2);
-//        Log.d(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh.hashCode() + "]");
+//        Log.w(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh + "]");
         return pvh;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
-//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
+//        Log.e(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
-            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+//            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+            holder.bindData(data.get(position), false);
         }
     }
 
@@ -102,9 +101,10 @@ public class ProjectsAdapter
     public String resolveData(int position) {
         ProjectData projectData = data.get(position);
         String name = projectData.getName();
-        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(name) : name;
+        String minified = TextUtils.extractInitials(name);
+//        return getLastSelectedPosition() != -1 ? minified : name;
+        return name;
     }
-
 
 //    @Override
 //    public long getItemId(int position) {
@@ -141,17 +141,17 @@ public class ProjectsAdapter
         diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
-                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
             }
 
             @Override
             public void onRemoved(int position, int count) {
-                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
             }
 
             @Override
             public void onMoved(int fromPosition, int toPosition) {
-                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
             }
 
             @Override
@@ -168,7 +168,7 @@ public class ProjectsAdapter
                         Bundle p = (Bundle) payload;
                         int id = p.getInt("id");
                         int color = p.getInt("color", 0);
-                        Log.e(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
+//                        Log.e(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
                         if (color != 0) {
                             vp.setItemBgColor(color);
                         }

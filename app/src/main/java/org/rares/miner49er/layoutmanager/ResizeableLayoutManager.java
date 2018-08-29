@@ -10,6 +10,7 @@ public interface ResizeableLayoutManager {
     void setMaxItemElevation(int maxItemElevation);
     void setItemCollapsedSelectedWidth(int itemCollapsedSelectedWidth);
     void setItemCollapsedWidth(int itemCollapsedWidth);
+    void resetState(boolean resetSelectedView);
 
     List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent);
 }

@@ -37,6 +37,14 @@ public class SimpleLinearLayoutManager
     @Setter
     int itemCollapsedWidth = -1;
 
+    @Override
+    public void resetState(boolean resetSelectedView) {
+        selectedPosition = -1;
+        maxItemElevation = 0;
+        itemCollapsedSelectedWidth = -1;
+        itemCollapsedWidth = -1;
+    }
+
     public List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent) {
         return Collections.emptyList();
     }

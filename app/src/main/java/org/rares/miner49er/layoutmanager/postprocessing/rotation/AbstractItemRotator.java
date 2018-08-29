@@ -33,7 +33,6 @@ public abstract class AbstractItemRotator
 
     @Override
     public void validateItemPostProcess(View view, boolean isViewGroupCollapsed, boolean isViewSelected) {
-        Log.d(TAG, "validateItemPostProcess() called with: isViewGroupCollapsed = [" + isViewGroupCollapsed + "], isViewSelected = [" + isViewSelected + "]");
         validateViewRotation(view, isViewGroupCollapsed, isViewSelected);
     }
 

@@ -21,6 +21,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.entries.TimeEntriesUiOps;
 import org.rares.miner49er.issues.IssuesUiOps;
@@ -116,6 +117,8 @@ public class HomeScrollingActivity
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
+                int scrollTo = ((AbstractAdapter)projectsRV.getAdapter()).getLastSelectedPosition();
+                projectsRV.smoothScrollToPosition(scrollTo==-1?0:scrollTo);
                 projectsUiOps.refreshData(false);
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
@@ -151,7 +154,9 @@ public class HomeScrollingActivity
 
     @OnClick(R.id.fab)
     public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+        Snackbar.make(view, "Confucius say " +
+                "<<He who click on floating action bar button today, " +
+                "will click on floating action bar button tomorrow>>", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
 
@@ -222,8 +227,8 @@ public class HomeScrollingActivity
 
         projectsRV.setAdapter(projectsAdapter);
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
-//        SimpleLinearLayoutManager layoutManager = new SimpleLinearLayoutManager(this);
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+//        SimpleLinearLayoutManager projectsLayoutManager = new SimpleLinearLayoutManager(this);
+//        LinearLayoutManager projectsLayoutManager = new LinearLayoutManager(this);
 
         // this condition is true, but here if we want to change
         // our custom managers with the default LLM implementation

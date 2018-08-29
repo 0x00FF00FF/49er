@@ -1,10 +1,12 @@
 package org.rares.miner49er.issues;
 
+import android.support.v7.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.issues.adapter.IssuesAdapter;
+import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 
 /**
  * @author rares
@@ -57,6 +59,15 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentChanged(ItemViewProperties itemViewProperties) {
+        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
+//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+//        int lastSelectedPosition = adapter.getLastSelectedPosition();
+//        boolean somethingSelected = lastSelectedPosition > -1;
+//        getRv().scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
+
+        if (_tempLm instanceof ResizeableLayoutManager) {
+            ((ResizeableLayoutManager)_tempLm).resetState(false);
+        }
         issuesRepository.setParentProperties(itemViewProperties);
         issuesRepository.refreshData(true);
     }

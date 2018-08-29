@@ -1,14 +1,11 @@
 package org.rares.miner49er.layoutmanager.postprocessing.rotation;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-
-import static org.rares.miner49er.util.TextUtils.TAG;
 
 public class SimpleItemRotator extends AbstractItemRotator {
 
@@ -51,7 +48,6 @@ public class SimpleItemRotator extends AbstractItemRotator {
 
     @Override
     public void validateViewRotation(View view, boolean closedState, boolean isViewSelected) {
-        Log.i(TAG, "validateViewRotation: cALLED");
         super.validateViewRotation(view, closedState, isViewSelected);
     }
 

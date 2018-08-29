@@ -52,7 +52,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
-        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+//        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         holder.bindData(data.get(position), getLastSelectedPosition() != -1);
     }
@@ -83,17 +83,17 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
-                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
             }
 
             @Override
             public void onRemoved(int position, int count) {
-                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
             }
 
             @Override
             public void onMoved(int fromPosition, int toPosition) {
-                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
                 // dispatch towards layout manager?
             }
 
@@ -101,11 +101,11 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
             public void onChanged(int position, int count, Object payload) {
                 int sp = getLastSelectedPosition();
                 ItemViewProperties vp = new ProjectViewProperties();
-                Log.v(TAG, "onChanged() called with: " +
-                        "selectedPos = [" + sp + "], " +
-                        "position = [" + position + "], " +
-                        "count = [" + count + "], " +
-                        "payload = [" + payload + "]");
+//                Log.v(TAG, "onChanged() called with: " +
+//                        "selectedPos = [" + sp + "], " +
+//                        "position = [" + position + "], " +
+//                        "count = [" + count + "], " +
+//                        "payload = [" + payload + "]");
                 if (position == sp) {
                     if (payload instanceof Bundle) {
                         Bundle p = (Bundle) payload;
