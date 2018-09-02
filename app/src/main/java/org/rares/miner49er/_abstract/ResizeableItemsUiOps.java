@@ -67,10 +67,20 @@ public abstract class ResizeableItemsUiOps
 
         if (layoutManager instanceof ResizeableLayoutManager) {
             ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
-            mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
-            List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
-            for (ItemAnimationDto ia : animatedItemsList) {
-                resizeAnimated(ia);
+            {
+
+                /*-
+                FIXME
+                this block smells.
+                the layout manager needs to get the view itself, not to have it supplied
+                the way this is now, there can be differences between the selected position and the selected view
+                 -*/
+
+                mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
+                List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
+                for (ItemAnimationDto ia : animatedItemsList) {
+                    resizeAnimated(ia);
+                }
             }
         }
 

@@ -1,5 +1,7 @@
 package org.rares.miner49er.layoutmanager;
 
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +16,10 @@ import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_SETTLING;
+
 /**
  * @author rares
  * @since 29.03.2018
@@ -24,7 +30,7 @@ public class StickyLinearLayoutManager
         implements ResizeableLayoutManager,
         ResizePostProcessor.PostProcessorValidatorConsumer {
 
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
 
     private final static String tag = StickyLinearLayoutManager.class.getSimpleName() + ":";
     private String usedTag = tag;
@@ -183,7 +189,6 @@ public class StickyLinearLayoutManager
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
         final boolean METHOD_DEBUG = true;
 
-        final int originalDy = dy;
         int itemAddPosition = dy > 0 ? BOTTOM : TOP;
         TAG = usedTag + (dy > 0 ? " v " : " ^ ");
         if (DEBUG && METHOD_DEBUG) {
@@ -213,12 +218,6 @@ public class StickyLinearLayoutManager
         if (lastTopY + dy + decoratedChildHeight >= maxScroll) {
             dy = maxScroll - decoratedChildHeight - lastTopY;
         }
-
-        // we're not scrolling when remaining
-        // vertical scroll reported by the rv
-        // state is 0 or when we _actually_
-        // scroll less than the original dy
-        scrolling = state.getRemainingScrollVertical() != 0 && Math.abs(dy) >= Math.abs(originalDy);
 
         if (dy == 0) {
             if (DEBUG && METHOD_DEBUG) {
@@ -351,6 +350,7 @@ public class StickyLinearLayoutManager
     ) {
 
         final boolean METHOD_DEBUG = true;
+        boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
         if (newItemPosition == BOTTOM) {
@@ -385,6 +385,7 @@ public class StickyLinearLayoutManager
                     " SELECTED VIEW: " + selectedView +
                     " (" + getItemText(selectedView) + ")");
         }
+
         try {
             // first of all, update first visible position.
             firstVisiblePosition = lastTopY / decoratedChildHeight;
@@ -486,7 +487,7 @@ public class StickyLinearLayoutManager
 
                 int r, t, b, l;
                 t = i * decoratedChildHeight - lastTopY;
-                b = (i + 1) * (decoratedChildHeight) - lastTopY;// why not t + decoratedChildHeight + inBetween?
+                b = t + decoratedChildHeight;
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
                         if (DEBUG && METHOD_DEBUG) {
@@ -511,7 +512,11 @@ public class StickyLinearLayoutManager
                     if (DEBUG && METHOD_DEBUG) {
                         Log.e(TAG, "drawChildren: " + selectedPosition + " " + selectedView + " scrolling? " + scrolling);
                     }
+
+                    refreshSelectedView(recycler);
+                    selectedViewRefreshed = true;
                     item = selectedView;
+
                     selectedViewDetached = false;
                     // always draw selected item inside the rv viewport
                     // selected item virtual position needs to be updated
@@ -563,12 +568,8 @@ public class StickyLinearLayoutManager
 //                }
             }
         } finally {
-            if (selectedViewDetached && selectedView != null) {
-                if (DEBUG && METHOD_DEBUG) {
-                    Log.d(TAG, "drawChildren: >>> adding selected view, because _someone_ \"forgot\" to add it /!\\");
-                }
 
-
+            if (selectedView != null) {
                 int t = (int) selectedView.getY();
                 int b = (int) (selectedView.getY() + decoratedChildHeight);
 
@@ -578,15 +579,30 @@ public class StickyLinearLayoutManager
                 t = newTb[0];
                 b = newTb[1];
 
-                addView(selectedView); // ??
-                measureChildWithMargins(selectedView, 0, 0);
-                layoutDecoratedWithMargins(selectedView,
-                        0,
-                        t,
-                        itemCollapsedSelectedWidth,
-                        b);
-                selectedViewDetached = false;
+                if (selectedViewDetached) {
+                    if (DEBUG && METHOD_DEBUG) {
+                        Log.d(TAG, "drawChildren: >>> adding selected view, because _someone_ \"forgot\" to add it /!\\");
+                    }
+                    addView(selectedView);
+                    selectedViewDetached = false;
+                }
+
+                if (selectedPosition != -1) {
+                    if (!selectedViewRefreshed) {
+                        refreshSelectedView(recycler);
+                    }
+                }
+
+                if (scrolling) {
+                    measureChildWithMargins(selectedView, 0, 0);
+                    layoutDecoratedWithMargins(selectedView,
+                            0,
+                            t,
+                            itemCollapsedSelectedWidth,
+                            b);
+                }
             }
+
             if (DEBUG && METHOD_DEBUG) {
                 int cc = getChildCount();
                 for (int i = 0; i < cc; i++) {
@@ -600,6 +616,7 @@ public class StickyLinearLayoutManager
                                     v.getY() + "-" + (v.getY() + decoratedChildHeight) + "][" +
                                     getPosition(v) + "][" +
 //                                  x + "," + y + "][" +
+                                    v.getWidth() + "][" +
                                     v.getHeight() + "][" +
                                     getItemText(v) + "]" +
                                     (v.equals(selectedView) ? "[" + originalPosition + "] [selected]" : "")
@@ -610,6 +627,44 @@ public class StickyLinearLayoutManager
                 Log.wtf(TAG, "---------------------------------------------------------------------end");
             }
         }
+    }
+
+    /**
+     * Refreshes the selected view with fresh contents
+     * because at some points in the layout stage, the
+     * selected view is skipped. It refreshes by
+     * requesting the new view and just swapping some
+     * information to the already existing view. The
+     * new view is then recycled.
+     *
+     * @param recycler the RecyclerView recycler that
+     *                 takes care of providing and
+     *                 recycling views
+     */
+    private void refreshSelectedView(RecyclerView.Recycler recycler) {
+        boolean METHOD_DEBUG = true;
+        // the following block is **very** itemView specific, this will
+        // be extracted into some interface + method
+//      --------------------------------------------------------------------
+        View tempV = recycler.getViewForPosition(selectedPosition);
+//      how good would it have been if we'd have access to a viewHolder here...
+        if (DEBUG && METHOD_DEBUG) {
+            Log.v(TAG, "refreshSelectedView: x_x " + selectedView);
+            Log.d(TAG, "refreshSelectedView: x_x " + tempV);
+        }
+        Drawable background = tempV.getBackground();
+        if (background instanceof ColorDrawable) {
+            int color = ((ColorDrawable) background).getColor();
+            selectedView.setBackgroundColor(color);
+        }
+        ViewGroup vg = (ViewGroup) selectedView;
+        ((TextView) vg.getChildAt(0)).setText(getItemText(tempV));
+
+        if (!tempV.equals(selectedView)) {
+            detachView(tempV);
+            recycler.recycleView(tempV);
+        }
+//      --------------------------------------------------------------------
     }
 
 
@@ -731,7 +786,7 @@ public class StickyLinearLayoutManager
     // TODO: 5/3/18 add support for different item heights.
     @Override
     public void offsetChildrenVertical(int dy) {
-        final boolean METHOD_DEBUG = true;
+        final boolean METHOD_DEBUG = false;
 
         boolean scrollToEnd = dy < 0, addItemsAtEnd = scrollToEnd;
         if (dy == 0) {
@@ -824,6 +879,7 @@ public class StickyLinearLayoutManager
                 Log.i(TAG, "offsetChildrenVertical: " +
                         "[ y: " + v.getY() + "-" + (v.getY() + decoratedChildHeight) +
                         "][" + i +
+                        "][" + v.getWidth() +
                         "][" + getItemText(v) +
                         "]" + (v.equals(selectedView) ? " [selected]" : ""));
             }
@@ -967,6 +1023,7 @@ public class StickyLinearLayoutManager
                 Log.d(TAG, "offsetChildrenVertical: " +
                         "[ y: " + v.getY() + "-" + (v.getY() + decoratedChildHeight) +
                         "][" + i +
+                        "][" + v.getWidth() +
                         "][" + getItemText(v) +
                         "]" + (v.equals(selectedView) ? " [selected]" : ""));
             }
@@ -1170,5 +1227,21 @@ public class StickyLinearLayoutManager
 
     private boolean tryDecrementPosition(int position) {
         return position > 0;
+    }
+
+    @Override
+    public void onScrollStateChanged(int state) {
+        if (SCROLL_STATE_IDLE == state) {
+            Log.i(TAG, "onScrollStateChanged: IDLE");
+            scrolling = false;
+        }
+        if (SCROLL_STATE_DRAGGING == state) {
+            Log.i(TAG, "onScrollStateChanged: DRAG");
+            scrolling = true;
+        }
+        if (SCROLL_STATE_SETTLING == state) {
+            Log.i(TAG, "onScrollStateChanged: SETTLING");
+            scrolling = true;
+        }
     }
 }
