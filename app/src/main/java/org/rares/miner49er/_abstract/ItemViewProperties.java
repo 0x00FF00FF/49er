@@ -1,11 +1,11 @@
 package org.rares.miner49er._abstract;
 
 import lombok.Data;
-import org.rares.miner49er.entries.adapter.TimeEntryViewProperties;
-import org.rares.miner49er.issues.adapter.IssuesViewProperties;
+import org.rares.miner49er.domain.entries.adapter.TimeEntryViewProperties;
+import org.rares.miner49er.domain.issues.adapter.IssuesViewProperties;
+import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
-import org.rares.miner49er.projects.adapter.ProjectViewProperties;
 
 /**
  * @author rares

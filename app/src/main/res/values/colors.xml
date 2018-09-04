@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#303f9f</color>
     <color name="colorAccent">#FF4081</color>
     <color name="greatGreen">#88FF00</color>
+    <color name="pureWhite">#FFFFFF</color>
     <!--villain-->
     <color name="villain.dark.green">#1c1513</color>
     <color name="villain.colorful.green">#58ba0c</color>

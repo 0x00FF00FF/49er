@@ -1232,15 +1232,21 @@ public class StickyLinearLayoutManager
     @Override
     public void onScrollStateChanged(int state) {
         if (SCROLL_STATE_IDLE == state) {
-            Log.i(TAG, "onScrollStateChanged: IDLE");
+            if (DEBUG) {
+                Log.i(TAG, "onScrollStateChanged: IDLE");
+            }
             scrolling = false;
         }
         if (SCROLL_STATE_DRAGGING == state) {
-            Log.i(TAG, "onScrollStateChanged: DRAG");
+            if (DEBUG) {
+                Log.i(TAG, "onScrollStateChanged: DRAG");
+            }
             scrolling = true;
         }
         if (SCROLL_STATE_SETTLING == state) {
-            Log.i(TAG, "onScrollStateChanged: SETTLING");
+            if (DEBUG) {
+                Log.i(TAG, "onScrollStateChanged: SETTLING");
+            }
             scrolling = true;
         }
     }

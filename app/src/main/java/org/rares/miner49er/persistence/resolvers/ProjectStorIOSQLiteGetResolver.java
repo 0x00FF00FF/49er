@@ -29,6 +29,19 @@ public class ProjectStorIOSQLiteGetResolver extends DefaultGetResolver<Project> 
         object.setIcon(cursor.getString(cursor.getColumnIndex("icon_path")));
         object.setPicture(cursor.getString(cursor.getColumnIndex("picture_path")));
 
+//        List<Issue> issues = storIOSQLite.get()
+//                .listOfObjects(Issue.class)
+//                .withQuery(
+//                        Query.builder()
+//                                .table(IssueTable.NAME)
+//                                .whereArgs(ProjectsTable.COLUMN_ID + " = ?")
+//                                .whereArgs(object.getId())
+//                                .build())
+//                .prepare()
+//                .executeAsBlocking();
+//
+//        object.setIssues(issues);
+
         return object;
     }
 
