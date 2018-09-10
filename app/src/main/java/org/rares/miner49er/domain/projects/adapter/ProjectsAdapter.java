@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.util.ListUpdateCallback;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,22 +75,30 @@ public class ProjectsAdapter
 
         final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
 
-//        decideRotation(pvh);
         pvh.setItemClickListener(eventListener);
-//        pvh.setMaxItemElevation(getMaxElevation() + 2);
-//        Log.w(TAG, "onCreateViewHolder() called with: parent = [" + parent.hashCode() + "], holder = [" + pvh + "]");
+
+        if (unbinderHost != null) { // should be already set in the activity
+            unbinderHost.registerUnbinder(pvh);
+        } else {
+            throw new IllegalStateException("Unbinder host is needed for memory management!");
+        }
+
+        Log.w(TAG, "onCreateViewHolder: " + pvh.hashCode());
         return pvh;
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
-//        Log.e(TAG, "onBindViewHolder() called with: holder = [" + holder.hashCode() + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
 //            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
             holder.bindData(data.get(position), false);
         }
+        Log.v(TAG, "onBindViewHolder() called with: " +
+                "holder = [" + holder.hashCode() + "], " +
+                "position = [" + position + "], " +
+                "data = [" + data.get(position).getName() + "]");
     }
 
     @Override
@@ -158,17 +167,11 @@ public class ProjectsAdapter
             public void onChanged(int position, int count, Object payload) {
                 int sp = getLastSelectedPosition();
                 ItemViewProperties vp = new ProjectViewProperties();
-//                Log.i(TAG, "zonChanged() called with: " +
-//                        "selectedPos = [" + sp + "], " +
-//                        "position = [" + position + "], " +
-//                        "count = [" + count + "], " +
-//                        "payload = [" + payload + "]");
                 if (position == sp) {
                     if (payload instanceof Bundle) {
                         Bundle p = (Bundle) payload;
                         int id = p.getInt("id");
                         int color = p.getInt("color", 0);
-//                        Log.e(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
                         if (color != 0) {
                             vp.setItemBgColor(color);
                         }

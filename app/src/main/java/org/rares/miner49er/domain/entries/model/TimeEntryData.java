@@ -40,6 +40,13 @@ public class TimeEntryData {
                 (otherTimeEntry.userName == null ? "" : otherTimeEntry.userName).equals(userName == null ? "" : userName);
     }
 
+    public String toLongString(){
+        DateTime dateTime = new DateTime(getWorkDate());
+        String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
+        String entryDate = dateTime.toString(pattern);
+        return getUserName() + " | " + getHours() + " | " + entryDate + " | " + comments;
+    }
+
     public String toString() {
         DateTime dateTime = new DateTime(getWorkDate());
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");

@@ -1,8 +1,6 @@
 package org.rares.miner49er.domain.entries;
 
 import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
@@ -16,7 +14,8 @@ import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
  */
 
 public class TimeEntriesUiOps extends ResizeableItemsUiOps
-        implements DomainLink {
+        implements
+        DomainLink {
 
     public static final String TAG = TimeEntriesUiOps.class.getSimpleName();
 
@@ -29,7 +28,9 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     public boolean onListItemClick(ResizeableViewHolder holder) {
-        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + (((TextView) ((ViewGroup) holder.itemView).getChildAt(0))).getText());
+        TimeEntriesAdapter adapter = (TimeEntriesAdapter) getRv().getAdapter();
+        String text = adapter.getData(getRv().getChildAdapterPosition(holder.itemView));
+        Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + text);
         return true;
     }
 
@@ -37,6 +38,12 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     public void onParentChanged(ItemViewProperties itemViewProperties) {
         teRepository.setParentProperties(itemViewProperties);
         teRepository.refreshData(true);
+
+//        Log.v(TAG, "onParentChanged: " + unbinderList.size());
+//        for (Unbinder unbinder : unbinderList) {
+//            RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) unbinder;
+//            Log.v(TAG, "onParentChanged: " + unbinder + "" + TextUtils.getItemText(vh.itemView));
+//        }
     }
 
     @Override
@@ -45,14 +52,38 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
 
         if (parentWasEnlarged) {
-            if (adapter != null) {
+            if (unbinderList.size() > 40) {
+                // + clear the viewHolders if
+                // they reach a certain number;
+
+                // LeakCanary shows views in
+                // viewHolders as leaks so
+                // they need to be cleared
+                // out when possible
+
+                // todo
+                // investigate if it's worth
+                // extending recyclerView to
+                // get information about all
+                // viewHolders
+
+                // TODO, important
+                // use some mechanism to
+                // delay/block/eat excessive
+                // user input so that RV will
+                // not have to use resources
+                // while it is being restarted
+                repository.shutdown();
+                getRv().setAdapter(null);
+                resetRv();
+            } else if (adapter != null) {
                 adapter.clearData();
             }
         } else {
             if (adapter != null) {
                 onParentChanged(viewProperties);
             } else {
-                getRv().swapAdapter(createNewTimeEntriesAdapter(viewProperties), true);
+                getRv().setAdapter(createNewAdapter(viewProperties));
             }
         }
     }
@@ -60,16 +91,18 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentRemoved(ItemViewProperties viewProperties) {
         if (viewProperties != null) {
-            getRv().setAdapter(createNewTimeEntriesAdapter(viewProperties));
+            getRv().setAdapter(createNewAdapter(viewProperties));
         }
     }
 
-    private TimeEntriesAdapter createNewTimeEntriesAdapter(ItemViewProperties viewProperties) {
+    @Override
+    protected AbstractAdapter createNewAdapter(ItemViewProperties viewProperties) {
 
-        Log.i(TAG, "createNewTimeEntriesAdapter: " + viewProperties.toString());
+        Log.i(TAG, "createNewAdapter: " + viewProperties.toString());
 
         TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
-//        teAdapter.setParentColor(viewProperties.getItemBgColor());
+        teAdapter.setUnbinderHost(this);
+
         teRepository
                 .setup()
                 .setParentProperties(viewProperties)

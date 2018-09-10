@@ -88,7 +88,6 @@ public abstract class Repository<T>
 
     private Set<String> affectedTables = new HashSet<>();
 
-//    protected int parentId = 0;
     protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class);
 
     public Repository<T> setParentProperties(ItemViewProperties ivp) {

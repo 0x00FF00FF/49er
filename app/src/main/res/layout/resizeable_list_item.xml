@@ -4,14 +4,14 @@
               android:id="@+id/resizeable_list_item_container"
               android:layout_width="match_parent"
               android:layout_height="@dimen/projects_list_item_height"
-              android:orientation="horizontal"
-              tools:background="@color/old.picture.white"
+              tools:background="@color/pureWhite"
               tools:layout_marginBottom="1dp"
               tools:showIn="@layout/activity_home_scrolling">
 
     <TextView
             android:id="@+id/tv_resource_name_item"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="match_parent"
             android:maxLines="1"
             android:ellipsize="end"
@@ -19,5 +19,14 @@
             style="@style/ProjectsListItem"
             tools:text="something here like a project's name"
             tools:padding="1dp"
+    />
+    <View
+            android:id="@+id/project_logo"
+            android:layout_width="96dp"
+            android:layout_height="match_parent"
+            style="@style/ProjectsListItem"
+            android:background="@color/projects.default.ffe6d0"
+            android:visibility="gone"
+            tools:visibility="visible"
     />
 </LinearLayout>

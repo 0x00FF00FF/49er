@@ -136,15 +136,12 @@ public class IssuesRepository extends Repository<Issue> {
 //                                .doOnNext((a) -> Log.d(TAG, "NET-- ON NEXT"))
 //                                .map(changes -> getDbItems(issuesQuery, Issue.class))
 //                                .map(list -> db2vm(list, false)),
-                        userActionsObservable
-                                .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
-                                .map(event -> getDbItems(issuesQuery, Issue.class))
-                                .startWith(getDbItems(issuesQuery, Issue.class))
-                                .map(list -> db2vm(list, true))
-//        )
-//                        .onBackpressureLatest()
+                userActionsObservable
+                        .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
+                        .map(event -> getDbItems(issuesQuery, Issue.class))
+                        .startWith(getDbItems(issuesQuery, Issue.class))
+                        .map(list -> db2vm(list, true))
                         .onBackpressureBuffer(2, () -> Log.i(TAG, "registerSubscriber: BACK PRESSURE BUFFER"))
-//                        .delay(200, TimeUnit.MILLISECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())

@@ -1,6 +1,8 @@
 package org.rares.miner49er.util;
 
 import android.view.Gravity;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class TextUtils {
@@ -52,5 +54,14 @@ public class TextUtils {
 
     public static void setCenterStartGravity(TextView view) {
         view.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+    }
+
+    public static String getItemText(View v) {
+        if (!(v instanceof LinearLayout)) {
+            return "BAD VIEW!";
+        }
+        LinearLayout layout = (LinearLayout) v;
+        TextView tv = (TextView) layout.getChildAt(0);
+        return tv.getText().toString();
     }
 }

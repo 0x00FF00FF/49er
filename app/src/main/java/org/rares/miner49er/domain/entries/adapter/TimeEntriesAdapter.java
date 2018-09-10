@@ -43,7 +43,13 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
         final TimeEntriesViewHolder tevh = new TimeEntriesViewHolder(projectItemView);
         tevh.setItemClickListener(eventListener);
-//        tevh.setMaxItemElevation(getMaxElevation() + 2);
+
+        if (unbinderHost != null) {
+            unbinderHost.registerUnbinder(tevh);
+        } else {
+            throw new IllegalStateException("Unbinder host is needed for memory management!");
+        }
+
         return tevh;
     }
 
@@ -53,8 +59,9 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     }
 
     public void onBindViewHolder(@NonNull TimeEntriesViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
+//        super.onBindViewHolder(holder, position);
         holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+        // ^ if in landscape mode, we can show time entry details
     }
 
     @Override
@@ -65,6 +72,10 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     @Override
     public String resolveData(int position) {
         return data.get(position).toString();
+    }
+
+    public String getData(int position){
+        return data.get(position).toLongString();
     }
 
     private void updateList(List<TimeEntryData> newData) {

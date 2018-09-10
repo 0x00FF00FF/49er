@@ -1,5 +1,6 @@
 package org.rares.miner49er;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -10,12 +11,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +47,6 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
-        BaseInterfaces.UnbinderHost,
         ProjectsResizeListener {
 
     public static final String TAG = HomeScrollingActivity.class.getName();
@@ -106,7 +110,7 @@ public class HomeScrollingActivity
         setContentView(R.layout.activity_home_scrolling);
 
         unbinder = ButterKnife.bind(this);
-        registerUnbinder(unbinder);
+//        registerUnbinder(unbinder);
 
         setSupportActionBar(toolbar);
 
@@ -117,8 +121,8 @@ public class HomeScrollingActivity
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
-                int scrollTo = ((AbstractAdapter)projectsRV.getAdapter()).getLastSelectedPosition();
-                projectsRV.smoothScrollToPosition(scrollTo==-1?0:scrollTo);
+                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
+                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
                 projectsUiOps.refreshData(false);
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
@@ -148,16 +152,36 @@ public class HomeScrollingActivity
         });*/
 
 
-//        Miner49erApplication.getRefWatcher(this).watch(this);
     }
 
 
     @OnClick(R.id.fab)
     public void onClick(View view) {
-        Snackbar.make(view, "Confucius say " +
-                "<<He who click on floating action bar button today, " +
-                "will click on floating action bar button tomorrow>>", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
+
+        final SpannableStringBuilder snackbarText = new SpannableStringBuilder();
+        snackbarText.append("Confucius say\n");
+        int italicStart = snackbarText.length();
+        snackbarText.append("<< He who click on\nfloating action bar button today...");
+        snackbarText.setSpan(new StyleSpan(Typeface.ITALIC), italicStart, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        Snackbar snackbar = Snackbar.make(view, snackbarText, Snackbar.LENGTH_LONG);
+        View snackbarView = snackbar.getView();
+        TextView textView = snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setMaxLines(3);
+
+        snackbarText.clear();
+        snackbarText.clearSpans();
+        snackbarText.append("...will click on floating\naction bar button tomorrow! >>");
+        snackbarText.setSpan(new StyleSpan(Typeface.ITALIC), 0, snackbarText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        snackbar.setAction(" ➡️ ", (v) -> {
+            Snackbar snackbar_ = Snackbar.make(v, snackbarText, Snackbar.LENGTH_LONG);
+            View snackbarView_ = snackbar_.getView();
+            TextView textView_ = snackbarView_.findViewById(android.support.design.R.id.snackbar_text);
+            textView_.setMaxLines(3);
+            snackbar_.show();
+        }).show();
+
+//        Miner49erApplication.getRefWatcher(this).watch(HomeScrollingActivity.this);
     }
 
     @Override
@@ -197,9 +221,10 @@ public class HomeScrollingActivity
 //        projectsRV.setHasFixedSize(true);
 
         // cache
-        projectsRV.setItemViewCacheSize(4);
-        issuesRV.setItemViewCacheSize(4);
-        timeEntriesRv.setItemViewCacheSize(4);
+        projectsRV.setItemViewCacheSize(14);
+        issuesRV.setItemViewCacheSize(14);
+        timeEntriesRv.setItemViewCacheSize(14);
+        timeEntriesRv.getRecycledViewPool().setMaxRecycledViews(0, 14);
 
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
         timeEntriesUiOps = new TimeEntriesUiOps();
@@ -222,6 +247,7 @@ public class HomeScrollingActivity
         projectsUiOps.setProjectsListResizeListener(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
+        projectsAdapter.setUnbinderHost(projectsUiOps);
         projectsUiOps.setRvCollapsedWidth(rvCollapsedWidth);
         projectsUiOps.setDomainLink(issuesUiOps);
 
@@ -251,7 +277,7 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
         // supportsPredictiveItemAnimations
-        Log.e(TAG, "setupRV: DONE ON CREATE" );
+        Log.e(TAG, "setupRV: DONE ON CREATE");
     }
 
     private void setupResizeableManager(RecyclerView.LayoutManager manager, int itemElevation) {
@@ -278,18 +304,18 @@ public class HomeScrollingActivity
         }
     }
 
-    @Override
-    public void registerUnbinder(Unbinder unbinder) {
-        unbinderList.add(unbinder);
-    }
-
-    @Override
-    public boolean deRegisterUnbinder(Unbinder unbinder) {
-        return
-                unbinderList != null
-                        && unbinderList.size() > 0
-                        && unbinderList.remove(unbinder);
-    }
+//    @Override
+//    public void registerUnbinder(Unbinder unbinder) {
+//        unbinderList.add(unbinder);
+//    }
+//
+//    @Override
+//    public boolean deRegisterUnbinder(Unbinder unbinder) {
+//        return
+//                unbinderList != null
+//                        && unbinderList.size() > 0
+//                        && unbinderList.remove(unbinder);
+//    }
 
     @Override
     protected void onPause() {
@@ -316,7 +342,7 @@ public class HomeScrollingActivity
         Log.e(TAG, "onStop() called");
         super.onStop();
 
-        projectsUiOps.shutdown();
+        projectsUiOps.shutdown(); // why is this here and the others on destroy?
     }
 
     @Override
@@ -325,12 +351,7 @@ public class HomeScrollingActivity
 
         NetworkingService.INSTANCE.end();
 
-        Log.i(TAG, "onDestroy: " + unbinderList.size());
-        for (Unbinder u : unbinderList) {
-            Log.i(TAG, "onDestroy: " + u);
-            u.unbind();
-        }
-        unbinderList.clear();
+        unbinder.unbind();
 
         timeEntriesUiOps.shutdown();
         timeEntriesUiOps = null;

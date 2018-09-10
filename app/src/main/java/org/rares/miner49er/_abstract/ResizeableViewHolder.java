@@ -8,7 +8,6 @@ import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
-import org.rares.miner49er.BaseInterfaces.UnbinderHost;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
@@ -48,9 +47,10 @@ public abstract class ResizeableViewHolder
     public ResizeableViewHolder(View itemView) {
         super(itemView);
         unbinder = ButterKnife.bind(this, itemView);
-        ((UnbinderHost) itemView.getContext()).registerUnbinder(unbinder);
         itemView.setOnClickListener(this);
         ButterKnife.bind(this, itemView);
+
+//       Miner49erApplication.getRefWatcher(itemView.getContext()).watch(itemView);
     }
 
     @Override

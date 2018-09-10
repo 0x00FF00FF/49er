@@ -21,6 +21,8 @@ public interface BaseInterfaces {
         void registerUnbinder(Unbinder unbinder);
 
         boolean deRegisterUnbinder(Unbinder unbinder);
+
+        void clearBindings();
     }
 
     interface ResizeableItems {
@@ -63,8 +65,7 @@ public interface BaseInterfaces {
         /**
          * Called when a project was clicked on.
          *
-         * param itemViewProperties the the transient project properties object
-         *                           containing information about the selected project
+         * @param holder the viewHolder that was clicked upon.
          */
 //        void onListItemClick(ItemViewProperties itemViewProperties);
         boolean onListItemClick(ResizeableViewHolder holder);

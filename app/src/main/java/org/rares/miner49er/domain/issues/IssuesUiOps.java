@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.issues;
 
 import android.support.v7.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
@@ -44,7 +45,16 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         }
 
         if (parentWasEnlarged) {
-            if (issuesAdapter != null) {
+            // clear the viewHolders if
+            // they reach a certain number
+            // so that the chance of leaked
+            // context or views will be
+            // minimal.
+            if (unbinderList.size() > 40) {
+                repository.shutdown();
+                getRv().setAdapter(null);
+                resetRv();
+            } else if (issuesAdapter != null) {
                 issuesAdapter.clearData();
             }
         } else {
@@ -66,7 +76,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 //        getRv().scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
 
         if (_tempLm instanceof ResizeableLayoutManager) {
-            ((ResizeableLayoutManager)_tempLm).resetState(false);
+            ((ResizeableLayoutManager) _tempLm).resetState(false);
         }
         issuesRepository.setParentProperties(itemViewProperties);
         issuesRepository.refreshData(true);
@@ -83,11 +93,17 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
+        issuesAdapter.setUnbinderHost(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
         issuesRepository
                 .setup()
                 .setParentProperties(projectViewProperties)
                 .registerSubscriber(issuesAdapter);
         return issuesAdapter;
+    }
+
+    @Override
+    protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
+        return createNewIssuesAdapter(itemViewProperties);
     }
 }

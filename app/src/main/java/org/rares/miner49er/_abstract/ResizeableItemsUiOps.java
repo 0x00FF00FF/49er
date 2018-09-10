@@ -8,12 +8,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.layoutmanager.ItemAnimationDto;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,8 @@ public abstract class ResizeableItemsUiOps
         implements
         BaseInterfaces.ListItemEventListener,
         BaseInterfaces.ResizeableItems,     // is this really necessary?
-        ResizePostProcessor.PostProcessorConsumer {
+        ResizePostProcessor.PostProcessorConsumer,
+        BaseInterfaces.UnbinderHost {
 
     private static String TAG = ResizeableItemsUiOps.class.getSimpleName();
 
@@ -38,6 +41,8 @@ public abstract class ResizeableItemsUiOps
 
     @Setter
     private int rvCollapsedWidth;
+
+    protected List<Unbinder> unbinderList = new ArrayList<>();
 
     @Getter
     @Setter
@@ -72,7 +77,7 @@ public abstract class ResizeableItemsUiOps
                 /*-
                 FIXME
                 this block smells.
-                the layout manager needs to get the view itself, not to have it supplied
+                the layout manager needs to get the view itself, not to have it supplied;
                 the way this is now, there can be differences between the selected position and the selected view
                  -*/
 
@@ -255,9 +260,53 @@ public abstract class ResizeableItemsUiOps
         }
     }
 
+
+    @Override
+    public void registerUnbinder(Unbinder unbinder) {
+        if (!unbinderList.contains(unbinder)) {
+            unbinderList.add(unbinder);
+        }
+    }
+
+    @Override
+    public boolean deRegisterUnbinder(Unbinder unbinder) {
+        return false;
+    }
+
+    @Override
+    public void clearBindings() {
+        if (unbinderList != null) {
+            Log.i(TAG, "clearBindings: " + unbinderList.size() + " (" + this.getClass().getSimpleName() + ")");
+            for (Unbinder u : unbinderList) {
+                RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) u;
+                Log.v(TAG, "clearBindings: " + u + "" + TextUtils.getItemText(vh.itemView));
+                u.unbind();
+            }
+            unbinderList.clear();
+        }
+    }
+
+    /**
+     * Resets item cache for the Recycler View.
+     * Also clears the recycled view pool for
+     * that adapter. Take care if you use shared
+     * recycled view pools.
+     */
+    protected void resetRv() {
+        Log.i(TAG, "resetRv:     <   <  < < <<<<<<<<<<<<<<<<<");
+        getRv().setItemViewCacheSize(0);        // rv moves cached views to rvPool...
+        getRv().getRecycledViewPool().clear();  // ...so we clean this too
+        clearBindings();
+        getRv().setItemViewCacheSize(14);
+    }
+
     public void shutdown() {
         if (repository != null) {
             repository.shutdown();
         }
+        clearBindings();
     }
+
+    protected abstract AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties);
+
 }

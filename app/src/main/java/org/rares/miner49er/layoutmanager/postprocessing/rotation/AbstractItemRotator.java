@@ -20,6 +20,10 @@ public abstract class AbstractItemRotator
     @Override
     public void postProcess(RecyclerView rv) {
         RecyclerView.Adapter _tempAdapter = rv.getAdapter();
+        if (_tempAdapter == null) {
+            Log.w(TAG, "postProcess: SKIP ITEM ROTATION, adapter is null.");
+            return;
+        }
         int ic = _tempAdapter.getItemCount();
         int cc = rv.getChildCount();
         if (ic < cc) {

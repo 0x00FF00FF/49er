@@ -47,6 +47,12 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         final IssuesViewHolder ivh = new IssuesViewHolder(containerView);
         ivh.setItemClickListener(eventListener);
 
+        if (unbinderHost != null) {
+            unbinderHost.registerUnbinder(ivh);
+        } else {
+            throw new IllegalStateException("Unbinder host is needed for memory management!");
+        }
+
         return ivh;
     }
 

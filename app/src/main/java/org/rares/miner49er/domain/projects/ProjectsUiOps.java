@@ -4,6 +4,8 @@ import android.util.Log;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er._abstract.AbstractAdapter;
+import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er._abstract.ResizeableViewHolder;
 
@@ -56,6 +58,10 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         projectsRepository.shutdown();
     }
 
+    @Override
+    protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
+        return null;
+    }
 
     /**
      * Removes a project from the list.

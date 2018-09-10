@@ -33,6 +33,9 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
     @BindView(R.id.tv_resource_name_item)
     TextView projectName;
 
+    @BindView(R.id.project_logo)
+    View projectLogo;
+
     private ProjectViewProperties projectViewProperties = new ProjectViewProperties();
 
     public ProjectsViewHolder(View itemView) {
@@ -54,6 +57,7 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
         }
         itemView.setBackgroundColor(itemBgColor);
 //        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());
+        projectLogo.setVisibility(View.VISIBLE);
     }
 
 }

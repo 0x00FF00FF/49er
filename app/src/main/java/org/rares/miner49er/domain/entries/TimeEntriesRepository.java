@@ -10,6 +10,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import org.joda.time.DateTime;
 import org.rares.miner49er._abstract.Repository;
+import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
@@ -126,6 +127,11 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                 .whereArgs(parentProperties.getId())
                 .build();
         return this;
+    }
+
+    @Override
+    public void refreshData(boolean onlyLocal) {
+        userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 
     public Query getTimeEntriesQuery() {

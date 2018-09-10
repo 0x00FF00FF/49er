@@ -1,14 +1,15 @@
 package org.rares.miner49er._abstract;
 
 import android.graphics.Color;
-import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import io.reactivex.functions.Consumer;
 import lombok.Getter;
 import lombok.Setter;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 
 import java.util.List;
@@ -39,6 +40,8 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
 
     protected ListItemEventListener eventListener;
 
+    @Setter
+    protected BaseInterfaces.UnbinderHost unbinderHost = null;
 
     /**
      * disable (custom=non {@link RecyclerView.ItemAnimator}) animation
@@ -47,37 +50,28 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
     @Override
     public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
         // todo: disable animation
+        Log.e(TAG, "onFailedToRecycleView: WELL... " + holder.hashCode());
         return true;
     }
 
     @Override
-    @CallSuper
     public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
 //        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
-//        int bgColor = parentColor + ((position % 2 == 0 ? 1 : -1) * 15);
-//        holder.itemView.setBackgroundColor(bgColor);
-//        holder.getItemProperties().setItemBgColor(bgColor);
-        // TODO: 07.03.2018 use a more intelligent compare mechanism + check if adapter has fixed ids
-//        if (holder.getItemProperties().getData().equals(getData(position))) {
-//            holder.setToBeRebound(false);
-//        } else {
-//            holder.setToBeRebound(true);
-//        }
     }
 
     @Override
     public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewDetachedFromWindow: " + holder.getItemProperties().getData());
+//        Log.e(TAG, "onViewDetachedFromWindow() called with: holder = [" + holder.hashCode() + "]");
     }
 
     @Override
     public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewRecycled: " + holder.getItemProperties().getData());
+//        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
     }
 
     @Override
     public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemProperties().getData());
+//        Log.d(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
         // the following may not be needed if
         // the first itemView after the visible
         // ones in the recycler view list is not
