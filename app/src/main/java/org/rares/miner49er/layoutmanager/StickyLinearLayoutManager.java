@@ -12,6 +12,7 @@ import android.widget.TextView;
 import lombok.Setter;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.ratv.rotationaware.RotationAwareTextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,7 +201,11 @@ public class StickyLinearLayoutManager
             );
         }
 
+        // virtual space at the end
         int maxScroll = (int) ((getItemCount() - 1) * (decoratedChildHeight)/* - (0.5 * decoratedChildHeight)*/);
+
+        // no virtual space at the end
+        maxScroll = (getItemCount() + 1) * decoratedChildHeight - getHeight();
 
 //        if (DEBUG && METHOD_DEBUG)
 //            Log.d(TAG, "scrollVerticallyBy: max scroll: " + maxScroll);
@@ -521,6 +526,7 @@ public class StickyLinearLayoutManager
                     selectedViewDetached = false;
                     // always draw selected item inside the rv viewport
                     // selected item virtual position needs to be updated
+//                    Log.i(TAG, "drawChildren: setting virtualPosition t: " + t + " b: " + b);
                     int[] newTb = assureVisibilityInViewport(t, b);
                     t = newTb[0];
                     b = newTb[1];
@@ -545,16 +551,19 @@ public class StickyLinearLayoutManager
                     addView(item, reversePosition++);
                 }
 
-                measureChildWithMargins(item, 0, 0);
-
-                layoutDecoratedWithMargins(item, 0, t, r, b);
-
-                if (newItemPosition != NONE && postProcessorValidator != null) {
-                    postProcessorValidator.validateItemPostProcess(
-                            item,
-                            selectedPosition != -1,
-                            item == selectedView);
+                if (newItemPosition != NONE) {
+                    // only force item state if scrolling while also expanding/collapsing
+                    if (postProcessorValidator != null) {
+                        postProcessorValidator.validateItemPostProcess(
+                                item,
+                                selectedPosition != -1,
+                                item == selectedView);
+                    }
                 }
+                // measure and lay out children after the post process validation
+                // so that we know we act on correct view positioning.
+                measureChildWithMargins(item, 0, 0);
+                layoutDecoratedWithMargins(item, 0, t, r, b);
 
 //                if (DEBUG && METHOD_DEBUG) {
 //                    Log.d(TAG, "drawChildren: newly added view: " + TextUtils.getItemText(item) +
@@ -576,6 +585,7 @@ public class StickyLinearLayoutManager
 
                 // always draw selected item inside the rv viewport
                 // selected item virtual position needs to be updated
+//                Log.d(TAG, "drawChildren: setting virtualPosition t: " + t + " b: " + b);
                 int[] newTb = assureVisibilityInViewport(t, b);
                 t = newTb[0];
                 b = newTb[1];
@@ -633,10 +643,16 @@ public class StickyLinearLayoutManager
     /**
      * Refreshes the selected view with fresh contents
      * because at some points in the layout stage, the
-     * selected view is skipped. It refreshes by
-     * requesting the new view and just swapping some
-     * information to the already existing view. The
-     * new view is then recycled.
+     * selected view is skipped. It is necessary to skip
+     * layout for the selected view because it can be
+     * replaced by a view which is not laid out as
+     * selected (we need larger width, elevation etc.)
+     * Replacement can also cause unwanted visual effects.
+     * Also, the selected view is kept inside the viewport
+     * even when it would normally scroll out of visible
+     * bounds. The refresh is made by requesting the new
+     * view and just swapping some information to the
+     * already existing view. The new view is then recycled.
      *
      * @param recycler the RecyclerView recycler that
      *                 takes care of providing and
@@ -659,7 +675,16 @@ public class StickyLinearLayoutManager
             selectedView.setBackgroundColor(color);
         }
         ViewGroup vg = (ViewGroup) selectedView;
-        ((TextView) vg.getChildAt(0)).setText(TextUtils.getItemText(tempV));
+        View childView = vg.getChildAt(0);
+        if (childView instanceof TextView) {
+            ((TextView) childView).setText(TextUtils.getItemText(tempV));
+        }
+        if (childView instanceof ViewGroup) {
+            View v = ((ViewGroup) childView).getChildAt(0);
+            if (v instanceof RotationAwareTextView) {
+                ((RotationAwareTextView) v).setText(TextUtils.getItemText(tempV));
+            }
+        }
 
         if (!tempV.equals(selectedView)) {
             detachView(tempV);
@@ -702,6 +727,10 @@ public class StickyLinearLayoutManager
             b = getHeight();
             t = b - decoratedChildHeight;
             virtualPosition = t;
+        }
+
+        if (DEBUG) {
+            Log.e(TAG, "assureVisibilityInViewport: setting virtualPosition to: " + virtualPosition);
         }
 
         topAndBottom[0] = t;
@@ -778,7 +807,7 @@ public class StickyLinearLayoutManager
     // TODO: 5/3/18 add support for different item heights.
     @Override
     public void offsetChildrenVertical(int dy) {
-        final boolean METHOD_DEBUG = false;
+        final boolean METHOD_DEBUG = true;
 
         boolean scrollToEnd = dy < 0, addItemsAtEnd = scrollToEnd;
         if (dy == 0) {
@@ -921,6 +950,13 @@ public class StickyLinearLayoutManager
                                     Log.i(TAG, offsetStatus + "offsetChildrenVertical: VIEW IN PLACE, NORMAL SCROLL");
                                 }
                                 offset = dy;
+                                // special case for the last item
+                                // when in the case that it is selected,
+                                // and normal scroll is used (no extra virtual space)
+                                // it should be blocked in its place and not scroll
+                                if (selectedPosition == getItemCount() - 1) {
+                                    offset = 0;
+                                }
                             } else { // virtualPosition - virtualTop > originalPosition
                                 // this happens when original position is about to get inside
                                 // of visible bounds. applying the full value of dy would shift
@@ -1041,6 +1077,8 @@ public class StickyLinearLayoutManager
             selectedView = null;
             selectedPosition = -1;
         }
+        virtualTop = 0;
+        virtualPosition = 0;
         lastTopY = 0;
     }
 

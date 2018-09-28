@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:r_aware="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/resizeable_list_item_container"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/projects_list_item_height"
+              android:gravity="center|start"
+              tools:background="@color/pureWhite"
+              tools:layout_marginBottom="1dp"
+              android:orientation="horizontal"
+              tools:showIn="@layout/activity_home_scrolling">
+
+    <LinearLayout
+            android:id="@+id/ratv_name_item_container"
+            android:layout_width="0dp"
+            android:layout_weight="0.75"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+    >
+        <org.rares.ratv.rotationaware.RotationAwareTextView
+                android:id="@+id/ratv_resource_name_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/sv_margin"
+                android:layout_marginStart="@dimen/sv_margin"
+                r_aware:attach_default_click_listener="false"
+                r_aware:text_color="@color/pureWhite"
+                r_aware:target_text_color="#FF777777"
+                r_aware:background_color="#00FFFFFF"
+                r_aware:target_background_color="#88FFFFFF"
+                r_aware:attach_default_animator="true"
+                r_aware:text_size="@dimen/list_item_text_size"
+                r_aware:target_rotation="-90"
+                r_aware:target_text_size="10sp"
+                r_aware:original_margin_left="@dimen/sv_margin"
+                r_aware:target_margin_left="0dp"
+                tools:background="@color/projects.default.bae0e7"
+                tools:text="something here like a project's name"
+        />
+        <LinearLayout
+                android:id="@+id/child_domain_info_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+        >
+            <include android:id="@+id/issues_number_info" layout="@layout/child_domain_info"/>
+            <include android:id="@+id/users_info" layout="@layout/child_domain_info"/>
+            <include android:id="@+id/hours_info" layout="@layout/child_domain_info"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+            android:id="@+id/project_logo"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:gravity="center|start"
+            android:background="@drawable/skull"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            tools:visibility="visible"
+    />
+</LinearLayout>

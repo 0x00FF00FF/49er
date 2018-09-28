@@ -60,7 +60,10 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
 //        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
-        holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+        holder.bindData(
+                data.get(position),
+                getLastSelectedPosition() != -1,
+                position == getLastSelectedPosition());
     }
 
     @Override
@@ -75,6 +78,14 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         }
         String issueName = this.data.get(position).toString();
         return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(issueName) : issueName;
+    }
+
+    @Override
+    public Object getDisplayData(int adapterPosition) {
+        if (adapterPosition < 0 || adapterPosition >= data.size()) {
+            return null;
+        }
+        return data.get(adapterPosition);
     }
 
     @Override

@@ -62,7 +62,7 @@ public abstract class ResizeableItemsUiOps
     }
 
     @Override
-    public boolean onListItemClick(ResizeableViewHolder holder) {
+    public boolean onListItemClick(ResizeableItemViewHolder holder) {
         int adapterPosition = holder.getAdapterPosition();
         boolean enlarge = selectItem(adapterPosition);
 
@@ -118,8 +118,6 @@ public abstract class ResizeableItemsUiOps
         }
 
         _tempAdapter.setLastSelectedPosition(selectedPosition);
-//        _tempAdapter.notifyItemChanged(prevSelected);
-//        _tempAdapter.notifyItemChanged(selectedPosition);
         return false;
     }
 
@@ -182,16 +180,16 @@ public abstract class ResizeableItemsUiOps
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
 
         ValueAnimator anim;
-        final ResizeableViewHolder holder = getHolder(v);
-        if (holder != null && holder.getAnimator() != null) {
-            anim = (ValueAnimator) holder.getAnimator();
-        } else {
-            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {        // // FIXME: 8/17/18
-                anim = (ValueAnimator) v.getTag(BaseInterfaces.TAG_ANIMATOR);
-            } else {
+//        final ResizeableViewHolder holder = getHolder(v);
+//        if (holder != null && holder.getAnimator() != null) {
+//            anim = (ValueAnimator) holder.getAnimator();
+//        } else {
+//            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {        // // FIXME: 8/17/18
+//                anim = (ValueAnimator) v.getTag(BaseInterfaces.TAG_ANIMATOR);
+//            } else {
                 anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE);
-            }
-        }
+//            }
+//        }
 
         anim.removeAllUpdateListeners();
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -222,21 +220,23 @@ public abstract class ResizeableItemsUiOps
         return containerWidth;
     }
 
-    private ResizeableViewHolder getHolder(View v) {
-        ResizeableViewHolder holder = null;
+    private ResizeableItemViewHolder getHolder(View v) {
+        ResizeableItemViewHolder holder = null;
         if (v instanceof LinearLayout) {
-            holder = (ResizeableViewHolder) getRv().getChildViewHolder(v);
+            holder = (ResizeableItemViewHolder) getRv().getChildViewHolder(v);
         }
         return holder;
     }
 
     public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
         resizePostProcessor = postProcessor;
-        RecyclerView.LayoutManager lm = getRv().getLayoutManager();
+// TODO: 9/24/18  the following block might not be needed. investigate.
+{        RecyclerView.LayoutManager lm = getRv().getLayoutManager();
         if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
             ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
                     .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
         }
+}
     }
 
     @Override

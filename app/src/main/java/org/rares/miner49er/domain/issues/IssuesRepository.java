@@ -17,6 +17,7 @@ import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.tables.IssueTable;
 import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -191,7 +192,10 @@ public class IssuesRepository extends Repository<Issue> {
             converted.setId(i.getId());
             converted.setName((local ? "" : "*") + i.getName());
             converted.setProjectId(i.getProjectId());
-            converted.setColor(parentProperties.getItemBgColor() + (count++ % 2 == 0 ? 1 : -1) * 15);
+            converted.setColor(
+                    UiUtil.getBrighterColor(
+                            parentProperties.getItemBgColor(),
+                            (count++ % 2 == 0 ? 3 : 4) * 0.0250F));
             projectDataList.add(converted);
         }
 

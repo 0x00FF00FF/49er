@@ -5,15 +5,25 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.rares.miner49er._abstract.AbstractAdapter;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.util.TextUtils;
 
+/**
+ * Customizes the item animation for view holders that do not support this themselves.
+ */
+@Deprecated
 public class AnimatedItemRotator extends AbstractItemRotator {
 
     private static final String TAG = AnimatedItemRotator.class.getSimpleName();
+
+    public AnimatedItemRotator(RecyclerView recyclerView) {
+        super(recyclerView);
+    }
 
     @Override
     public void rotateItems(ViewGroup viewGroup) {
@@ -25,29 +35,37 @@ public class AnimatedItemRotator extends AbstractItemRotator {
             final int prevPos = _tempAdapter.getPreviouslySelectedPosition();
             final int lastPos = _tempAdapter.getLastSelectedPosition();
             final int vhPos = vh.getAdapterPosition();
-            TextView animatedView = (TextView) ((ViewGroup) itemView).getChildAt(0);
 
-            String text = _tempAdapter.resolveData(vh.getAdapterPosition());
-            if (text != null) {
-                animatedView.setText(text);
+            if (vhPos == -1) {
+                Log.w(TAG, "rotateItems: processed holder that was no longer in the adapter. returning.");
+                return;
+            }
+
+            if (vh instanceof ResizeableItemViewHolder) {
+                ResizeableItemViewHolder holder = (ResizeableItemViewHolder) vh;
+                boolean shortVersion = lastPos != -1;
+//                int position = holder.getAdapterPosition();
+//                boolean selected = position == lastPos;
+//                holder.bindData(_tempAdapter.getDisplayData(vhPos), shortVersion, selected);
+                holder.toggleItemText(shortVersion);
             }
 
             if (prevPos == -1 && lastPos != -1) {   // from big to small, no prev item selected
                 if (vhPos != lastPos) {
-                    rotateItem(itemView, false);
+                    rotateItem(vh, false);
                 }
             }
             if (prevPos != -1 && lastPos != -1) {   // changing from one selected item to another
                 if (vhPos == prevPos) {
-                    rotateItem(itemView, false);
+                    rotateItem(vh, false);
                 }
                 if (vhPos == lastPos) {
-                    rotateItem(itemView, true);
+                    rotateItem(vh, true);
                 }
             }
             if (prevPos != -1 && lastPos == -1) {   // from small to big
                 if (vhPos != prevPos) {
-                    rotateItem(itemView, true);
+                    rotateItem(vh, true);
                 }
             }
         }
@@ -57,36 +75,46 @@ public class AnimatedItemRotator extends AbstractItemRotator {
     }
 
     @Override
-    public void rotateItem(View itemView, boolean clockwise) {
-        int fromRotation, toRotation;
+    public void rotateItem(RecyclerView.ViewHolder holder, boolean clockwise) {
 
-        View animatedView = ((ViewGroup) itemView).getChildAt(0);
+        View childView = ((ViewGroup) holder.itemView).getChildAt(0);
 
-        fromRotation = clockwise ? -90 : 0;
-        toRotation = clockwise ? 0 : -90;
+        if (!(childView instanceof TextView)) {
+            Log.e(TAG, "rotateItem: animated view not instance of text view.");
+            return;
+        }
 
-        animatedView.setPivotX(animatedView.getMeasuredHeight() / 2);
-        animatedView.setPivotY(animatedView.getMeasuredHeight() / 2);
+        TextView animatedView = (TextView) childView;
+
+        int fromRotation = clockwise ? -90 : 0;
+        int toRotation = clockwise ? 0 : -90;
+
+//        animatedView.setPivotX(animatedView.getMeasuredHeight() / 2);
+//        animatedView.setPivotY(animatedView.getMeasuredHeight() / 2);
 
         PropertyValuesHolder pvhRotation = PropertyValuesHolder.ofInt("rotation", fromRotation, toRotation);
-        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhRotation);
+        ValueAnimator anim = null;
+        if (holder instanceof ResizeableItemViewHolder) {
+            anim = ((ResizeableItemViewHolder) holder).getAnimator();
+        }
+        if (anim == null) {
+            anim = ValueAnimator.ofPropertyValuesHolder(pvhRotation);
+        }
 
         AnimationUpdateListener listener = new AnimationUpdateListener();
         listener.animatedView = animatedView;
 
         AnimationEventListener evListener = new AnimationEventListener();
+        evListener.holder = holder;
         evListener.animatedView = animatedView;
         evListener.clockwise = clockwise;
+
+        anim.removeAllListeners();
         anim.addListener(evListener);
         anim.addUpdateListener(listener);
         anim.setDuration(200);
         anim.start();
 
-    }
-
-    @Override
-    public void validateViewRotation(View itemView, boolean closedState, boolean isViewSelected) {
-        super.validateViewRotation(itemView, closedState, isViewSelected);
     }
 
     @Override
@@ -105,23 +133,26 @@ public class AnimatedItemRotator extends AbstractItemRotator {
     }
 
     private class AnimationEventListener extends AnimatorListenerAdapter {
+        RecyclerView.ViewHolder holder;
 
         View animatedView;
         boolean clockwise = true;
 
         @Override
         public void onAnimationStart(Animator animation) {
-            if (clockwise) {
+            if (animatedView instanceof TextView/* && clockwise*/) {
                 TextUtils.setCenterStartGravity((TextView) animatedView);
             }
         }
 
         @Override
         public void onAnimationEnd(Animator animation) {
-            if (!clockwise) {
-                TextUtils.setCenterGravity((TextView) animatedView);
-            } else {
-                TextUtils.setCenterStartGravity((TextView) animatedView);
+            if (animatedView instanceof TextView) {
+                if (!clockwise) {
+                    TextUtils.setCenterGravity((TextView) animatedView);
+                } else {
+                    TextUtils.setCenterStartGravity((TextView) animatedView);
+                }
             }
         }
     }

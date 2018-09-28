@@ -4,8 +4,8 @@ import android.util.Log;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
 
 /**
@@ -27,7 +27,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public boolean onListItemClick(ResizeableViewHolder holder) {
+    public boolean onListItemClick(ResizeableItemViewHolder holder) {
         TimeEntriesAdapter adapter = (TimeEntriesAdapter) getRv().getAdapter();
         String text = adapter.getData(getRv().getChildAdapterPosition(holder.itemView));
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + text);

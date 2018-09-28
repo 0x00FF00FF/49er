@@ -1,11 +1,12 @@
-package org.rares.miner49er.domain.projects.adapter;
+package org.rares.miner49er.domain.projects.viewholder;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
 import org.rares.miner49er.R;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
+import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.util.TextUtils;
 
@@ -26,7 +27,8 @@ import org.rares.miner49er.util.TextUtils;
  * @since 29.09.2017.
  */
 
-public class ProjectsViewHolder extends ResizeableViewHolder {
+@Deprecated
+public class ProjectsViewHolder extends ResizeableItemViewHolder {
 
     private static final String TAG = ProjectsViewHolder.class.getSimpleName();
 
@@ -45,19 +47,25 @@ public class ProjectsViewHolder extends ResizeableViewHolder {
     }
 
     @Override
-    public void bindData(Object o, boolean shortVersion) {
+    public void bindData(Object o, boolean shortVersion, boolean selected) {
         ProjectData data = (ProjectData) o;
         int itemBgColor = data.getColor() == 0 ? Color.parseColor("cbbeb5") : data.getColor();
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setId(data.getId());
-        if (shortVersion) {
-            projectName.setText(TextUtils.extractInitials(data.getName()));
-        } else {
-            projectName.setText(data.getName());
-        }
+        shortTitle = TextUtils.extractInitials(data.getName());
+        longTitle = data.getName();
+
+        projectName.setText(shortVersion ? shortTitle : longTitle);
+
         itemView.setBackgroundColor(itemBgColor);
 //        Log.i(TAG, "ProjectsViewHolder: custom id: " + getItemProperties().getItemContainerCustomId());
         projectLogo.setVisibility(View.VISIBLE);
+    }
+
+
+    @Override
+    public void toggleItemText(boolean shortVersion) {
+        projectName.setText(shortVersion ? shortTitle : longTitle);
     }
 
 }

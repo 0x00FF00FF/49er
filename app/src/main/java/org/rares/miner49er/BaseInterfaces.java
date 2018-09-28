@@ -2,7 +2,7 @@ package org.rares.miner49er;
 
 import butterknife.Unbinder;
 import org.rares.miner49er._abstract.ItemViewProperties;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 
 /**
  * @author rares
@@ -68,7 +68,7 @@ public interface BaseInterfaces {
          * @param holder the viewHolder that was clicked upon.
          */
 //        void onListItemClick(ItemViewProperties itemViewProperties);
-        boolean onListItemClick(ResizeableViewHolder holder);
+        boolean onListItemClick(ResizeableItemViewHolder holder);
         void onListItemChanged( ItemViewProperties itemViewProperties);
     }
 

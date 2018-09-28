@@ -42,7 +42,7 @@ android {
 dependencies {
 
 //    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.5.4'
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')       // include ratv_lib.aar here.
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group:  'com.android.support', module: 'support-annotations'
     })

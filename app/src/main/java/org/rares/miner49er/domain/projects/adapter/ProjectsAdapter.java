@@ -16,6 +16,7 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectDiff;
+import org.rares.miner49er.domain.projects.viewholder.RotatingViewHolder;
 import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
@@ -29,8 +30,7 @@ import java.util.List;
  */
 
 public class ProjectsAdapter
-        extends AbstractAdapter<ProjectsViewHolder> {
-//        extends RecyclerView.Adapter<ProjectsViewHolder> {
+        extends AbstractAdapter<RotatingViewHolder> {
 
     private static final String TAG = ProjectsAdapter.class.getSimpleName();
 
@@ -66,14 +66,14 @@ public class ProjectsAdapter
 
     @NonNull
     @Override
-    public ProjectsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RotatingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
 
         View projectItemView =
                 LayoutInflater.from(ctx)
-                        .inflate(R.layout.resizeable_list_item, parent, false);
+                        .inflate(R.layout.self_animated_resizeable_list_item, parent, false);
 
-        final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
+        final RotatingViewHolder pvh = new RotatingViewHolder(projectItemView);
 
         pvh.setItemClickListener(eventListener);
 
@@ -89,11 +89,14 @@ public class ProjectsAdapter
 
 
     @Override
-    public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RotatingViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
 //            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
-            holder.bindData(data.get(position), false);
+            holder.bindData(
+                    data.get(position),
+                    getLastSelectedPosition() != -1,
+                    position == getLastSelectedPosition());
         }
         Log.v(TAG, "onBindViewHolder() called with: " +
                 "holder = [" + holder.hashCode() + "], " +
@@ -111,22 +114,16 @@ public class ProjectsAdapter
         ProjectData projectData = data.get(position);
         String name = projectData.getName();
         String minified = TextUtils.extractInitials(name);
-//        return getLastSelectedPosition() != -1 ? minified : name;
-        return name;
+        return getLastSelectedPosition() != -1 ? minified : name;
     }
 
-//    @Override
-//    public long getItemId(int position) {
-////        Log.d(TAG, "getItemId: item at position: " + sortedData.get(position).getName()());
-////        Log.i(TAG, "getItemId: position " + position);
-//        int ret = -1;
-//        if (customIds.size() > position) {
-//            ret = customIds.get(position);
-//        }
-////        Log.d(TAG, "getItemId() returned: " + ret);
-//        return ret;
-//    }
-
+    @Override
+    public Object getDisplayData(int adapterPosition) {
+        if (adapterPosition < 0 || adapterPosition >= data.size()) {
+            return null;
+        }
+        return data.get(adapterPosition);
+    }
 
     @Override
     public int getItemCount() {
@@ -134,14 +131,23 @@ public class ProjectsAdapter
     }
 
 
-    @Override
-    public int getItemViewType(int position) {
-//        Log.i(TAG, "getItemViewType position: " + position);
-        return R.layout.resizeable_list_item;
-    }
+//    @Override
+//    public int getItemViewType(int position) {
+//        return R.layout.resizeable_list_item;
+//    }
 
     private void updateList(List<ProjectData> newData) {
-//       new ProjectsSort().sort(newData, ProjectsInterfaces.SORT_TYPE_ALPHA_NUM);
+
+
+        /*-
+        TODO
+        when data is refreshed
+        and the rv is small,
+        the new data is not
+        in short format.
+        -*/
+
+
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ProjectDiff(data, newData));
 
         data = newData;

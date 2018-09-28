@@ -226,7 +226,7 @@ public class ProjectsRepository extends Repository<Project> {
 //            Log.v(TAG, "db2vm: project team: " + (p.getTeam() != null ? p.getTeam().size() : "null"));
             ++i;
             ProjectData converted = new ProjectData();
-            converted.setName((local ? "" : "*") + p.getName());
+            converted.setName(p.getName() + (local ? "" : " *"));
             converted.setIcon(p.getIcon());
             converted.setId(p.getId());
             converted.setDescription(p.getDescription());
@@ -259,8 +259,8 @@ public class ProjectsRepository extends Repository<Project> {
         return getDbItems(ProjectsTable.AllProjectsQuery, Project.class);
     }
 
-    private final String[] redColors = {"#e9aac8", "#c9aac8"};
-    private final String[] blueColors = {"#96c7cf", "#96a7cf"};
+    private final String[] redColors = {"#7986CB", "#5C6BC0"};
+    private final String[] blueColors = {"#9575CD", "#7E57C2"};
 
     private final String[] dummyData = {
             "Project 1",

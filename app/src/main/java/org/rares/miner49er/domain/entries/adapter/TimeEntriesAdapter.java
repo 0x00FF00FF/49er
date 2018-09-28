@@ -60,7 +60,10 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
     public void onBindViewHolder(@NonNull TimeEntriesViewHolder holder, int position) {
 //        super.onBindViewHolder(holder, position);
-        holder.bindData(data.get(position), getLastSelectedPosition() != -1);
+        holder.bindData(
+                data.get(position),
+                getLastSelectedPosition() != -1,
+                position == getLastSelectedPosition());
         // ^ if in landscape mode, we can show time entry details
     }
 
@@ -72,6 +75,14 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     @Override
     public String resolveData(int position) {
         return data.get(position).toString();
+    }
+
+    @Override
+    public Object getDisplayData(int adapterPosition) {
+        if (adapterPosition < 0 || adapterPosition >= data.size()) {
+            return null;
+        }
+        return this.data.get(adapterPosition);
     }
 
     public String getData(int position){

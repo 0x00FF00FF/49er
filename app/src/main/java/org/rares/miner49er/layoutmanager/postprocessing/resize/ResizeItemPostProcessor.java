@@ -2,11 +2,16 @@ package org.rares.miner49er.layoutmanager.postprocessing.resize;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+import org.rares.ratv.rotationaware.RotationAwareTextView;
 
+/**
+ * Simple post processor that updates an itemView's text.
+ */
 public class ResizeItemPostProcessor implements ResizePostProcessor.PostProcessor {
 
     private static final String TAG = ResizeItemPostProcessor.class.getSimpleName();
@@ -24,10 +29,22 @@ public class ResizeItemPostProcessor implements ResizePostProcessor.PostProcesso
         } else {
             for (int i = 0; i < recyclerView.getChildCount(); i++) {
                 ViewGroup listItem = (ViewGroup) recyclerView.getChildAt(i);
-                TextView textView = (TextView) listItem.getChildAt(0);
+                View childView = listItem.getChildAt(0);
                 String text = _adapter.resolveData(recyclerView.getChildAdapterPosition(listItem));
-                if (text != null) {
-                    textView.setText(text);
+                if (childView instanceof TextView) {
+                    TextView textView = (TextView) childView;
+                    if (text != null) {
+                        textView.setText(text);
+                    }
+                }
+                if (childView instanceof ViewGroup) {
+                    View v = ((ViewGroup) childView).getChildAt(0);
+                    if (v instanceof RotationAwareTextView) {
+                        RotationAwareTextView textView = (RotationAwareTextView) v;
+                        if (text != null) {
+                            textView.setText(text);
+                        }
+                    }
                 }
             }
         }

@@ -37,7 +37,7 @@ import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
-import org.rares.miner49er.layoutmanager.postprocessing.rotation.SimpleItemRotator;
+import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.util.BehaviorFix;
 
 import java.util.ArrayList;
@@ -238,9 +238,13 @@ public class HomeScrollingActivity
         issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);
         issuesUiOps.setRv(issuesRV);
         issuesUiOps.setDomainLink(timeEntriesUiOps);
-//        issuesUiOps.setResizePostProcessor(new ResizeItemPostProcessor());
-//        issuesUiOps.setResizePostProcessor(new AnimatedItemRotator());
-        issuesUiOps.setResizePostProcessor(new SimpleItemRotator());
+
+//        ResizePostProcessor.PostProcessor ipp = new SelfAnimatedItemRotator(issuesRV);
+        ResizePostProcessor.PostProcessor ipp = new AnimatedItemRotator(issuesRV);
+//        ResizePostProcessor.PostProcessor ipp = new SimpleItemRotator(issuesRV);
+
+        ipp.setPostProcessConsumer(issuesUiOps);
+        issuesUiOps.setResizePostProcessor(ipp);
 
         projectsUiOps = new ProjectsUiOps();
         projectsUiOps.setRv(projectsRV);
@@ -261,7 +265,8 @@ public class HomeScrollingActivity
 
         setupResizeableManager(projectsLayoutManager, projectsAdapter.getMaxElevation());
         projectsRV.setLayoutManager(projectsLayoutManager);
-        ResizePostProcessor.PostProcessor pp = new AnimatedItemRotator();
+        ResizePostProcessor.PostProcessor pp = new SelfAnimatedItemRotator(projectsRV);
+//        ResizePostProcessor.PostProcessor pp = new AnimatedItemRotator();
 //        ResizePostProcessor.PostProcessor pp = new SimpleItemRotator();
         pp.setPostProcessConsumer(projectsUiOps);
         projectsUiOps.setResizePostProcessor(pp);
@@ -280,14 +285,23 @@ public class HomeScrollingActivity
         Log.e(TAG, "setupRV: DONE ON CREATE");
     }
 
-    private void setupResizeableManager(RecyclerView.LayoutManager manager, int itemElevation) {
+    private void setupResizeableManager(
+            RecyclerView.LayoutManager manager,
+            int itemElevation,
+            int collapsedSelectedWidth,
+            int collapsedWidth
+    ) {
         if (manager instanceof ResizeableLayoutManager) {
             // this is not downCasting
             ResizeableLayoutManager mgr = (ResizeableLayoutManager) manager;
-            mgr.setItemCollapsedSelectedWidth(itemCollapsedSelectedWidth);
-            mgr.setItemCollapsedWidth(rvCollapsedWidth);
+            mgr.setItemCollapsedSelectedWidth(collapsedSelectedWidth);
+            mgr.setItemCollapsedWidth(collapsedWidth);
             mgr.setMaxItemElevation(itemElevation + 2);
         }
+    }
+
+    private void setupResizeableManager(RecyclerView.LayoutManager manager, int itemElevation) {
+        setupResizeableManager(manager, itemElevation, itemCollapsedSelectedWidth, rvCollapsedWidth);
     }
 
     /**

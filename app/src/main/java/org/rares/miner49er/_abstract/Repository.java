@@ -48,7 +48,7 @@ public abstract class Repository<T>
             userActionsObservable =
             userActionProcessor
                     .subscribeOn(Schedulers.io())
-                    .doOnSubscribe((action) -> refreshData(false));
+                    /*.doOnSubscribe((action) -> refreshData(false))*/;
 
     protected PublishProcessor<List<T>> demoProcessor = PublishProcessor.create();
 

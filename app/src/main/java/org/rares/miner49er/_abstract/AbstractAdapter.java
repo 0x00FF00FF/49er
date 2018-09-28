@@ -4,8 +4,6 @@ import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import io.reactivex.functions.Consumer;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,10 +17,9 @@ import java.util.List;
  * @since 07.03.2018
  */
 
-public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewHolder>
+public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemViewHolder>
         extends RecyclerView.Adapter<ExtendedViewHolder>
-        implements Consumer<List>
-{
+        implements Consumer<List> {
 
     public static final String TAG = AbstractAdapter.class.getSimpleName();
 
@@ -78,18 +75,20 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewH
         // drawn; but that solution could have
         // other (unwanted) implications in
         // scrolling behaviour.
-        {
-            TextView tv = (TextView) ((ViewGroup) holder.itemView).getChildAt(0);
-            String newData = resolveData(holder.getAdapterPosition());
-            if (tv.getText().length() != newData.length()) {
-                tv.setText(newData);
-            }
-//            Log.w(TAG, "onViewAttachedToWindow: " + tv.getText());
-        }
+//        if (holder instanceof RotatingViewHolder) {
+//            int position = holder.getAdapterPosition();
+//            boolean shortVersion = lastSelectedPosition != -1;
+//            boolean selected = position == lastSelectedPosition;
+//            //holder.bindData(getDisplayData(position), shortVersion, selected);
+//            ((RotatingViewHolder) holder).validateItem(shortVersion, selected);
+////            Log.w(TAG, "onViewAttachedToWindow: " + tv.getText());
+//        }
 
     }
 
     public abstract void clearData();
 
     public abstract String resolveData(int position);
+
+    public abstract Object getDisplayData(int adapterPosition);
 }

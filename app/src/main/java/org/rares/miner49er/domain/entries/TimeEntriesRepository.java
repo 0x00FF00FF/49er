@@ -16,6 +16,7 @@ import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,7 +156,10 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
             converted.setUserId(entry.getUserId());
             converted.setUserPhoto(entry.getUser().getPhoto());
             converted.setIssueId(entry.getIssueId());
-            converted.setColor(parentProperties.getItemBgColor() + (count++ % 2 == 0 ? 1 : -1) * 15);
+            converted.setColor(
+                    UiUtil.getBrighterColor(
+                            parentProperties.getItemBgColor(),
+                            (count++ % 2 == 0 ? 3 : 4) * 0.0250F));
 
             timeEntryDataList.add(converted);
         }

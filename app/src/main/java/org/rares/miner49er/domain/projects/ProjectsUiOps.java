@@ -6,8 +6,8 @@ import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
-import org.rares.miner49er._abstract.ResizeableViewHolder;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
     }
 
     @Override
-    public boolean onListItemClick(ResizeableViewHolder holder) {
+    public boolean onListItemClick(ResizeableItemViewHolder holder) {
         boolean enlarge = super.onListItemClick(holder);
         if (!enlarge) {
             projectsListResizeListener.onProjectsListShrink();
