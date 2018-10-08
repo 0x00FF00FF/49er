@@ -69,7 +69,20 @@ public abstract class ResizeableItemViewHolder
         unbinder.unbind();
     }
 
+    /**
+     * The view holder is 'resizeable' (better said,
+     * items in this view holder will be resized) so
+     * at times we need to show a short version of
+     * the text.
+     * @param shortVersion true to show the short version of the text
+     */
     public void toggleItemText(boolean shortVersion) {
         // not forcing concrete classes to override this
     }
+
+    /**
+     * Convenience method that
+     * @return the long version of the title
+     */
+    public String getItemText(){return longTitle;}
 }

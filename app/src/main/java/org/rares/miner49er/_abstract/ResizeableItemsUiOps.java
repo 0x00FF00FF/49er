@@ -7,7 +7,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.LayoutAnimationController;
 import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
@@ -179,17 +181,12 @@ public abstract class ResizeableItemsUiOps
         final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
 
-        ValueAnimator anim;
-//        final ResizeableViewHolder holder = getHolder(v);
-//        if (holder != null && holder.getAnimator() != null) {
-//            anim = (ValueAnimator) holder.getAnimator();
-//        } else {
-//            if (v.getTag(BaseInterfaces.TAG_ANIMATOR) != null) {        // // FIXME: 8/17/18
-//                anim = (ValueAnimator) v.getTag(BaseInterfaces.TAG_ANIMATOR);
-//            } else {
-                anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE);
-//            }
-//        }
+
+        Animation animation = new AnimationSet(true);
+
+        LayoutAnimationController animationController = new LayoutAnimationController(animation);
+
+        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE);
 
         anim.removeAllUpdateListeners();
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -203,6 +200,9 @@ public abstract class ResizeableItemsUiOps
                 v.getLayoutParams().width = animatedW;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     v.setElevation(animatedE);
+                } else {
+                    v.bringToFront();
+                    v.invalidate();
                 }
                 v.requestLayout();
             }
@@ -214,29 +214,22 @@ public abstract class ResizeableItemsUiOps
     private int getParentWidth(View v) {
         Log.e(TAG, "getParentWidth: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
         int containerWidth = ((View) getRv().getParent()).getMeasuredWidth();
-        if (v instanceof LinearLayout) {
+        if (v instanceof ViewGroup) {
             return rvState == ListState.SMALL ? rvCollapsedWidth : containerWidth;
         }
         return containerWidth;
     }
 
-    private ResizeableItemViewHolder getHolder(View v) {
-        ResizeableItemViewHolder holder = null;
-        if (v instanceof LinearLayout) {
-            holder = (ResizeableItemViewHolder) getRv().getChildViewHolder(v);
-        }
-        return holder;
-    }
-
     public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
         resizePostProcessor = postProcessor;
 // TODO: 9/24/18  the following block might not be needed. investigate.
-{        RecyclerView.LayoutManager lm = getRv().getLayoutManager();
-        if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
-            ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
-                    .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
+        {
+            RecyclerView.LayoutManager lm = getRv().getLayoutManager();
+            if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
+                ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
+                        .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
+            }
         }
-}
     }
 
     @Override
@@ -278,9 +271,11 @@ public abstract class ResizeableItemsUiOps
         if (unbinderList != null) {
             Log.i(TAG, "clearBindings: " + unbinderList.size() + " (" + this.getClass().getSimpleName() + ")");
             for (Unbinder u : unbinderList) {
-                RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) u;
-                Log.v(TAG, "clearBindings: " + u + "" + TextUtils.getItemText(vh.itemView));
-                u.unbind();
+                if (u instanceof ResizeableItemViewHolder) {
+                    ResizeableItemViewHolder vh = (ResizeableItemViewHolder) u;
+                    Log.v(TAG, "clearBindings: " + u + "" + TextUtils.getItemText(vh));
+                    u.unbind();
+                }
             }
             unbinderList.clear();
         }

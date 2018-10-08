@@ -20,7 +20,7 @@
     >
         <org.rares.ratv.rotationaware.RotationAwareTextView
                 android:id="@+id/ratv_resource_name_item"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/sv_margin"
                 android:layout_marginStart="@dimen/sv_margin"
@@ -43,6 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:alpha="0"
         >
             <include android:id="@+id/issues_number_info" layout="@layout/child_domain_info"/>
             <include android:id="@+id/users_info" layout="@layout/child_domain_info"/>

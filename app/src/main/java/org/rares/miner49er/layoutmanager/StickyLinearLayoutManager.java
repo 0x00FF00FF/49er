@@ -192,14 +192,6 @@ public class StickyLinearLayoutManager
 
         int itemAddPosition = dy > 0 ? BOTTOM : TOP;
         TAG = usedTag + (dy > 0 ? " v " : " ^ ");
-        if (DEBUG && METHOD_DEBUG) {
-            Log.w(TAG, "scrollVerticallyBy: " +
-                    "[dy: " + dy + "]" +
-                    "[lastTopY: " + lastTopY + "]" +
-                    "[scrollRemaining: " + state.getRemainingScrollVertical() + "]" +
-                    "[firstVisiblePosition: " + firstVisiblePosition + "]"
-            );
-        }
 
         // virtual space at the end
         int maxScroll = (int) ((getItemCount() - 1) * (decoratedChildHeight)/* - (0.5 * decoratedChildHeight)*/);
@@ -210,6 +202,22 @@ public class StickyLinearLayoutManager
 //        if (DEBUG && METHOD_DEBUG)
 //            Log.d(TAG, "scrollVerticallyBy: max scroll: " + maxScroll);
 
+        if (DEBUG && METHOD_DEBUG) {
+            Log.w(TAG, "scrollVerticallyBy: " +
+                    "[dy: " + dy + "]" +
+                    "[height: " + getHeight() + "]" +
+                    "[item count * decoratedItemHeight: " + getItemCount() * decoratedChildHeight + "]" +
+                    "[maxScroll: " + maxScroll + "]" +
+                    "[lastTopY: " + lastTopY + "]" +
+                    "[scrollRemaining: " + state.getRemainingScrollVertical() + "]" +
+                    "[firstVisiblePosition: " + firstVisiblePosition + "]"
+            );
+        }
+
+        if (getHeight() > getItemCount() * decoratedChildHeight) {
+            return 0;
+        }
+
         // this fixes (over)scrolling to top
         if (lastTopY + dy <= 0) {
             dy = -lastTopY;
@@ -218,11 +226,11 @@ public class StickyLinearLayoutManager
 //        if (DEBUG && METHOD_DEBUG)
 //            Log.w(TAG, "scrollVerticallyBy: [dy: " + dy + "]");
 
-
 //      virtual space at the end
         if (lastTopY + dy + decoratedChildHeight >= maxScroll) {
             dy = maxScroll - decoratedChildHeight - lastTopY;
         }
+
 
         if (dy == 0) {
             if (DEBUG && METHOD_DEBUG) {
@@ -354,7 +362,7 @@ public class StickyLinearLayoutManager
             RecyclerView.State state
     ) {
 
-        final boolean METHOD_DEBUG = true;
+        final boolean METHOD_DEBUG = false;
         boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
@@ -369,6 +377,8 @@ public class StickyLinearLayoutManager
         if (DEBUG && METHOD_DEBUG) {
             Log.wtf(TAG, "-------------------------------------------------------------------start");
         }
+
+        long s = System.currentTimeMillis();
 
         if (DEBUG && METHOD_DEBUG) {
 //            Log.v(TAG, "last top y: " + lastTopY);
@@ -472,6 +482,7 @@ public class StickyLinearLayoutManager
 
             int reversePosition = 0;
             for (int i = from; i < to; i++) {
+                long cs = System.currentTimeMillis();
                 // the algorithm may say that
                 // the item at the selected
                 // position item must be added.
@@ -576,6 +587,9 @@ public class StickyLinearLayoutManager
 //                            "; lastTopY: " + lastTopY +
 //                            "; rv height: " + getHeight());
 //                }
+                if (DEBUG && METHOD_DEBUG) {
+                    Log.e(TAG, "drawChildren: PER ITEM: " + (System.currentTimeMillis() - cs));
+                }
             }
         } finally {
 
@@ -635,6 +649,7 @@ public class StickyLinearLayoutManager
                 }
             }
             if (DEBUG && METHOD_DEBUG) {
+                Log.e(TAG, "drawChildren: TOTAL: " + (System.currentTimeMillis() - s));
                 Log.wtf(TAG, "---------------------------------------------------------------------end");
             }
         }
@@ -807,7 +822,7 @@ public class StickyLinearLayoutManager
     // TODO: 5/3/18 add support for different item heights.
     @Override
     public void offsetChildrenVertical(int dy) {
-        final boolean METHOD_DEBUG = true;
+        final boolean METHOD_DEBUG = false;
 
         boolean scrollToEnd = dy < 0, addItemsAtEnd = scrollToEnd;
         if (dy == 0) {

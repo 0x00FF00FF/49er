@@ -36,7 +36,6 @@ import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
-import org.rares.miner49er.layoutmanager.postprocessing.rotation.AnimatedItemRotator;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.util.BehaviorFix;
 
@@ -232,15 +231,19 @@ public class HomeScrollingActivity
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
-        setupResizeableManager(issuesManager, BaseInterfaces.MAX_ELEVATION_ISSUES);
+        setupResizeableManager(
+                issuesManager,
+                BaseInterfaces.MAX_ELEVATION_ISSUES,
+                (int) (itemCollapsedSelectedWidth * 0.5),
+                (int) (rvCollapsedWidth * 0.5));
         issuesRV.setLayoutManager(issuesManager);
         issuesUiOps = new IssuesUiOps();
-        issuesUiOps.setRvCollapsedWidth(rvCollapsedWidth);
+        issuesUiOps.setRvCollapsedWidth((int) (rvCollapsedWidth * 0.5));
         issuesUiOps.setRv(issuesRV);
         issuesUiOps.setDomainLink(timeEntriesUiOps);
 
-//        ResizePostProcessor.PostProcessor ipp = new SelfAnimatedItemRotator(issuesRV);
-        ResizePostProcessor.PostProcessor ipp = new AnimatedItemRotator(issuesRV);
+        ResizePostProcessor.PostProcessor ipp = new SelfAnimatedItemRotator(issuesRV);
+//        ResizePostProcessor.PostProcessor ipp = new AnimatedItemRotator(issuesRV);
 //        ResizePostProcessor.PostProcessor ipp = new SimpleItemRotator(issuesRV);
 
         ipp.setPostProcessConsumer(issuesUiOps);

@@ -59,6 +59,10 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
     @Override
     public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
 //        Log.e(TAG, "onViewDetachedFromWindow() called with: holder = [" + holder.hashCode() + "]");
+        // for when the view is animating and is scrolled out of the visible area
+        if (holder.getAnimator() != null && holder.getAnimator().isRunning()) {
+            holder.getAnimator().end();
+        }
     }
 
     @Override
@@ -69,21 +73,6 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
     @Override
     public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
 //        Log.d(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
-        // the following may not be needed if
-        // the first itemView after the visible
-        // ones in the recycler view list is not
-        // drawn; but that solution could have
-        // other (unwanted) implications in
-        // scrolling behaviour.
-//        if (holder instanceof RotatingViewHolder) {
-//            int position = holder.getAdapterPosition();
-//            boolean shortVersion = lastSelectedPosition != -1;
-//            boolean selected = position == lastSelectedPosition;
-//            //holder.bindData(getDisplayData(position), shortVersion, selected);
-//            ((RotatingViewHolder) holder).validateItem(shortVersion, selected);
-////            Log.w(TAG, "onViewAttachedToWindow: " + tv.getText());
-//        }
-
     }
 
     public abstract void clearData();

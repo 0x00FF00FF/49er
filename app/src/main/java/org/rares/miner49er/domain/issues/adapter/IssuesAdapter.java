@@ -42,7 +42,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     public IssuesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View containerView =
                 LayoutInflater.from(parent.getContext()).
-                        inflate(R.layout.resizeable_list_item, parent, false);
+                        inflate(R.layout.self_animated_issues_item_rl, parent, false);
 
         final IssuesViewHolder ivh = new IssuesViewHolder(containerView);
         ivh.setItemClickListener(eventListener);

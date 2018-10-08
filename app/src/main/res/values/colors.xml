@@ -83,6 +83,9 @@
     <color name="deepPurple.A700">#6200EA</color>
 
     <color name="android_color_dim_foreground_dark">#bebebe</color>
+    <color name="android_color_dim_foreground_light">#323232</color>
+    <color name="android_color_dim_foreground_dark_disabled">#80bebebe</color>
+    <color name="android_color_dim_foreground_light_disabled">#80323232</color>
 
     <!--villain-->
     <color name="villain.dark.green">#1c1513</color>

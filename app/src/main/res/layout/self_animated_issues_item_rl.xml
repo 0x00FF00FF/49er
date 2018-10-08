@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:r_aware="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:id="@+id/resizeable_list_item_container"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/projects_list_item_height"
+                android:gravity="center|start"
+                android:orientation="vertical"
+                tools:background="@color/pureWhite"
+                tools:layout_marginBottom="1dp"
+                tools:showIn="@layout/activity_home_scrolling">
+
+    <org.rares.ratv.rotationaware.RotationAwareTextView
+            android:id="@+id/ratv_resource_name_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            r_aware:attach_default_click_listener="false"
+            r_aware:background_color="#00FFFFFF"
+            r_aware:target_background_color="#00FFFFFF"
+            r_aware:text_color="@color/projects.default.383640"
+            r_aware:target_text_color="@color/projects.default.545f66"
+            r_aware:attach_default_animator="true"
+            r_aware:text_size="@dimen/list_item_text_size"
+            r_aware:target_rotation="-90"
+            r_aware:original_margin_left="16dp"
+            r_aware:target_margin_left="0dp"
+            tools:background="@color/projects.default.bae0e7"
+            tools:text="something here like a issue's name"
+    />
+
+</RelativeLayout>

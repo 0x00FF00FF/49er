@@ -79,12 +79,7 @@ public class AnimatedItemRotator extends AbstractItemRotator {
 
         View childView = ((ViewGroup) holder.itemView).getChildAt(0);
 
-        if (!(childView instanceof TextView)) {
-            Log.e(TAG, "rotateItem: animated view not instance of text view.");
-            return;
-        }
-
-        TextView animatedView = (TextView) childView;
+//        TextView animatedView = (TextView) childView;
 
         int fromRotation = clockwise ? -90 : 0;
         int toRotation = clockwise ? 0 : -90;
@@ -102,11 +97,11 @@ public class AnimatedItemRotator extends AbstractItemRotator {
         }
 
         AnimationUpdateListener listener = new AnimationUpdateListener();
-        listener.animatedView = animatedView;
+        listener.animatedView = childView;
 
         AnimationEventListener evListener = new AnimationEventListener();
         evListener.holder = holder;
-        evListener.animatedView = animatedView;
+        evListener.animatedView = childView;
         evListener.clockwise = clockwise;
 
         anim.removeAllListeners();

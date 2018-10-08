@@ -5,7 +5,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er.domain.projects.viewholder.RotatingViewHolder;
+import org.rares.miner49er._abstract.ItemViewAnimator;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 
 public class SelfAnimatedItemRotator extends AbstractItemRotator {
 
@@ -28,20 +29,11 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
             final int lastPos = _tempAdapter.getLastSelectedPosition();
             final int vhPos = vh.getAdapterPosition();
 
-//            if (vh instanceof ResizeableItemViewHolder) {
-//                ResizeableItemViewHolder holder = (ResizeableItemViewHolder) vh;
-//                boolean shortVersion = lastPos != -1;
-//                int position = holder.getAdapterPosition();
-//                boolean selected = position == lastPos;
-//                holder.bindData(_tempAdapter.getDisplayData(vhPos), shortVersion, selected);
-////                holder.toggleItemText(shortVersion);
-//            }
+            // we only work with ItemViewAnimator+ viewHolder
+            ItemViewAnimator h;
 
-            // we only work with RotatingViewHolder
-            RotatingViewHolder h;
-
-            if (vh instanceof RotatingViewHolder) {
-                h = ((RotatingViewHolder) vh);
+            if (vh instanceof ItemViewAnimator) {
+                h = ((ItemViewAnimator) vh);
             } else {
                 continue;
             }
@@ -64,9 +56,13 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
                  * Because the StickyLayoutManager keeps
                  * the selected view and updates it artificially,
                  * we need to re-bind the view holder when animating,
-                 * because the layout manager can only update the view.
+                 * because the layout manager can only update the view
+                 * and not all the items in the view holder.
                  * */
-                h.bindData(_tempAdapter.getDisplayData(vhPos), false, false);
+                if (h instanceof ResizeableItemViewHolder && vhPos == prevPos) {
+                    ((ResizeableItemViewHolder) h)
+                            .bindData(_tempAdapter.getDisplayData(vhPos), false, false);
+                }
                 h.animateItem(true, vhPos == prevPos, defaultAnimationTime);
             }
         }
@@ -82,15 +78,14 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
 
     @Override
     public void validateViewRotation(View itemView, boolean closedState, boolean isViewSelected) {
-        Log.d(TAG, "validateViewRotation() called.");
         RecyclerView.ViewHolder holder = rv.getChildViewHolder(itemView);
         if (holder == null) {
             Log.w(TAG, "validateViewRotation: RETURNING, HOLDER NOT IN RV");
             return;
         }
-        RotatingViewHolder rvh = null;
-        if (holder instanceof RotatingViewHolder) {
-            rvh = (RotatingViewHolder) holder;
+        ItemViewAnimator rvh = null;
+        if (holder instanceof ItemViewAnimator) {
+            rvh = (ItemViewAnimator) holder;
         }
         if (rvh == null) {
             Log.w(TAG, "validateViewRotation: RETURNING, HOLDER NOT RVH");

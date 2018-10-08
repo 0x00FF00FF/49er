@@ -8,17 +8,15 @@
               android:layout_marginStart="@dimen/sv_margin">
     <TextView
             android:id="@+id/helper_label"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.75"
             android:textColor="@color/android_color_dim_foreground_dark"
             android:textSize="@dimen/list_item_secondary_text_size"
     />
     <TextView
             android:id="@+id/helper_value"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
             android:textColor="@color/android_color_dim_foreground_dark"
             android:textSize="@dimen/list_item_secondary_text_size"
     />

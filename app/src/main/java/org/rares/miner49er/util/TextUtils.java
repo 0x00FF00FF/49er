@@ -1,10 +1,12 @@
 package org.rares.miner49er.util;
 
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 
 public class TextUtils {
@@ -15,11 +17,15 @@ public class TextUtils {
         if (s == null || s.length() == 0) {
             return "";
         }
+
+        s = clearNamePrefix(s);
+
         StringBuilder builder = new StringBuilder(2);
         s = s.trim().toUpperCase();
         if (s.length() == 0) {
             return "";
         }
+
         builder.append(s.charAt(0));
 
         if (s.length() > 1) {
@@ -75,5 +81,34 @@ public class TextUtils {
             }
         }
         throw new UnsupportedOperationException("Unsupported view: " + view.getClass().toString());
+    }
+
+    public static String getItemText(RecyclerView.ViewHolder holder) {
+        if (holder instanceof ResizeableItemViewHolder) {
+            return ((ResizeableItemViewHolder) holder).getItemText();
+        }
+        return "";
+    }
+
+    private static String clearNamePrefix(String s){
+        String res = s;
+
+        res = res.replace("Baronin ", "");
+        res = res.replace("Baron ", "");
+        res = res.replace("Graf ", "");
+        res = res.replace("Gräfin ", "");
+        res = res.replace("von ", "");
+        res = res.replace("vom ", "");
+        res = res.replace("der ", "");
+        res = res.replace("den ", "");
+        res = res.replace("Fr. ", "");
+        res = res.replace("Hr. ", "");
+        res = res.replace("Dr. ", "");
+        res = res.replace("Prof. ", "");
+        res = res.replace("zu ", "");
+        res = res.replace("Freiherrin ", "");
+        res = res.replace("Freiherr ", "");
+
+        return res;
     }
 }

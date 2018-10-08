@@ -37,8 +37,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (issuesAdapter != null) {
             int selected = issuesAdapter.getLastSelectedPosition();
             if (selected != -1) {
-                onListItemClick((ResizeableItemViewHolder)
-                        getRv().findViewHolderForAdapterPosition(selected));
+                ResizeableItemViewHolder vh = (ResizeableItemViewHolder)
+                        getRv().findViewHolderForAdapterPosition(selected);
+                if (vh != null) {
+                    onListItemClick(vh);
+                }
                 resetLastSelectedId();
                 issuesAdapter.setPreviouslySelectedPosition(-1);
             }
@@ -80,6 +83,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         }
         issuesRepository.setParentProperties(itemViewProperties);
         issuesRepository.refreshData(true);
+
+//    TODO:    trigger some thing that shows all info containers at once
     }
 
     @Override
