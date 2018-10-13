@@ -53,7 +53,16 @@ public class TextUtils {
             }
         }
 //        Log.i(TAG, "extractInitials: [" + builder.toString() + "]");
-        return builder.toString();
+        String res = builder.toString();
+
+        if (res.length() > 3) {
+            res = res.substring(0,3);
+        }
+        return res;
+    }
+
+    public static String capitalize(String str) {
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     public static void setCenterGravity(TextView view) {
@@ -93,6 +102,7 @@ public class TextUtils {
     private static String clearNamePrefix(String s){
         String res = s;
 
+        res = res.replace("-", " ");
         res = res.replace("Baronin ", "");
         res = res.replace("Baron ", "");
         res = res.replace("Graf ", "");
@@ -108,6 +118,8 @@ public class TextUtils {
         res = res.replace("zu ", "");
         res = res.replace("Freiherrin ", "");
         res = res.replace("Freiherr ", "");
+        res = res.replace("Dipl. ", "");
+        res = res.replace("Ing. ", "");
 
         return res;
     }

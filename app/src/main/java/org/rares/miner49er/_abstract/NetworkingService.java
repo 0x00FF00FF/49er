@@ -82,7 +82,7 @@ public enum NetworkingService {
         Call<List<User>> getUsers(@Path("projectId") int projectId);
     }
 
-    enum RestServiceGenerator {
+    public enum RestServiceGenerator {
         INSTANCE;
 
         private final String serviceUrl = "http://192.168.1.148/~rares/";
@@ -92,6 +92,8 @@ public enum NetworkingService {
         private OkHttpClient httpClient =
                 new OkHttpClient.Builder()
                         .addInterceptor(loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC))
+                        .readTimeout(5, TimeUnit.SECONDS)
+                        .connectTimeout(5, TimeUnit.SECONDS)
                         .build();
 
         private Retrofit restClient =
@@ -107,7 +109,16 @@ public enum NetworkingService {
             Log.w(TAG, "enum instance:::: " + this.hashCode());
             return restClient.create(c);
         }
+
+        public OkHttpClient getHttpClient() {
+            return httpClient;
+        }
+
+        public Retrofit getRestClient() {
+            return restClient;
+        }
     }
+
 
     public Single<List<Project>> getProjects() {
 

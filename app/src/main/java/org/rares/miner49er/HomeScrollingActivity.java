@@ -2,15 +2,12 @@ package org.rares.miner49er;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -24,7 +21,6 @@ import android.widget.TextView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.Unbinder;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
@@ -37,7 +33,6 @@ import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
-import org.rares.miner49er.util.BehaviorFix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +49,8 @@ public class HomeScrollingActivity
 
     List<Unbinder> unbinderList = new ArrayList<>();
 
-    @BindView(R.id.app_bar)
-    AppBarLayout appBarLayout;
+//    @BindView(R.id.app_bar)
+//    AppBarLayout appBarLayout;
 
     @BindView(R.id.rv_projects_list)
     RecyclerView projectsRV;
@@ -69,17 +64,17 @@ public class HomeScrollingActivity
     @BindView(R.id.fab2)
     FloatingActionButton fab2;
 
-    @BindView(R.id.fab)
-    FloatingActionButton fab;
+//    @BindView(R.id.fab)
+//    FloatingActionButton fab;
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
+//    @BindView(R.id.toolbar)
+//    Toolbar toolbar;
 
     @BindView(R.id.main_container)
     CoordinatorLayout mainContainer;
 
-    @BindView(R.id.toolbar_layout)
-    CollapsingToolbarLayout clt;
+//    @BindView(R.id.toolbar_layout)
+//    CollapsingToolbarLayout clt;
 
     @BindView(R.id.scroll_views_container)
     LinearLayout scrollViewsContainer;
@@ -111,7 +106,7 @@ public class HomeScrollingActivity
         unbinder = ButterKnife.bind(this);
 //        registerUnbinder(unbinder);
 
-        setSupportActionBar(toolbar);
+//        setSupportActionBar(toolbar);
 
         setupRV();
 
@@ -154,7 +149,7 @@ public class HomeScrollingActivity
     }
 
 
-    @OnClick(R.id.fab)
+//    @OnClick(R.id.fab)
     public void onClick(View view) {
 
         final SpannableStringBuilder snackbarText = new SpannableStringBuilder();
@@ -312,13 +307,13 @@ public class HomeScrollingActivity
      * as a follow-up to a project being selected.
      */
     private void flingBarUp() {
-        // fling the app bar up
+/*        // fling the app bar up
         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
         BehaviorFix behavior = (BehaviorFix) params.getBehavior();
         if (behavior != null) {
             behavior.onNestedFling(mainContainer, appBarLayout, null, 0, 7000, true);
 //            behavior.onNestedPreScroll(mainContainer, appBarLayout, appBarLayout, 0, 1000, new int[] {0, 0});
-        }
+        }*/
     }
 
 //    @Override

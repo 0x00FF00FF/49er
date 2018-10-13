@@ -4,4 +4,7 @@
     <string name="_issues_info_entries_label">Entries:</string>
     <string name="_issues_info_user_hours_label">User Hours:</string>
     <string name="_issues_info_total_hours_label">Total Hours:</string>
+    <string name="_projects_info_issues_label">Issues:</string>
+    <string name="_projects_info_users_label">Users:</string>
+    <string name="_projects_info_total_hours">Hours:</string>
 </resources>

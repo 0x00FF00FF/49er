@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import lombok.Setter;
+import org.rares.miner49er.R;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
@@ -504,6 +505,14 @@ public class StickyLinearLayoutManager
 
                 int r, t, b, l;
                 t = i * decoratedChildHeight - lastTopY;
+//                 overlap items vertically so that
+//                 only one part of the margin will
+//                 be shown
+//                 max top will probably need to be
+//                 adjusted
+//                if (i > 0) {
+//                    t = t - 6 * i;
+//                }
                 b = t + decoratedChildHeight;
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
@@ -919,6 +928,13 @@ public class StickyLinearLayoutManager
                         "][" + TextUtils.getItemText(v) +
                         "]" + (v.equals(selectedView) ? " [selected]" : ""));
             }
+            // TODO: 10/11/18 extract this as an interface
+            // TODO: 10/11/18 make this more consistent with scroll/position
+            View vv = v.findViewById(R.id.project_image);
+            if (vv != null) {
+                vv.setRotation(vv.getRotation() + 3 * Math.signum(dy));
+            }
+
             if (v != selectedView) {
                 v.offsetTopAndBottom(dy);
             } else {

@@ -1,5 +1,8 @@
 package org.rares.miner49er.domain.entries.adapter;
 
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -29,7 +32,18 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
     @Override
     public void bindData(Object data, boolean shortVersion, boolean selected) {
         TimeEntryData entryData = (TimeEntryData) data;
-        itemView.setBackgroundColor(entryData.getColor());
+//        itemView.setBackgroundColor(entryData.getColor());
+
+        Drawable d = itemView.getBackground();
+        d.mutate();
+        if (d instanceof LayerDrawable) {
+            LayerDrawable ld = (LayerDrawable) d;
+            GradientDrawable opaqueBackground = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
+            if (opaqueBackground != null) {
+                opaqueBackground.setColor(entryData.getColor());
+            }
+        }
+
         userInitials.setText(TextUtils.extractInitials(entryData.getUserName()));
         hours.setText(String.valueOf(entryData.getHours()) + (entryData.getHours() > 1 ? " hours" : " hour"));
 

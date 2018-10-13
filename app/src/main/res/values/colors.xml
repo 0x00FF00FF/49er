@@ -6,6 +6,12 @@
     <color name="greatGreen">#88FF00</color>
     <color name="pureWhite">#FFFFFF</color>
 
+    <color name="semitransparent_black_left">#BB000000</color>
+    <color name="semitransparent_black_right">#33000000</color>
+    <color name="semitransparent_black_left_selected">#99000000</color>
+    <color name="semitransparent_black_left_issues">#66000000</color>
+    <color name="semitransparent_black_right_selected">#11000000</color>
+
     <!--material.blueGray-->
     <color name="blueGray.050">#ECEFF1</color>
     <color name="blueGray.100">#CFD8DC</color>

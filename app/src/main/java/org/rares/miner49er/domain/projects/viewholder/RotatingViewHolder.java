@@ -4,76 +4,75 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.BindString;
 import butterknife.BindView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
+import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.ui.custom.glide.GlideApp;
+import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.List;
 
 public class RotatingViewHolder extends ResizeableItemViewHolder implements org.rares.miner49er._abstract.ItemViewAnimator {
 
     private static final String TAG = RotatingViewHolder.class.getSimpleName();
 
+    @BindView(R.id.resizeable_list_item_container)
+    ConstraintLayout topContainer;
+
     @BindView(R.id.ratv_resource_name_item)
-    public RotationAwareTextView projectNameTextView;
+    RotationAwareTextView projectNameTextView;
 
     @BindView(R.id.project_logo)
-    View projectLogoView;
+    ImageView projectLogoView;
 
-    @BindView(R.id.issues_number_info)
-    LinearLayout issuesNumberInfo;
+    @BindView(R.id.project_image)
+    ImageView projectImage;
 
-    @BindView(R.id.users_info)
-    LinearLayout usersInfo;
+    private TextView infoLabel = null;
 
-    @BindView(R.id.hours_info)
-    LinearLayout totalHoursInfo;
+    private String infoLabelString;
 
-    @BindView(R.id.child_domain_info_container)
-    LinearLayout childDomainInfoContainer;
+    @BindString(R.string._projects_info_issues_label)
+    String issuesLabel;
+    @BindString(R.string._projects_info_users_label)
+    String usersLabel;
+    @BindString(R.string._projects_info_total_hours)
+    String hoursLabel;
 
-    private int forcedWidth = Integer.MIN_VALUE;
-
-//    @BindView(R.id.ratv_name_item_container)
-//    LinearLayout nameContainer;
-
-    private TextView issuesValue;
-    private TextView usersValue;
-    private TextView hoursValue;
-
-    private int originalTextSize = 60;
+    private int originalTextSize = 60;      /////
 
     private ProjectViewProperties projectViewProperties = new ProjectViewProperties();
 
-    @SuppressLint("SetTextI18n")
     public RotatingViewHolder(View itemView) {
         super(itemView);
         setItemProperties(projectViewProperties);
-//        Miner49erApplication.getRefWatcher(itemView.getContext()).watch(this);
-        TextView issuesLabel = issuesNumberInfo.findViewById(R.id.helper_label);
-        TextView usersLabel = usersInfo.findViewById(R.id.helper_label);
-        TextView hoursLabel = totalHoursInfo.findViewById(R.id.helper_label);
-
-        issuesValue = issuesNumberInfo.findViewById(R.id.helper_value);
-        usersValue = usersInfo.findViewById(R.id.helper_value);
-        hoursValue = totalHoursInfo.findViewById(R.id.helper_value);
-
-        issuesLabel.setText("Issues: ");
-        usersLabel.setText("Users: ");
-        hoursLabel.setText("Hours: ");
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         ProjectData data = (ProjectData) o;
@@ -84,34 +83,72 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         shortTitle = TextUtils.extractInitials(data.getName());
         longTitle = data.getName();
 
-        toggleItemText(shortVersion);
-        itemView.setBackgroundColor(itemBgColor);
+        Drawable d = itemView.getBackground();
+        d.mutate();
+        if (d instanceof LayerDrawable) {
+            LayerDrawable ld = (LayerDrawable) d;
+            GradientDrawable gd = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
+            if (gd != null) {
+                gd.setColor(data.getColor());
+            }
+        }
 
         projectLogoView.setVisibility(View.VISIBLE);
 
-        issuesValue.setText("16");
-        usersValue.setText("4");
-        hoursValue.setText("221");
+        String pictureUrl = data.getPicture();
 
-        if (!shortVersion) {
-
-            if (childDomainInfoContainer.getAlpha() == 0) {
-                PropertyValuesHolder pvh = PropertyValuesHolder.ofFloat("alpha", 0, 1);
-
-                ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(pvh);
-
-                setAnimator(animator);
-                getAnimator().addUpdateListener(new ItemAnimationUpdateListener());
-                getAnimator().setStartDelay(400);
-                getAnimator().setDuration(500);
-                getAnimator().start();
-            }
-        } else {
-//            childDomainInfoContainer.setVisibility(View.VISIBLE);
-            childDomainInfoContainer.setAlpha(1);
+        try {
+            pictureUrl = URLDecoder.decode(data.getPicture(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
 
-        projectNameTextView.setGravity(shortVersion ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
+        GlideApp
+                .with(itemView)
+                .load(pictureUrl)
+                .placeholder(R.drawable.skull)
+                .fallback(R.drawable.skull)
+                .error(R.drawable.skull)
+                .into(projectLogoView);
+
+        GlideApp
+                .with(itemView)
+                .load(pictureUrl)
+                .onlyRetrieveFromCache(true)
+                .placeholder(R.drawable.skull)
+//                .transform(new PositionedCrop(0.5F, 0.5F))
+                .into(projectImage);
+
+        int issuesNumber = 0;
+        int usersNumber = 0;
+        int hoursNumber = 0;
+
+        List<IssueData> issues = data.getIssues();
+        // todo => get these from cache
+        if (issues != null) {
+            issuesNumber = issues.size();
+            for (IssueData issueData : issues) {
+                List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
+                if (timeEntryData != null) {
+                    for (TimeEntryData ted : timeEntryData) {
+                        hoursNumber += ted.getHours();
+                    }
+                }
+            }
+        }
+        List<UserData> users = data.getTeam();
+        if (users != null) {
+            usersNumber = users.size();
+        }
+
+        populateInfoLabel(issuesNumber, usersNumber, hoursNumber);
+
+        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
+            toggleInfoContainerVisiblity(false);
+            infoLabel.setAlpha(0);
+        }
+
+        validateItem(shortVersion, selected);
     }
 
     /**
@@ -134,19 +171,24 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 
         AnimationTextValidator animationTextValidator = new AnimationTextValidator();
         animationTextValidator.reverse = reverse;
+        animationTextValidator.selected = selected;
 
         if (getAnimator() != null) {
             getAnimator().removeAllListeners();
         }
 
+        AnimationDTO dto = preparePositionData(reverse, selected);
+
         projectNameTextView
                 .getRotationAnimatorHost()
-                .updateAnimationData(
-                        preparePositionData(reverse, selected));
+                .updateAnimationData(dto);
         setAnimator(
                 projectNameTextView
                         .getRotationAnimatorHost()
                         .configureAnimator(reverse));
+
+        validatePosition(!reverse, dto);
+
         getAnimator().addListener(animationTextValidator);
         getAnimator().setDuration(animationTime);
         getAnimator().start();
@@ -161,22 +203,53 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
      */
     @Override
     public void validateItem(boolean collapsed, boolean selected) {
+        int fadeAnimationDelay = 250;
+        boolean shouldValidate = true;
         if (getAnimator() != null && getAnimator().isRunning()) {
-            return; // do not validate anything if the animator is running
+            shouldValidate = false; // do not validate anything if the animator is running
         }
 
-        projectNameTextView.setGravity(collapsed ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
-        toggleItemText(collapsed);
+//        projectNameTextView.setGravity(collapsed ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
+        if (shouldValidate) {
+            toggleItemText(collapsed);
 
-        AnimationDTO animationDTO = preparePositionData(!collapsed, selected);
-        projectNameTextView.setRotation(collapsed ? animationDTO.maxRotation : animationDTO.minRotation);
-        projectNameTextView.setTextSize(collapsed ? animationDTO.maxTextSize : animationDTO.minTextSize);
-        projectNameTextView.setTextColor(collapsed ? animationDTO.maxTextColor : animationDTO.minTextColor);
-        projectNameTextView.setBackgroundColor(collapsed ? animationDTO.maxBackgroundColor : animationDTO.minBackgroundColor);
+            AnimationDTO animationDTO = preparePositionData(!collapsed, selected);
+            projectNameTextView.setRotation(collapsed ? animationDTO.maxRotation : animationDTO.minRotation);
+            projectNameTextView.setTextSize(collapsed ? animationDTO.maxTextSize : animationDTO.minTextSize);
+            projectNameTextView.setTextColor(collapsed ? animationDTO.maxTextColor : animationDTO.minTextColor);
+            projectNameTextView.setBackgroundColor(collapsed ? animationDTO.maxBackgroundColor : animationDTO.minBackgroundColor);
+
+            validatePosition(collapsed, animationDTO);
+//            projectNameTextView.setEllipsize(!collapsed);
+        }
+
+        if (infoLabel != null) {
+            float currentAlpha = infoLabel.getAlpha();
+            toggleInfoContainerVisiblity(!collapsed);
+            if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
+                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+            }
+        } else {
+            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+        }
+
+        if (projectImage != null) {
+            projectImage.setVisibility(collapsed ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    /**
+     * Validate size position, alignment, gravity for projectNameTextView
+     */
+    private void validatePosition(boolean collapsed, AnimationDTO animationDTO) {
+        projectNameTextView.setGravity(collapsed ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
 
         ViewGroup.LayoutParams lp = projectNameTextView.getLayoutParams();
-//        lp.width = collapsed ? selected ? 48 * 2 : 48 : (int) projectNameTextView.getTextPaint().measureText(projectNameTextView.getText());
-        lp.height = collapsed ? itemView.getLayoutParams().height : (int) (originalTextSize * 1.25);
+        boolean matchParentWidth = lp.width == ViewGroup.LayoutParams.MATCH_PARENT;
+
+        lp.width = matchParentWidth ? ViewGroup.LayoutParams.MATCH_PARENT : collapsed ? animationDTO.maxWidth : animationDTO.minWidth;
+        lp.height = collapsed ? ViewGroup.LayoutParams.MATCH_PARENT : (int) (originalTextSize * 1.25);
+
         ViewGroup.MarginLayoutParams mlp = null;
         if (lp instanceof ViewGroup.MarginLayoutParams) {
             mlp = (ViewGroup.MarginLayoutParams) lp;
@@ -185,14 +258,29 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             mlp.rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
             mlp.bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
         }
-        if (mlp != null) {
-            projectNameTextView.setLayoutParams(mlp);
+        ConstraintLayout.LayoutParams clp = null;
+        if (lp instanceof ConstraintLayout.LayoutParams) {
+            clp = (ConstraintLayout.LayoutParams) lp;
+
+            int leftMargin = collapsed ? animationDTO.maxMarginLeft : animationDTO.minMarginLeft;
+            int topMargin = collapsed ? animationDTO.maxMarginTop : animationDTO.minMarginTop;
+            int rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
+            int bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
+
+            clp.leftMargin = leftMargin;
+            clp.topMargin = topMargin;
+            clp.rightMargin = rightMargin;
+            clp.bottomMargin = bottomMargin;
         }
-
-
-        projectNameTextView.setLayoutParams(lp);
-
-        childDomainInfoContainer.setVisibility(collapsed ? View.GONE : View.VISIBLE);
+//        if (clp != null) {
+//            projectNameTextView.setLayoutParams(clp);
+//        } else {
+//            if (mlp != null) {
+//                projectNameTextView.setLayoutParams(mlp);
+//            } else {
+//                projectNameTextView.setLayoutParams(lp);
+//            }
+//        }
     }
 
     private AnimationDTO preparePositionData(boolean reverse, boolean selected) {
@@ -279,7 +367,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
                 adto.minBackgroundColor = projectNameTextView.getBackgroundColor();
                 adto.minTextColor = projectNameTextView.getTextPaint().getColor();
                 adto.maxTextColor = 0xFFFFFFFF;
-                adto.maxBackgroundColor = 0x77FFFFFF;
+//                adto.maxBackgroundColor = 0x77FFFFFF;
 
                 if (mlp != null) {
                     adto.minMarginLeft = mlp.leftMargin;
@@ -313,14 +401,110 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         projectNameTextView.setText(shortVersion ? shortTitle : longTitle);
     }
 
+    private void populateInfoLabel(int issuesValue,
+                                   float usersValue,
+                                   float hoursValue) {
+        infoLabelString = String.format(
+                issuesLabel + "%2s " +
+                        usersLabel + "%3.1s " +
+                        hoursLabel + "%3.1s ",
+                issuesValue,
+                usersValue,
+                hoursValue
+        );
+    }
+
+    private void toggleInfoContainerVisiblity(boolean visible) {
+        if (infoLabel != null) {
+            infoLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    /**
+     * Visual effects for the info container
+     *
+     * @param currentAlpha the alpha to start the animation with
+     */
+    private void startInfoContainerFade(float currentAlpha) {
+
+        PropertyValuesHolder pvh = PropertyValuesHolder.ofFloat("alpha", currentAlpha, 1);
+
+        ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(pvh);
+
+        setAnimator(animator);
+
+        getAnimator().addUpdateListener(new ItemAnimationUpdateListener());
+        getAnimator().setDuration(400);
+        getAnimator().start();
+    }
+
+    /**
+     * It's more effective to inflate a layout
+     * that contains less items, and add them
+     * later programmatically, after the view
+     * is shown.
+     *
+     * @param res needed to get the customizable
+     *            resources (size, colors etc.)
+     */
+    private void addInfoLabelToContainer(Resources res, boolean collapsed) {
+        if (res == null || projectNameTextView == null || topContainer == null) {
+            Log.w(TAG, "addInfoLabelToContainer: RETURNING BECAUSE a needed component is null");
+            return;
+        }
+        int textColor = 0xAA999999;
+        textColor = UiUtil.getBrighterColor(textColor, 0.1F);
+
+        infoLabel = new TextView(itemView.getContext());
+        infoLabel.setId(NumberUtils.generateViewId());
+
+        infoLabel.setTextColor(textColor);
+        infoLabel.setText(infoLabelString);
+        infoLabel.setAlpha(0);
+
+        int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
+        infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+
+        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        lp.topToBottom = R.id.ratv_resource_name_item;
+        lp.startToStart = R.id.ratv_resource_name_item;
+        lp.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        infoLabel.setLayoutParams(lp);
+
+        if (projectNameTextView.getLayoutParams() instanceof ConstraintLayout.LayoutParams) {
+            lp = (ConstraintLayout.LayoutParams) projectNameTextView.getLayoutParams();
+            lp.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+            lp.bottomToTop = infoLabel.getId();
+
+            lp.goneBottomMargin = 0;
+            lp.bottomMargin = 0;
+            projectNameTextView.setLayoutParams(lp);
+        }
+        // TODO: animate using constraintSet
+
+        toggleInfoContainerVisiblity(!collapsed);
+
+        topContainer.addView(infoLabel);
+
+        startInfoContainerFade(infoLabel.getAlpha());
+    }
+
     class AnimationTextValidator extends AnimatorListenerAdapter {
         boolean reverse = false;
+        boolean selected = false;
 
         @Override
         public void onAnimationStart(Animator animation) {
             if (reverse) {
                 toggleItemText(false);
-                childDomainInfoContainer.setVisibility(reverse ? View.VISIBLE : View.GONE);
+            }
+            if (infoLabel != null) {
+                infoLabel.setVisibility(reverse ? View.VISIBLE : View.GONE);
+            }
+            if (projectImage != null) {
+                projectImage.setVisibility(reverse ? View.VISIBLE : View.GONE);
             }
         }
 
@@ -338,7 +522,9 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
             float alpha = (float) animation.getAnimatedValue("alpha");
-            childDomainInfoContainer.setAlpha(alpha);
+            if (infoLabel != null) {
+                infoLabel.setAlpha(alpha);
+            }
         }
     }
 }

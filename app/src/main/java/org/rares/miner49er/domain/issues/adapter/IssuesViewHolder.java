@@ -5,6 +5,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.text.TextPaint;
 import android.util.Log;
@@ -72,9 +75,17 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         IssueData data = (IssueData) o;
         shortTitle = TextUtils.extractInitials(data.getName());
-        longTitle = data.getName();
+        longTitle = TextUtils.capitalize(data.getName());
 
-        itemView.setBackgroundColor(data.getColor());
+        Drawable d = itemView.getBackground();
+        d.mutate();
+        if (d instanceof LayerDrawable) {
+            LayerDrawable ld = (LayerDrawable) d;
+            GradientDrawable opaqueBackground = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
+            if (opaqueBackground != null) {
+                opaqueBackground.setColor(data.getColor());
+            }
+        }
         getItemProperties().setItemBgColor(data.getColor());
         getItemProperties().setId(data.getId());
 
@@ -141,7 +152,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                         .getRotationAnimatorHost()
                         .configureAnimator(reverse));
 
-        validatePosition(!reverse, selected, dto);
+        validatePosition(!reverse, dto);
 
         getAnimator().addListener(animationTextValidator);
         getAnimator().setDuration(animationTime);
@@ -162,21 +173,19 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         int fadeAnimationDelay = 250;
         boolean shouldValidate = true;
         if (getAnimator() != null && getAnimator().isRunning()) {
-            Log.w(TAG, "validateItem: SHOULD NOT VALIDATE BECAUSE ANIMATOR IS RUNNING");
             shouldValidate = false; // do not validate anything if the animator is running
         }
 
         if (shouldValidate) {
             toggleItemText(collapsed);
 
-            Log.e(TAG, "validateItem: SHOULD VALIDATE...");
             AnimationDTO animationDTO = preparePositionData(!collapsed, selected);
             issueName.setRotation(collapsed ? animationDTO.maxRotation : animationDTO.minRotation);
             issueName.setTextSize(collapsed ? animationDTO.maxTextSize : animationDTO.minTextSize);
             issueName.setTextColor(collapsed ? animationDTO.maxTextColor : animationDTO.minTextColor);
             issueName.setBackgroundColor(collapsed ? animationDTO.maxBackgroundColor : animationDTO.minBackgroundColor);
 
-            validatePosition(collapsed, selected, animationDTO);
+            validatePosition(collapsed, animationDTO);
             issueName.setEllipsize(!collapsed);
         }
 
@@ -296,7 +305,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 adto.maxTextSize = selectedTextSize;
                 adto.minBackgroundColor = issueName.getBackgroundColor();
                 adto.minTextColor = issueName.getTextPaint().getColor();
-                adto.maxTextColor = 0x99FFFFFF;
+                adto.maxTextColor = 0xFFFFFFFF;
 //                adto.maxBackgroundColor = 0x50FFFFFF;
 
                 if (mlp != null) {
@@ -348,7 +357,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     /**
      * Validate size position, alignment, gravity for issueName
      */
-    private void validatePosition(boolean collapsed, boolean selected, AnimationDTO animationDTO) {
+    private void validatePosition(boolean collapsed, AnimationDTO animationDTO) {
 
         issueName.setGravity(collapsed ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
 
@@ -380,24 +389,6 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             rlp.rightMargin = rightMargin;
             rlp.bottomMargin = bottomMargin;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                // TODO: 10/3/18 see how this works on api < JB_MR1
-                rlp.resolveLayoutDirection(RelativeLayout.LAYOUT_DIRECTION_LOCALE);
-                // this is why center in parent didn't work
-            }
-            if (collapsed) {
-                rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    rlp.addRule(RelativeLayout.ALIGN_PARENT_START, 0);
-                }
-                rlp.addRule(RelativeLayout.CENTER_IN_PARENT);
-            } else {
-                rlp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    rlp.addRule(RelativeLayout.ALIGN_PARENT_START);
-                }
-                rlp.addRule(RelativeLayout.CENTER_IN_PARENT, 0);
-            }
         }
         if (rlp != null) {
 //            Log.i(TAG, "validatePosition: " +
@@ -420,6 +411,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      * that contains less items, and add them
      * later programmatically, after the view
      * is shown.
+     *
      * @param res needed to get the customizable
      *            resources (size, colors etc.)
      */
@@ -428,7 +420,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             Log.w(TAG, "addInfoLabelToContainer: RETURNING BECAUSE a needed component is null");
             return;
         }
-        int textColor = res.getColor(R.color.android_color_dim_foreground_light);
+        int textColor = 0xAA999999;
         textColor = UiUtil.getBrighterColor(textColor, 0.1F);
 
         infoLabel = new TextView(itemView.getContext());

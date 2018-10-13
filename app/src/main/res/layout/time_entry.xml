@@ -5,6 +5,7 @@
               android:layout_height="@dimen/projects_list_item_height"
               android:orientation="horizontal"
               android:gravity="center|start"
+              android:background="@drawable/transient_semitransparent_rectangle"
 >
     <TextView
             android:id="@+id/user_initials_tv"
@@ -24,24 +25,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_marginLeft="40dp"
-            android:layout_marginStart="40dp">
+            android:layout_marginLeft="60dp"
+            android:layout_marginStart="60dp">
         <TextView
                 android:id="@+id/hours_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="16sp"
+                android:textColor="@color/pureWhite"
         />
         <View
                 android:id="@+id/hours_day_separator"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/android_color_dim_foreground_light_disabled"
+                android:background="@color/android_color_dim_foreground_dark_disabled"
         />
         <TextView
                 android:id="@+id/day_tv"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/android_color_dim_foreground_dark"
+        />
     </LinearLayout>
 </LinearLayout>
