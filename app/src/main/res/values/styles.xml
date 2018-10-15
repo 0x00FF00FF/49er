@@ -4,9 +4,19 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!--<item name="coordinatorLayoutStyle">@style/Widget.Design.CoordinatorLayout</item>-->
         <item name="colorPrimary">@color/pureWhite</item>
-        <item name="colorPrimaryDark">@color/indigo.700</item>
+        <item name="colorPrimaryDark">@color/indigo.100_blacked</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/indigo.300</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="titleTextStyle">@style/MyTitleTextStyle</item>
+        <item name="background">@drawable/transient_semitransparent_rectangle_app_bar</item>
+    </style>
+
+    <style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/pureWhite</item>
     </style>
 
     <style name="ProjectsList" parent="AppTheme">

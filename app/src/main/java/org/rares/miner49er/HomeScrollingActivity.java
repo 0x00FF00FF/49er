@@ -2,7 +2,7 @@ package org.rares.miner49er;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -71,7 +71,7 @@ public class HomeScrollingActivity
 //    Toolbar toolbar;
 
     @BindView(R.id.main_container)
-    CoordinatorLayout mainContainer;
+    ConstraintLayout mainContainer;
 
 //    @BindView(R.id.toolbar_layout)
 //    CollapsingToolbarLayout clt;
@@ -105,8 +105,6 @@ public class HomeScrollingActivity
 
         unbinder = ButterKnife.bind(this);
 //        registerUnbinder(unbinder);
-
-//        setSupportActionBar(toolbar);
 
         setupRV();
 

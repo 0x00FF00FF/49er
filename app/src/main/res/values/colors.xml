@@ -25,6 +25,7 @@
     <color name="blueGray.900">#263238</color>
 
     <!--material.indigo-->
+    <color name="indigo.100_blacked">#30344B</color>
     <color name="indigo.100_grayed">#606586</color>
     <color name="indigo.050">#E8EAF6</color>
     <color name="indigo.100">#c5cae9</color>
