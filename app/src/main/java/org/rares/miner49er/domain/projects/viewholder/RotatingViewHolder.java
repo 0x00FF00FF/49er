@@ -223,6 +223,8 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 //            projectNameTextView.setEllipsize(!collapsed);
         }
 
+        projectLogoView.setAlpha(!collapsed ? 1 : selected ? 1 : 0.3F);
+
         if (infoLabel != null) {
             float currentAlpha = infoLabel.getAlpha();
             toggleInfoContainerVisiblity(!collapsed);
@@ -506,6 +508,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             if (projectImage != null) {
                 projectImage.setVisibility(reverse ? View.VISIBLE : View.GONE);
             }
+            projectLogoView.setAlpha(reverse ? 1 : selected ? 1 : 0.3F);
         }
 
         @Override

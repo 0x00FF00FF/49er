@@ -33,7 +33,7 @@
 
             <stroke
                     android:width="@dimen/projects_list_item_background_stroke_width"
-                    android:color="@color/indigo.100"
+                    android:color="@color/indigo.100_grayed"
             />
         </shape>
     </item>

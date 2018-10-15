@@ -185,7 +185,7 @@ public abstract class ResizeableItemsUiOps
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
         // background manipulation
         Resources res = v.getResources();
-        int indigo = res.getColor(R.color.indigo_100);
+        int indigo = res.getColor(R.color.indigo_100_grayed);
         int white = res.getColor(R.color.pureWhite);
         int bgLeft = res.getColor(R.color.semitransparent_black_left);
         int bgRight = res.getColor(R.color.semitransparent_black_right);

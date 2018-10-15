@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!--<item name="coordinatorLayoutStyle">@style/Widget.Design.CoordinatorLayout</item>-->
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/pureWhite</item>
         <item name="colorPrimaryDark">@color/indigo.700</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/indigo.300</item>
