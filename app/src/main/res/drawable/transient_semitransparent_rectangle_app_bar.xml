@@ -1,0 +1,38 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/opaque_background">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/indigo.300"/>
+            <corners
+                    android:bottomRightRadius="15dp"
+            />
+        </shape>
+    </item>
+    <item android:id="@+id/semitransparent_background">
+        <shape
+                android:shape="rectangle"
+        >
+            <corners
+                    android:bottomRightRadius="15dp"
+            />
+            <gradient
+                    android:startColor="@color/semitransparent_black_left"
+                    android:endColor="@color/semitransparent_black_right"
+            />
+        </shape>
+    </item>
+    <item android:id="@+id/outside_stroke">
+        <shape
+                android:shape="rectangle"
+        >
+            <corners
+                    android:bottomRightRadius="12dp"
+
+            />
+
+            <stroke
+                    android:width="@dimen/projects_list_item_background_stroke_width"
+                    android:color="@color/pureWhite"
+            />
+        </shape>
+    </item>
+</layer-list>
