@@ -2,7 +2,6 @@ package org.rares.miner49er._abstract;
 
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -59,6 +58,13 @@ public abstract class ResizeableItemsUiOps
     private ResizePostProcessor.PostProcessor resizePostProcessor;
 
     protected Repository repository;
+
+    protected int indigo = 0;
+    protected int white = 0;
+    protected int bgLeft = 0;
+    protected int bgRight = 0;
+    protected int bgLeftSelected = 0;
+    protected int bgRightSelected = 0;
 
     @Override
     public void resetLastSelectedId() {
@@ -184,13 +190,7 @@ public abstract class ResizeableItemsUiOps
         final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
         // background manipulation
-        Resources res = v.getResources();
-        int indigo = res.getColor(R.color.indigo_100_grayed);
-        int white = res.getColor(R.color.pureWhite);
-        int bgLeft = res.getColor(R.color.semitransparent_black_left);
-        int bgRight = res.getColor(R.color.semitransparent_black_right);
-        int bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected);
-        int bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);
+
         boolean selected = endWidth != ViewGroup.LayoutParams.MATCH_PARENT;
         int startColor = selected ? indigo : white;
         int endColor = selected ? white : indigo;
@@ -215,8 +215,8 @@ public abstract class ResizeableItemsUiOps
 
 
                 Drawable bg = v.getBackground();
-                bg.mutate();
                 if (bg instanceof LayerDrawable) {
+                    bg.mutate();
                     int animatedC = (int) animation.getAnimatedValue("strokeColor");
                     int animatedBgL = (int) animation.getAnimatedValue("bgColorL");
                     int animatedBgR = (int) animation.getAnimatedValue("bgColorR");

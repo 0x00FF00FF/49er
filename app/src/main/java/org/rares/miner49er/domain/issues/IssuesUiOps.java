@@ -1,7 +1,9 @@
 package org.rares.miner49er.domain.issues;
 
+import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -21,9 +23,26 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private static final String TAG = IssuesUiOps.class.getSimpleName();
     private IssuesRepository issuesRepository = new IssuesRepository();
 
-    public IssuesUiOps() {
+    public IssuesUiOps(RecyclerView rv) {
+        setRv(rv);
         issuesRepository.setup();
         repository = issuesRepository;
+
+/*        Resources res = getRv().getResources();
+        indigo = res.getColor(R.color.indigo_100_grayed);
+        white = res.getColor(R.color.pureWhite);
+        bgLeft = res.getColor(R.color.semitransparent_black_left_issues);
+        bgRight = res.getColor(R.color.semitransparent_black_right);
+        bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected_issues);
+        bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);*/
+
+        Resources res = getRv().getResources();
+        indigo = res.getColor(R.color.indigo_100_grayed);
+        white = res.getColor(R.color.pureWhite);
+        bgLeft = res.getColor(R.color.semitransparent_black_left);
+        bgRight = res.getColor(R.color.semitransparent_black_right);
+        bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected);
+        bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);
     }
 
     @Override

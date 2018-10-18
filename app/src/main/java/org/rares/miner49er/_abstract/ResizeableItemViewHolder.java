@@ -8,6 +8,8 @@ import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
+import org.rares.ratv.rotationaware.animation.RotationAnimatorHost;
+import org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
@@ -44,6 +46,9 @@ public abstract class ResizeableItemViewHolder
     private boolean toBeRebound = true;
 
     private Unbinder unbinder;
+
+    protected RotationAwareUpdateListener animationUpdateListener;
+    protected RotationAnimatorHost animatorHost;
 
     public abstract void bindData(Object data, boolean shortVersion, boolean selected);
 

@@ -14,27 +14,24 @@
 
     <org.rares.ratv.rotationaware.RotationAwareTextView
             android:id="@+id/ratv_resource_name_item"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/sv_margin"
-            android:layout_marginStart="@dimen/sv_margin"
 
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/project_logo"
             app:layout_constraintVertical_chainStyle="packed"
 
-            app:attach_default_click_listener="false"
             app:text_color="@color/pureWhite"
             app:target_text_color="#FF777777"
             app:background_color="#00FFFFFF"
             app:target_background_color="#00000000"
-            app:attach_default_animator="true"
             app:text_size="@dimen/list_item_text_size"
             app:target_rotation="-90"
             app:target_text_size="10sp"
             app:original_margin_left="@dimen/sv_margin"
-            app:target_margin_left="4dp"
+            app:target_margin_left="0dp"
             tools:background="@color/projects.default.bae0e7"
             tools:text="something here like a project's name"
     />

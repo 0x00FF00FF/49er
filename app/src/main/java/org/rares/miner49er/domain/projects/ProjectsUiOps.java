@@ -1,9 +1,12 @@
 package org.rares.miner49er.domain.projects;
 
+import android.content.res.Resources;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -26,10 +29,19 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 
     private ProjectsRepository projectsRepository;
 
-    public ProjectsUiOps() {
+    public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
+        setRv(rv);
         projectsRepository = new ProjectsRepository();
         repository = projectsRepository;
+
+        Resources res = getRv().getResources();
+        indigo = res.getColor(R.color.indigo_100_grayed);
+        white = res.getColor(R.color.pureWhite);
+        bgLeft = res.getColor(R.color.semitransparent_black_left);
+        bgRight = res.getColor(R.color.semitransparent_black_right);
+        bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected);
+        bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);
     }
 
     @Override

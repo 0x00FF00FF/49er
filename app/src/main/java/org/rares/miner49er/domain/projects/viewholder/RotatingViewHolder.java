@@ -27,11 +27,13 @@ import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
+import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
+import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -68,9 +70,13 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 
     private ProjectViewProperties projectViewProperties = new ProjectViewProperties();
 
+    private int infoLabelId = -1;
+
     public RotatingViewHolder(View itemView) {
         super(itemView);
         setItemProperties(projectViewProperties);
+        animationUpdateListener = new NoWidthUpdateListener(projectNameTextView);
+        animatorHost = new DefaultRotationAnimatorHost(projectNameTextView.gatherAnimationData());
     }
 
     @Override
@@ -165,27 +171,19 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         // !reverse + selected = this item is the first to be selected
         // reverse + !selected = this item was not selected and returns to the expanded form
         // !reverse + !selected = this item is not selected and goes to short form
-        if (!projectNameTextView.isDefaultAnimatorEnabled()) {
-            projectNameTextView.setEnableDefaultAnimator(true);
-        }
+
 
         AnimationTextValidator animationTextValidator = new AnimationTextValidator();
         animationTextValidator.reverse = reverse;
         animationTextValidator.selected = selected;
 
-        if (getAnimator() != null) {
-            getAnimator().removeAllListeners();
-        }
+        animatorHost.clearListeners();
 
         AnimationDTO dto = preparePositionData(reverse, selected);
 
-        projectNameTextView
-                .getRotationAnimatorHost()
-                .updateAnimationData(dto);
-        setAnimator(
-                projectNameTextView
-                        .getRotationAnimatorHost()
-                        .configureAnimator(reverse));
+        animatorHost.updateAnimationData(dto);
+        animatorHost.configureAnimator(reverse).addUpdateListener(animationUpdateListener);
+        setAnimator(animatorHost.animator);
 
         validatePosition(!reverse, dto);
 
@@ -223,7 +221,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 //            projectNameTextView.setEllipsize(!collapsed);
         }
 
-        projectLogoView.setAlpha(!collapsed ? 1 : selected ? 1 : 0.3F);
+        projectLogoView.setAlpha(!collapsed ? .8F : selected ? 1 : 0.3F);
 
         if (infoLabel != null) {
             float currentAlpha = infoLabel.getAlpha();
@@ -292,7 +290,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         AnimationDTO adto = new AnimationDTO();
         final int startRotation = projectNameTextView.getOriginalRotation();
         final int endRotation = projectNameTextView.getTargetRotation();
-        final int startWidth = (int) _tempTextPaint.measureText(longTitle);
+        final int startWidth = projectNameTextView.getOriginalWidth();
         final int endWidth = 48;
         final int startHeight = (int) (originalTextSize * 1.25);
         final int endHeight = itemView.getHeight();
@@ -335,7 +333,6 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         adto.maxMarginTop = maxMarginTop;
         adto.maxMarginRight = maxMarginRight;
         adto.maxMarginBottom = maxMarginBottom;
-        adto.updateListener = projectNameTextView.getAnimationUpdateListener();
 
         ViewGroup.LayoutParams lp = projectNameTextView.getLayoutParams();
         ViewGroup.MarginLayoutParams mlp = null;
@@ -450,15 +447,16 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
      *            resources (size, colors etc.)
      */
     private void addInfoLabelToContainer(Resources res, boolean collapsed) {
-        if (res == null || projectNameTextView == null || topContainer == null) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING BECAUSE a needed component is null");
+        if (res == null || projectNameTextView == null || topContainer == null || infoLabelId != -1) {
+            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
             return;
         }
         int textColor = 0xAA999999;
         textColor = UiUtil.getBrighterColor(textColor, 0.1F);
 
         infoLabel = new TextView(itemView.getContext());
-        infoLabel.setId(NumberUtils.generateViewId());
+        infoLabelId = NumberUtils.generateViewId();
+        infoLabel.setId(infoLabelId);
 
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);
@@ -508,7 +506,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             if (projectImage != null) {
                 projectImage.setVisibility(reverse ? View.VISIBLE : View.GONE);
             }
-            projectLogoView.setAlpha(reverse ? 1 : selected ? 1 : 0.3F);
+            projectLogoView.setAlpha(reverse ? .8F : selected ? 1 : 0.3F);
         }
 
         @Override

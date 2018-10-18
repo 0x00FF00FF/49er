@@ -4,12 +4,13 @@ import android.animation.ValueAnimator;
 import android.view.ViewGroup;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.RotationAware;
+import org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener;
 
 /**
  * Custom rotation aware update listener.
  * Does not update width.
  */
-public class NoWidthUpdateListener extends org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener {
+public class NoWidthUpdateListener extends RotationAwareUpdateListener {
 
     public NoWidthUpdateListener(RotationAwareTextView animatedView) {
         super(animatedView);
@@ -38,11 +39,11 @@ public class NoWidthUpdateListener extends org.rares.ratv.rotationaware.animatio
             mlp.rightMargin = mr;
             mlp.bottomMargin = mb;
 
-            mlp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+//            mlp.width = ViewGroup.LayoutParams.MATCH_PARENT;
             mlp.height = height;
         }
 
-        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+//        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = height;
 
         animatedView.setTextColor(tc);

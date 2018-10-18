@@ -24,10 +24,12 @@ import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
+import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
+import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
 import java.util.List;
 
@@ -60,6 +62,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private String infoLabelString;
 
+    private int infoLabelId = -1;
+
 
     public IssuesViewHolder(View itemView) {
         super(itemView);
@@ -68,7 +72,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         // set a custom animator that doesn't animate width because the default one
         // animates from whatever value the view has to -1 or -2 if it is the case
         // and we don't want that (bad visuals).
-        issueName.setAnimationUpdateListener(new NoWidthUpdateListener(issueName));
+        animationUpdateListener = new NoWidthUpdateListener(issueName);
+        animatorHost = new DefaultRotationAnimatorHost(issueName.gatherAnimationData());
     }
 
     @Override
@@ -129,28 +134,18 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         // !reverse + selected = this item is the first to be selected
         // reverse + !selected = this item was not selected and returns to the expanded form
         // !reverse + !selected = this item is not selected and goes to short form
-        if (!issueName.isDefaultAnimatorEnabled()) {
-            issueName.setEnableDefaultAnimator(true);
-        }
 
         AnimationTextValidator animationTextValidator = new AnimationTextValidator();
         animationTextValidator.reverse = reverse;
         animationTextValidator.selected = selected;
 
-        if (getAnimator() != null) {
-            getAnimator().removeAllListeners();
-        }
+        animatorHost.clearListeners();
 
         AnimationDTO dto = preparePositionData(reverse, selected);
 
-        issueName
-                .getRotationAnimatorHost()
-                .updateAnimationData(
-                        dto);
-        setAnimator(
-                issueName
-                        .getRotationAnimatorHost()
-                        .configureAnimator(reverse));
+        animatorHost.updateAnimationData(dto);
+        animatorHost.configureAnimator(reverse).addUpdateListener(animationUpdateListener);
+        setAnimator(animatorHost.animator);
 
         validatePosition(!reverse, dto);
 
@@ -272,7 +267,6 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         adto.maxMarginTop = maxMarginTop;
         adto.maxMarginRight = maxMarginRight;
         adto.maxMarginBottom = maxMarginBottom;
-        adto.updateListener = issueName.getAnimationUpdateListener();
 
         ViewGroup.LayoutParams lp = issueName.getLayoutParams();
         ViewGroup.MarginLayoutParams mlp = null;
@@ -416,14 +410,16 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      *            resources (size, colors etc.)
      */
     private void addInfoLabelToContainer(Resources res) {
-        if (res == null || issueName == null || topContainer == null) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING BECAUSE a needed component is null");
+        if (res == null || issueName == null || topContainer == null || infoLabelId != -1) {
+            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequesites not met.");
             return;
         }
         int textColor = 0xAA999999;
         textColor = UiUtil.getBrighterColor(textColor, 0.1F);
 
         infoLabel = new TextView(itemView.getContext());
+        infoLabelId = NumberUtils.generateViewId();
+        infoLabel.setId(infoLabelId);
 
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);

@@ -217,23 +217,25 @@ public class HomeScrollingActivity
         issuesRV.setItemViewCacheSize(14);
         timeEntriesRv.setItemViewCacheSize(14);
         timeEntriesRv.getRecycledViewPool().setMaxRecycledViews(0, 14);
-
+//        AccDecoration decoration = new AccDecoration();
+//        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
-        timeEntriesUiOps = new TimeEntriesUiOps();
-        timeEntriesUiOps.setRv(timeEntriesRv);
+        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
+        final double shrinkRatio = 0.5;
         setupResizeableManager(
                 issuesManager,
                 BaseInterfaces.MAX_ELEVATION_ISSUES,
-                (int) (itemCollapsedSelectedWidth * 0.5),
-                (int) (rvCollapsedWidth * 0.5));
+                (int) (itemCollapsedSelectedWidth * shrinkRatio),
+                (int) (rvCollapsedWidth * shrinkRatio));
         issuesRV.setLayoutManager(issuesManager);
-        issuesUiOps = new IssuesUiOps();
-        issuesUiOps.setRvCollapsedWidth((int) (rvCollapsedWidth * 0.5));
-        issuesUiOps.setRv(issuesRV);
+        issuesUiOps = new IssuesUiOps(issuesRV);
+        issuesUiOps.setRvCollapsedWidth((int) (rvCollapsedWidth * shrinkRatio));
         issuesUiOps.setDomainLink(timeEntriesUiOps);
+//        decoration.setSelectedPosition(1);
+//        issuesRV.addItemDecoration(decoration);
 
         ResizePostProcessor.PostProcessor ipp = new SelfAnimatedItemRotator(issuesRV);
 //        ResizePostProcessor.PostProcessor ipp = new AnimatedItemRotator(issuesRV);
@@ -242,8 +244,7 @@ public class HomeScrollingActivity
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
 
-        projectsUiOps = new ProjectsUiOps();
-        projectsUiOps.setRv(projectsRV);
+        projectsUiOps = new ProjectsUiOps(projectsRV);
         projectsUiOps.setProjectsListResizeListener(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
@@ -266,6 +267,8 @@ public class HomeScrollingActivity
 //        ResizePostProcessor.PostProcessor pp = new SimpleItemRotator();
         pp.setPostProcessConsumer(projectsUiOps);
         projectsUiOps.setResizePostProcessor(pp);
+
+//        projectsRV.addItemDecoration(decoration);
 
         // pool
         // - cannot share same pool between rvs
