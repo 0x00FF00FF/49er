@@ -15,4 +15,6 @@
     <dimen name="issues_list_margin">-20dp</dimen>
 
     <dimen name="_list_item_corner_radius_small">12dp</dimen>
+    <dimen name="_list_item_corner_radius_large">15dp</dimen>
+    <dimen name="_list_item_invisible_margin">2dp</dimen>
 </resources>

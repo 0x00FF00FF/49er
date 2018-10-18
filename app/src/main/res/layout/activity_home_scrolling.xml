@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layoutAnimation="@anim/anim_rv_item"
-                tools:listitem="@layout/resizeable_list_item"
+                tools:listitem="@layout/self_animated_resizeable_list_item"
                 tools:itemCount="8"
         />
 
