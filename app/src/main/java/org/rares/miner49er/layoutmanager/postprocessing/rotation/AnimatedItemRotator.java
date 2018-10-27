@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import io.reactivex.processors.PublishProcessor;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.util.TextUtils;
@@ -26,7 +27,7 @@ public class AnimatedItemRotator extends AbstractItemRotator {
     }
 
     @Override
-    public void rotateItems(ViewGroup viewGroup) {
+    public void rotateItems(ViewGroup viewGroup, PublishProcessor<Boolean> processor) {
         RecyclerView rv = (RecyclerView) viewGroup;
         AbstractAdapter _tempAdapter = (AbstractAdapter) rv.getAdapter();
         for (int i = 0; i < viewGroup.getChildCount(); i++) {

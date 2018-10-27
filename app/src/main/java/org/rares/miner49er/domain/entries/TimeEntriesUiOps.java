@@ -28,8 +28,8 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         teRepository.setup();
         repository = teRepository;
 
-        setRv(rv);
-/*        Resources res = getRv().getResources();
+        this.rv = rv;
+/*        Resources res = rv.getResources();
         indigo = res.getColor(R.color.indigo_100_grayed);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left_issues);
@@ -37,7 +37,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected_issues);
         bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);*/
 
-        Resources res = getRv().getResources();
+        Resources res = rv.getResources();
         indigo = res.getColor(R.color.indigo_100_grayed);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left);
@@ -48,8 +48,8 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
-        TimeEntriesAdapter adapter = (TimeEntriesAdapter) getRv().getAdapter();
-        String text = adapter.getData(getRv().getChildAdapterPosition(holder.itemView));
+        TimeEntriesAdapter adapter = (TimeEntriesAdapter) rv.getAdapter();
+        String text = adapter.getData(rv.getChildAdapterPosition(holder.itemView));
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + text);
         return true;
     }
@@ -69,7 +69,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
 
-        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+        AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
 
         if (parentWasEnlarged) {
             if (unbinderList.size() > 40) {
@@ -94,7 +94,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
                 // not have to use resources
                 // while it is being restarted
                 repository.shutdown();
-                getRv().setAdapter(null);
+                rv.setAdapter(null);
                 resetRv();
             } else if (adapter != null) {
                 adapter.clearData();
@@ -103,7 +103,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
             if (adapter != null) {
                 onParentChanged(viewProperties);
             } else {
-                getRv().setAdapter(createNewAdapter(viewProperties));
+                rv.setAdapter(createNewAdapter(viewProperties));
             }
         }
     }
@@ -111,7 +111,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentRemoved(ItemViewProperties viewProperties) {
         if (viewProperties != null) {
-            getRv().setAdapter(createNewAdapter(viewProperties));
+            rv.setAdapter(createNewAdapter(viewProperties));
         }
     }
 

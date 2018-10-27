@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import io.reactivex.processors.PublishProcessor;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
@@ -19,7 +20,7 @@ public class ResizeItemPostProcessor implements ResizePostProcessor.PostProcesso
     private ResizePostProcessor.PostProcessorConsumer consumer = null;
 
     @Override
-    public void postProcess(RecyclerView recyclerView) {
+    public void postProcess(RecyclerView recyclerView, PublishProcessor<Boolean> processor) {
         AbstractAdapter _adapter = (AbstractAdapter) recyclerView.getAdapter();
         int ic = _adapter.getItemCount();
         int cc = recyclerView.getChildCount();

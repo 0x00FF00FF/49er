@@ -3,6 +3,7 @@ package org.rares.miner49er.domain.projects;
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ViewGroup;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
@@ -31,17 +32,19 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 
     public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
-        setRv(rv);
+        this.rv = rv;
         projectsRepository = new ProjectsRepository();
         repository = projectsRepository;
 
-        Resources res = getRv().getResources();
+        Resources res = rv.getResources();
         indigo = res.getColor(R.color.indigo_100_grayed);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left);
         bgRight = res.getColor(R.color.semitransparent_black_right);
         bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected);
         bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);
+
+        guideline = ((ViewGroup) rv.getParent()).findViewById(R.id.guideline_projects_end);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         Log.e(TAG, "setupRepository() called");
         projectsRepository
                 .setup()
-                .registerSubscriber((Consumer<List>) getRv().getAdapter());
+                .registerSubscriber((Consumer<List>) rv.getAdapter());
     }
 
     /**
@@ -81,20 +84,20 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
      */
     // TODO: 02.03.2018 refactor
     public void removeItem() {
-//        RecyclerView.LayoutManager llm = getRv().getLayoutManager();
-//        int itemCount = getRv().getAdapter().getItemCount();
+//        RecyclerView.LayoutManager llm = rv.getLayoutManager();
+//        int itemCount = rv.getAdapter().getItemCount();
 //        if (itemCount > 0) {
 //            View child = llm.getChildAt(0);
 //
 //            ItemViewProperties projectViewProperties =
-//                    ((ResizeableViewHolder) getRv().getChildViewHolder(child)).getItemProperties();
+//                    ((ResizeableViewHolder) rv.getChildViewHolder(child)).getItemProperties();
 //            // ^
 //            if (projectViewProperties.getItemContainerCustomId() == getLastSelectedId()) {
 //                if (itemCount > 1) {
 //                    child = llm.getChildAt(1);
 //
 //                    projectViewProperties =
-//                            ((ResizeableViewHolder) getRv().getChildViewHolder(child)).getItemProperties();
+//                            ((ResizeableViewHolder) rv.getChildViewHolder(child)).getItemProperties();
 //                    // ^
 //                    resizeItems(projectViewProperties.getItemContainerCustomId());
 //
@@ -106,7 +109,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
 //                }
 //            }
 //        }
-//        ((ProjectsAdapter) getRv().getAdapter()).removeItem();
+//        ((ProjectsAdapter) rv.getAdapter()).removeItem();
 //        // ^
     }
 

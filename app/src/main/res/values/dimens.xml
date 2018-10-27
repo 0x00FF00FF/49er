@@ -5,7 +5,7 @@
     <dimen name="projects_list_item_height">64dp</dimen>
     <dimen name="projects_list_item_background_stroke_width">2dp</dimen>
     <dimen name="projects_rv_collapsed_width">80dp</dimen>
-    <dimen name="projects_rv_collapsed_selected_item_width">82dp</dimen>
+    <dimen name="projects_rv_collapsed_selected_item_width">90dp</dimen>
     <!--<dimen name="projects_rv_collapsed_width">112dp</dimen>-->
     <!--<dimen name="projects_rv_collapsed_selected_item_width">128dp</dimen>-->
     <dimen name="sv_margin">8dp</dimen>

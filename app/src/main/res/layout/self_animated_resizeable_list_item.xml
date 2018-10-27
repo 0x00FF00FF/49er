@@ -9,7 +9,7 @@
         android:gravity="center|start"
         android:background="@drawable/transient_semitransparent_rectangle"
         tools:background="@drawable/transient_semitransparent_rectangle"
-        tools:layout_height="48dp"
+        tools:layout_height="64dp"
 >
 
     <org.rares.ratv.rotationaware.RotationAwareTextView
@@ -32,6 +32,10 @@
             app:target_text_size="10sp"
             app:original_margin_left="@dimen/sv_margin"
             app:target_margin_left="0dp"
+            app:original_shadow_radius="0dp"
+            app:target_shadow_radius="0dp"
+            app:original_shadow_color="@color/pureWhite"
+            app:target_shadow_color="@color/pureWhite"
             tools:background="@color/projects.default.bae0e7"
             tools:text="something here like a project's name"
     />

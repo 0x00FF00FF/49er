@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ResizeableLayoutManager {
 
-    void setSelectedPosition(int selectedPosition);
+    void setSelected(int selectedPosition, View selectedView);
     void setMaxItemElevation(int maxItemElevation);
     void setItemCollapsedSelectedWidth(int itemCollapsedSelectedWidth);
     void setItemCollapsedWidth(int itemCollapsedWidth);

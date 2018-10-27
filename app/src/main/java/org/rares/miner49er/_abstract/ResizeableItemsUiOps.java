@@ -1,16 +1,25 @@
 package org.rares.miner49er._abstract;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.Guideline;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import butterknife.Unbinder;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.processors.PublishProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
@@ -23,6 +32,7 @@ import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author rares
@@ -48,9 +58,7 @@ public abstract class ResizeableItemsUiOps
 
     protected List<Unbinder> unbinderList = new ArrayList<>();
 
-    @Getter
-    @Setter
-    private RecyclerView rv;
+    protected RecyclerView rv;
 
     @Getter
     private ListState rvState = ListState.LARGE;
@@ -59,6 +67,8 @@ public abstract class ResizeableItemsUiOps
 
     protected Repository repository;
 
+    protected Guideline guideline = null;
+
     protected int indigo = 0;
     protected int white = 0;
     protected int bgLeft = 0;
@@ -66,37 +76,51 @@ public abstract class ResizeableItemsUiOps
     protected int bgLeftSelected = 0;
     protected int bgRightSelected = 0;
 
+    private CompositeDisposable disposables = new CompositeDisposable();
+    private Disposable rvWidthDisposable = null;
+
+    private long lastUserAction = -1;
+
     @Override
     public void resetLastSelectedId() {
-        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
+        AbstractAdapter _tempAdapter = (AbstractAdapter) rv.getAdapter();
         _tempAdapter.setLastSelectedPosition(-1);
     }
 
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
+        Log.e(TAG, "onListItemClick: _________________________________________");
+        long now = System.currentTimeMillis();
+        if (lastUserAction != -1) {
+            if (now - lastUserAction < 300) {
+                Log.w(TAG, "resizeRv: EATEN EVENT");
+                lastUserAction = now;
+                return false;
+            }else{
+                Log.w(TAG, "onListItemClick: " + now + "-" + lastUserAction + "=" + (now - lastUserAction) );
+            }
+        }
+        lastUserAction = now;
+
         int adapterPosition = holder.getAdapterPosition();
         boolean enlarge = selectItem(adapterPosition);
 
-        domainLink.onParentSelected(holder.getItemProperties(), enlarge);
+//        domainLink.onParentSelected(holder.getItemProperties(), enlarge);
 
-        RecyclerView.LayoutManager layoutManager = getRv().getLayoutManager();
+        RecyclerView.LayoutManager layoutManager = rv.getLayoutManager();
 
         if (layoutManager instanceof ResizeableLayoutManager) {
             ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
             {
-
-                /*-
-                FIXME
-                this block smells.
-                the layout manager needs to get the view itself, not to have it supplied;
-                the way this is now, there can be differences between the selected position and the selected view
-                 -*/
-
-                mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
-                List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
-                for (ItemAnimationDto ia : animatedItemsList) {
-                    resizeAnimated(ia);
+                if (enlarge) {
+                    mgr.setSelected(-1, null);
+                } else {
+                    mgr.setSelected(adapterPosition, holder.itemView);
                 }
+//                List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
+//                for (ItemAnimationDto ia : animatedItemsList) {
+//                    resizeAnimated(ia);
+//                }
             }
         }
 
@@ -112,7 +136,7 @@ public abstract class ResizeableItemsUiOps
 
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
-        AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
+        AbstractAdapter _tempAdapter = ((AbstractAdapter) rv.getAdapter());
         final int prevSelected = _tempAdapter.getLastSelectedPosition();
         _tempAdapter.setPreviouslySelectedPosition(prevSelected);
 
@@ -120,7 +144,7 @@ public abstract class ResizeableItemsUiOps
 
         rvState = enlarge ? ListState.LARGE : ListState.SMALL;
 
-        dispatchResizeEvents(enlarge);
+        dispatchStartResizeEvents(enlarge);
 
         Log.d(TAG, "selectItem: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
         if (enlarge) {
@@ -132,44 +156,184 @@ public abstract class ResizeableItemsUiOps
         return false;
     }
 
-    private void dispatchResizeEvents(boolean enlarge) {
+    private void dispatchStartResizeEvents(boolean enlarge) {
         for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
             if (enlarge) {
-                resizeListener.onRvGrow();
+                resizeListener.onRvExpanding();
             } else {
-                resizeListener.onRvShrink();
+                resizeListener.onRvCollapsing();
             }
         }
     }
 
-    /**
-     * Resize the projects recycler view based on the enlarge param
-     *
-     * @param enlarge if true, makes the rv as big as its parent.
-     *                also determines if the parent rv gets elevated over
-     *                the child domain rv (if the device supports the operation)
-     */
-    protected void resizeRv(boolean enlarge) {
-        boolean animationEnabled = true;
-        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
-//        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
-        int width = enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth;
-        int elevation = enlarge ? 0 : (_tempAdapter == null ? 0 : _tempAdapter.getMaxElevation());
-
-        ItemAnimationDto itemAnimationDto = new ItemAnimationDto(getRv(), elevation, width);
-        if (animationEnabled) {
-            resizeAnimated(itemAnimationDto);
-        } else {
-            getRv().getLayoutParams().width = width;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                getRv().setElevation(elevation);
+    private void dispatchEndResizeEvents(boolean enlarge) {
+        for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
+            if (enlarge) {
+                resizeListener.onRvExpanded();
+            } else {
+                resizeListener.onRvCollapsed();
             }
-            getRv().requestLayout();
         }
+    }
+
+    private void dispatchPostProcess(boolean enlarge, int selectedPosition, PublishProcessor processor) {
+        Log.d(TAG, "dispatchPostProcess() called");
         // post process views
         if (resizePostProcessor != null) {
-            resizePostProcessor.postProcess(getRv());
+            resizePostProcessor.postProcess(rv, processor);
         }
+    }
+
+    protected void resizeRv(boolean enlarge) {
+        Log.i(TAG, "resizeRv: START");
+        boolean animationEnabled = true;
+        AbstractAdapter _tempAdapter = (AbstractAdapter) rv.getAdapter();
+        if (_tempAdapter == null) {
+            return;
+        }
+        final int selectedPos = _tempAdapter.getLastSelectedPosition();
+        int rvParentWidth = ((View) rv.getParent()).getWidth();
+//        int width = enlarge ? 0 : rvParentWidth-rvCollapsedWidth; // guideline width   // -> enlarge/collapse strategy
+        int width = enlarge ? 0 : -rvParentWidth + rvCollapsedWidth;// x translation    //
+        int elevation = enlarge ? 0 : _tempAdapter.getMaxElevation();
+
+        ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) guideline.getLayoutParams();
+
+        ItemAnimationDto itemAnimationDto = new ItemAnimationDto.Builder(guideline).elevation(elevation).width(width).build();
+
+        ViewPropertyAnimator rvViewAnimator = rv.animate();
+
+        if (animationEnabled) {
+            // if the user double clicks the selected item or clicks while translation is happening
+            // cancel the EAR runnable that puts the guideline at collapsed position
+            rvViewAnimator.setListener(null).cancel();
+            if (rvWidthDisposable != null && !rvWidthDisposable.isDisposed()) {
+                rvWidthDisposable.dispose();
+            }
+            if (enlarge) {                    // do the SELECTED->NORMAL collapse
+                PublishProcessor<Boolean> animationEndedProcessor = PublishProcessor.create();
+                rvWidthDisposable = animationEndedProcessor
+                        .debounce(80, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((event) -> {
+                            if (lp.guideEnd != width) { // no use to rerun code if the guideline is already at its place
+                                // before moving on with putting the guideline back
+                                // and translating
+                                lp.guideEnd = width; // (0)
+                                guideline.setLayoutParams(lp);
+                                rv.setTranslationX(-rvParentWidth + rvCollapsedWidth);
+                            }
+                            if (rv.getTranslationX() != 0) {
+                                rvViewAnimator
+                                        .setStartDelay(200)
+                                        .translationX(0);
+                            }
+                        });
+                disposables.add(rvWidthDisposable);
+                dispatchPostProcess(true, selectedPos, animationEndedProcessor);
+            } else {
+                rvViewAnimator
+                        .setStartDelay(rv.getTranslationX() == width ? 0 : 200)
+                        .translationX(width);
+/*                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                dispatchPostProcess(false, selectedPos);
+
+                                ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) g.getLayoutParams();
+                                if (lp.guideEnd != -width) {
+                                    for (int i = 0; i < rv.getChildCount(); i++) {
+                                        RecyclerView.ViewHolder vh = rv.getChildViewHolder(rv.getChildAt(i));
+                                        if (vh instanceof ItemViewAnimator) {
+                                            ((ItemViewAnimator) vh).validateItem(true,
+                                                    vh.getAdapterPosition() == selectedPos);
+                                        }
+                                    }
+
+                                    lp.guideEnd = -width;
+                                    g.setLayoutParams(lp);
+                                    rv.setTranslationX(0);
+                                }
+
+                            }
+                        });*/
+                rvViewAnimator
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                // get Guideline per extended class
+                                if (ear == null) {
+                                    ear = new EndAnimationRunnable(width, guideline);
+                                } else {
+                                    ear.g = guideline;
+                                    ear.guidelinePosition = width;
+                                }
+                                ear.selectedPosition = selectedPos;
+                                ear.enlarge = false;
+                                rv.post(ear);
+                            }
+                        });
+            }
+            rvViewAnimator.start();
+//            resizeRvAnimated(itemAnimationDto);
+        } else {
+            rv.getLayoutParams().width = width;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                rv.setElevation(elevation);
+            }
+            rv.requestLayout();
+        }
+        dispatchEndResizeEvents(enlarge);
+        Log.i(TAG, "resizeRv: END");
+    }
+
+    private class EndAnimationRunnable implements Runnable {
+        public boolean ok = true;
+        int selectedPosition;
+        boolean enlarge;
+
+        int guidelinePosition;
+        Guideline g;
+
+        EndAnimationRunnable(int guidelinePosition, Guideline guideline) {
+            this.g = guideline;
+            this.guidelinePosition = guidelinePosition;
+        }
+
+        @Override
+        public void run() {
+            if (ok) {
+                ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) g.getLayoutParams();
+                Log.w(TAG, "run:" + lp.guideEnd + "!=" + -guidelinePosition);
+                if (lp.guideEnd != -guidelinePosition) {
+                    lp.guideEnd = -guidelinePosition;
+                    g.setLayoutParams(lp);
+                    rv.setTranslationX(0);
+                }
+                dispatchPostProcess(enlarge, selectedPosition, null);
+            }
+        }
+    }
+
+    protected EndAnimationRunnable ear = null;
+
+    protected ValueAnimator.AnimatorUpdateListener rvResizeListener = animation -> {
+        int guidelinePosition = (int) animation.getAnimatedValue("guidelinePosition");
+        ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) guideline.getLayoutParams();
+        Log.i(TAG, "guideline position: " + guidelinePosition + " " + lp.guideEnd);
+
+        guideline.setGuidelineEnd(guidelinePosition);
+    };
+
+    private void resizeRvAnimated(final ItemAnimationDto animatedItem) {
+        final View v = animatedItem.getAnimatedView();
+        ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) v.getLayoutParams();
+        int startWidth = lp.guideEnd;
+        int endWidth = animatedItem.getWidth();
+        PropertyValuesHolder widthHolder = PropertyValuesHolder.ofInt("guidelinePosition", startWidth, endWidth);
+        ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(widthHolder);
+        animator.addUpdateListener(rvResizeListener);
+        animator.start();
     }
 
     /**
@@ -187,7 +351,7 @@ public abstract class ResizeableItemsUiOps
             startElevation = v.getElevation();
         }
 
-        final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
+//        final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
         // background manipulation
 
@@ -206,7 +370,7 @@ public abstract class ResizeableItemsUiOps
 //
 //        LayoutAnimationController animationController = new LayoutAnimationController(animation);
 
-        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE, pvhC, pvhBgCL, pvhBgCR);
+        ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(/*pvhW,*/ pvhE, pvhC, pvhBgCL, pvhBgCR);
 
         anim.removeAllUpdateListeners();
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -233,18 +397,16 @@ public abstract class ResizeableItemsUiOps
                     }
                 }
 
-
-                int animatedW = (int) animation.getAnimatedValue("width");
-                if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == parentWidth) {
-                    animatedW = ViewGroup.LayoutParams.MATCH_PARENT;
-                }
+//                int animatedW = (int) animation.getAnimatedValue("width");
+//                if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == parentWidth) {
+//                    animatedW = ViewGroup.LayoutParams.MATCH_PARENT;
+//                }
                 float animatedE = (float) animation.getAnimatedValue("elevation");
-                v.getLayoutParams().width = animatedW;
+//                v.getLayoutParams().width = animatedW;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     v.setElevation(animatedE);
                 } else {
                     v.bringToFront();
-                    v.invalidate();
                 }
                 v.requestLayout();
             }
@@ -255,7 +417,7 @@ public abstract class ResizeableItemsUiOps
 
     private int getParentWidth(View v) {
         Log.e(TAG, "getParentWidth: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
-        int containerWidth = ((View) getRv().getParent()).getMeasuredWidth();
+        int containerWidth = ((View) rv.getParent()).getMeasuredWidth();
         if (v instanceof ViewGroup) {
             return rvState == ListState.SMALL ? rvCollapsedWidth : containerWidth;
         }
@@ -266,7 +428,7 @@ public abstract class ResizeableItemsUiOps
         resizePostProcessor = postProcessor;
 // TODO: 9/24/18  the following block might not be needed. investigate.
         {
-            RecyclerView.LayoutManager lm = getRv().getLayoutManager();
+            RecyclerView.LayoutManager lm = rv.getLayoutManager();
             if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
                 ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
                         .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
@@ -274,8 +436,10 @@ public abstract class ResizeableItemsUiOps
         }
     }
 
+
     @Override
     public void onPostProcessEnd() {
+        Log.d(TAG, "onPostProcessEnd() called");
         if (rvState == ListState.LARGE) {
             AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
             adapter.setPreviouslySelectedPosition(-1);
@@ -331,16 +495,20 @@ public abstract class ResizeableItemsUiOps
      */
     protected void resetRv() {
         Log.i(TAG, "resetRv:     <   <  < < <<<<<<<<<<<<<<<<<");
-        getRv().setItemViewCacheSize(0);        // rv moves cached views to rvPool...
-        getRv().getRecycledViewPool().clear();  // ...so we clean this too
+        rv.setItemViewCacheSize(0);        // rv moves cached views to rvPool...
+        rv.getRecycledViewPool().clear();  // ...so we clean this too
         clearBindings();
-        getRv().setItemViewCacheSize(14);
+        rv.setItemViewCacheSize(14);
     }
 
     public void shutdown() {
         if (repository != null) {
             repository.shutdown();
         }
+        if (rvWidthDisposable != null) {
+            rvWidthDisposable.dispose();
+        }
+        disposables.dispose();
         clearBindings();
     }
 

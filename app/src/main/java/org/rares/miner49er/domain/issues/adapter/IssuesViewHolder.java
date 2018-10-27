@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
+import io.reactivex.processors.PublishProcessor;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -123,13 +124,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     /**
      * Animates an item to a previously defined schema. No state is held in the holder. <br />
      * Check {@link RotationAwareTextView} innards for more information about the animation.
-     *
-     * @param reverse       specifies if the animation should run backwards
+     *  @param reverse       specifies if the animation should run backwards
      * @param selected      specifies that the current item is selected
      * @param animationTime defines animation time
      */
     @Override
-    public void animateItem(boolean reverse, boolean selected, int animationTime) {
+    public ValueAnimator animateItem(boolean reverse, boolean selected, int animationTime, PublishProcessor<Boolean> processor) {
         // reverse + selected = this item was selected after another one was already selected
         // !reverse + selected = this item is the first to be selected
         // reverse + !selected = this item was not selected and returns to the expanded form
@@ -152,6 +152,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         getAnimator().addListener(animationTextValidator);
         getAnimator().setDuration(animationTime);
         getAnimator().start();
+        return null;
     }
 
 

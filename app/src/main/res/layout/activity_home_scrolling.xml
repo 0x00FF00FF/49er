@@ -7,39 +7,48 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
+        android:clipChildren="false"
         tools:context="org.rares.miner49er.HomeScrollingActivity">
 
-    <LinearLayout
-            android:id="@+id/scroll_views_container"
-            android:layout_width="match_parent"
+    <android.support.constraint.Guideline
+            android:id="@+id/guideline_projects_end"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintGuide_end="0dp"
+            android:orientation="vertical"
+    />
+
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_projects_list"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:orientation="horizontal">
+            android:layoutAnimation="@anim/anim_rv_item"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline_projects_end"
+            app:layout_goneMarginRight="0dp"
+            tools:listitem="@layout/self_animated_resizeable_list_item"
+            tools:itemCount="8"
+    />
 
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_projects_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layoutAnimation="@anim/anim_rv_item"
-                tools:listitem="@layout/self_animated_resizeable_list_item"
-                tools:itemCount="8"
-        />
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_issues_list"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layoutAnimation="@anim/anim_rv_item"
+            android:visibility="gone"
+            app:layout_constraintStart_toEndOf="@id/rv_projects_list"
+            app:layout_goneMarginRight="0dp"
+    />
 
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_issues_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layoutAnimation="@anim/anim_rv_item"
-        />
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_time_entries_list"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:layout_constraintStart_toEndOf="@id/rv_issues_list"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
 
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_time_entries_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-        />
-
-    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab2"

@@ -1,7 +1,9 @@
 package org.rares.miner49er.layoutmanager.postprocessing;
 
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import io.reactivex.processors.PublishProcessor;
 
 // TODO: this seems a bit tangled up
 public interface ResizePostProcessor {
@@ -20,9 +22,14 @@ public interface ResizePostProcessor {
      * animation to the recycler view semi-closed-drawer
      * mechanism and their child views so that the
      * recycler view children could also be animated.
+     *
+     * 10/26/18: added a publish processor that can be used
+     * to announce other components when the animations
+     * have finished. (used with rx.debounce if animations
+     * have delays)
      */
     interface PostProcessor { // a post processor needs to have these:
-        void postProcess(RecyclerView viewGroup);
+        void postProcess(RecyclerView viewGroup, @Nullable PublishProcessor<Boolean> publishProcessor);
 
         PostProcessorValidator getPostProcessorValidator();
 

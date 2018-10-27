@@ -55,8 +55,10 @@ public interface BaseInterfaces {
     }
 
     interface RvResizeListener {
-        void onRvGrow();
-        void onRvShrink();
+        void onRvExpanding();
+        void onRvCollapsing();
+        void onRvExpanded();
+        void onRvCollapsed();
     }
 
     interface ListItemEventListener {

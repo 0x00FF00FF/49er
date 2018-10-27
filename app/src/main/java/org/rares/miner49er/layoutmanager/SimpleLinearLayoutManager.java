@@ -25,8 +25,7 @@ public class SimpleLinearLayoutManager
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    @Setter
-    protected int selectedPosition = -1;    // currently adapter _selected_ position
+    private int selectedPosition = -1;    // currently adapter _selected_ position
 
     @Setter
     protected int maxItemElevation = 0;
@@ -36,6 +35,11 @@ public class SimpleLinearLayoutManager
 
     @Setter
     int itemCollapsedWidth = -1;
+
+    @Override
+    public void setSelected(int selectedPosition, View sv) {
+        this.selectedPosition = selectedPosition;
+    }
 
     @Override
     public void resetState(boolean resetSelectedView) {

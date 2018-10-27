@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import butterknife.BindDimen;
 import butterknife.BindView;
@@ -76,8 +75,8 @@ public class HomeScrollingActivity
 //    @BindView(R.id.toolbar_layout)
 //    CollapsingToolbarLayout clt;
 
-    @BindView(R.id.scroll_views_container)
-    LinearLayout scrollViewsContainer;
+//    @BindView(R.id.scroll_views_container)
+//    LinearLayout scrollViewsContainer;
 
     @BindDimen(R.dimen.projects_rv_collapsed_width)
     int rvCollapsedWidth;

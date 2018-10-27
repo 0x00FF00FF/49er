@@ -2,7 +2,6 @@ package org.rares.miner49er.layoutmanager;
 
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -27,6 +26,7 @@ import static android.support.v7.widget.RecyclerView.SCROLL_STATE_SETTLING;
  * @since 29.03.2018
  */
 
+@SuppressWarnings({"PointlessBooleanExpression", "SingleStatementInBlock", "ConstantConditions"})
 public class StickyLinearLayoutManager
         extends RecyclerView.LayoutManager
         implements ResizeableLayoutManager,
@@ -122,16 +122,33 @@ public class StickyLinearLayoutManager
     }
 
     @Override
-    public void setSelectedPosition(int selectedPosition) {
+    public void setSelected(int selectedPosition, View sv) {
 //        if (DEBUG && METHOD_DEBUG)
 //            Log.d(TAG, "setSelectedPosition() called with: " +
 //                    "selectedPosition = [" + selectedPosition + "]");
         this.selectedPosition = selectedPosition;
+        selectedView = sv;
+        if (sv != null) {
+            setInitialPosition(sv);
+        }
+        /*
+        boolean found = false;
+        for (int i = 0; i < getChildCount(); i++) {
+            View v = getChildAt(i);
+            if (v.hashCode() == sv.hashCode()) {
+                found =true;
+                break;
+            }
+        }
+        if (!found) {
+            Log.w(TAG, "Selected view not child of LM!");
+        }
+        */
     }
 
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        final boolean METHOD_DEBUG = false;
+        final boolean METHOD_DEBUG = true;
 
         if (DEBUG && METHOD_DEBUG) {
             Log.v(TAG, "onLayoutChildren: remaining scroll >>> " + state.getRemainingScrollVertical());
@@ -559,7 +576,7 @@ public class StickyLinearLayoutManager
                 l = (int) Math.pow(2, 6 - i) * 3;
 
                 int lpWidth = item.getLayoutParams().width;
-                r = lpWidth == -1 ? getWidth() : lpWidth;
+                r = lpWidth == ViewGroup.LayoutParams.MATCH_PARENT ? getWidth() : lpWidth;
 
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     addView(item);
@@ -583,8 +600,19 @@ public class StickyLinearLayoutManager
                 // measure and lay out children after the post process validation
                 // so that we know we act on correct view positioning.
                 measureChildWithMargins(item, 0, 0);
-                layoutDecoratedWithMargins(item, 0, t, r, b);
 
+                if (i == selectedPosition) {
+                    Log.e(TAG, "drawChildren: >>>>>> " + r);
+//                    if (getWidth() < itemCollapsedSelectedWidth) {
+//                        r = itemCollapsedSelectedWidth;
+//                    } else {
+//                        r = getWidth();
+//                    }
+                    layoutDecoratedWithMargins(item, 0, t, r, b);
+                } else {
+                    Log.v(TAG, "drawChildren: >>>>>> " + item.getLayoutParams().width);
+                    layoutDecoratedWithMargins(item, 0, t, r, b);
+                }
 //                if (DEBUG && METHOD_DEBUG) {
 //                    Log.d(TAG, "drawChildren: newly added view: " + TextUtils.getItemText(item) +
 //                            "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
@@ -627,12 +655,15 @@ public class StickyLinearLayoutManager
                     }
                 }
 
+                // if scrolling: because when selecting the item,
+                // it has animation that modifies its width.
+                // so only do layout when not animating
                 if (scrolling) {
                     measureChildWithMargins(selectedView, 0, 0);
                     layoutDecoratedWithMargins(selectedView,
                             0,
                             t,
-                            itemCollapsedSelectedWidth,
+                            getWidth() < itemCollapsedSelectedWidth ? itemCollapsedSelectedWidth : getWidth(),
                             b);
                 }
             }
@@ -648,6 +679,7 @@ public class StickyLinearLayoutManager
 //                  int y = location[1];
                     Log.v(TAG, "drawChildren: [" + i + "][" +
                                     v.getY() + "-" + (v.getY() + decoratedChildHeight) + "][" +
+                                    v.getX() + "-" + (v.getX() + decoratedChildWidth) + "][" +
                                     getPosition(v) + "][" +
 //                                  x + "," + y + "][" +
                                     v.getWidth() + "][" +
@@ -763,58 +795,66 @@ public class StickyLinearLayoutManager
     }
 
     public List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent) {
-        boolean animationEnabled = true;
+//        boolean animationEnabled = true;
         List<ItemAnimationDto> animatedItems = new ArrayList<>();
-
-        int elevation;
-        int width;
-
-        if (expandToMatchParent) {
-            if (!animationEnabled) {
-                itemView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    itemView.setElevation(0);
-                }
-            }
-            elevation = 0;
-            width = ViewGroup.LayoutParams.MATCH_PARENT;
-        } else {
-            setInitialPosition(itemView);
-            if (!animationEnabled) {
-                itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    itemView.setElevation(maxItemElevation);
-                }
-            }
-            elevation = maxItemElevation;
-            width = itemCollapsedSelectedWidth;
-        }
-
-        if (animationEnabled) {
-            animatedItems.add(new ItemAnimationDto(itemView, elevation, width));
-        }
-
-        if (selectedView == null) {
-//            requestLayout();
-            selectedView = itemView;
-            return animatedItems;
-        }
-
-        if (itemView != selectedView) {
-            if (!animationEnabled) {
-                selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    selectedView.setElevation(0);
-                }
-            }
-            if (animationEnabled) {
-                animatedItems.add(new ItemAnimationDto(selectedView, 0, ViewGroup.LayoutParams.MATCH_PARENT));
-            }
-//            requestLayout();
-            selectedView = itemView;
-        } else {
-            selectedView = null;
-        }
+//
+//        int elevation;
+//        int width;
+//
+//        if (expandToMatchParent) {
+//            if (!animationEnabled) {
+//                itemView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    itemView.setElevation(0);
+//                }
+//            }
+//            elevation = 0;
+//            width = ViewGroup.LayoutParams.MATCH_PARENT;
+//        } else {
+//            setInitialPosition(itemView);
+//            if (!animationEnabled) {
+//                itemView.getLayoutParams().width = itemCollapsedSelectedWidth;
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    itemView.setElevation(maxItemElevation);
+//                }
+//            }
+//            elevation = maxItemElevation;
+//            width = itemCollapsedSelectedWidth;
+//        }
+//
+//        if (animationEnabled) {
+//            ItemAnimationDto idto = new ItemAnimationDto
+//                    .Builder(itemView)
+//                    .elevation(elevation)
+//                    .width(width)
+//                    .build();
+//            animatedItems.add(idto);
+//        }
+//
+//        if (selectedView == null) {
+//            selectedView = itemView;
+//            return animatedItems;
+//        }
+//
+//        if (itemView != selectedView) {
+//            if (!animationEnabled) {
+//                selectedView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    selectedView.setElevation(0);
+//                }
+//            }
+//            if (animationEnabled) {
+//                ItemAnimationDto idto = new ItemAnimationDto
+//                        .Builder(selectedView)
+//                        .elevation(0)
+//                        .width(ViewGroup.LayoutParams.MATCH_PARENT)
+//                        .build();
+//                animatedItems.add(idto);
+//            }
+//            selectedView = itemView;
+//        } else {
+//            selectedView = null;
+//        }
         return animatedItems;
     }
 
@@ -1292,7 +1332,8 @@ public class StickyLinearLayoutManager
 
     @Override
     public void onScrollStateChanged(int state) {
-        boolean METHOD_DEBUG = false;
+        boolean DEBUG = true;
+        boolean METHOD_DEBUG = true;
         if (SCROLL_STATE_IDLE == state) {
             if (DEBUG && METHOD_DEBUG) {
                 Log.i(TAG, "onScrollStateChanged: IDLE");

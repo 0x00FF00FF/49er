@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import io.reactivex.processors.PublishProcessor;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 
@@ -14,7 +15,7 @@ public class SimpleItemRotator extends AbstractItemRotator {
     }
 
     @Override
-    public void rotateItems(ViewGroup viewGroup) {
+    public void rotateItems(ViewGroup viewGroup, PublishProcessor processor) {
         RecyclerView rv = (RecyclerView) viewGroup;
         AbstractAdapter _tempAdapter = (AbstractAdapter) rv.getAdapter();
 

@@ -28,6 +28,8 @@ public class NoWidthUpdateListener extends RotationAwareUpdateListener {
         int mt = (int) animation.getAnimatedValue(RotationAware.MARGIN_TOP);
         int mr = (int) animation.getAnimatedValue(RotationAware.MARGIN_RIGHT);
         int mb = (int) animation.getAnimatedValue(RotationAware.MARGIN_BOTTOM);
+        int sr = (int) animation.getAnimatedValue(RotationAware.SHADOW_RADIUS);
+        int sc = (int) animation.getAnimatedValue(RotationAware.SHADOW_COLOR);
 
         animatedView.setRotation(rotation);
         ViewGroup.MarginLayoutParams mlp = null;
@@ -49,6 +51,10 @@ public class NoWidthUpdateListener extends RotationAwareUpdateListener {
         animatedView.setTextColor(tc);
         animatedView.setBackgroundColor(bgc);
         animatedView.setTextSize(ts);
+
+        animatedView.setShadowRadius(sr);
+        animatedView.setShadowColor(sc);
+        animatedView.setShadowLayer();
 
         if (mlp != null) {
             animatedView.setLayoutParams(mlp);

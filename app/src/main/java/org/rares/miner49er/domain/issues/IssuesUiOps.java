@@ -24,11 +24,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private IssuesRepository issuesRepository = new IssuesRepository();
 
     public IssuesUiOps(RecyclerView rv) {
-        setRv(rv);
+       this.rv=rv;
         issuesRepository.setup();
         repository = issuesRepository;
 
-/*        Resources res = getRv().getResources();
+/*        Resources res = rv.getResources();
         indigo = res.getColor(R.color.indigo_100_grayed);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left_issues);
@@ -36,7 +36,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected_issues);
         bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);*/
 
-        Resources res = getRv().getResources();
+        Resources res = rv.getResources();
         indigo = res.getColor(R.color.indigo_100_grayed);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left);
@@ -48,7 +48,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentSelected(ItemViewProperties projectProperties, boolean parentWasEnlarged) {
 
-        IssuesAdapter issuesAdapter = (IssuesAdapter) getRv().getAdapter();
+        IssuesAdapter issuesAdapter = (IssuesAdapter) rv.getAdapter();
 
         // the following (if) block is here to resize issue items
         // after selecting another project while one of the
@@ -57,7 +57,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             int selected = issuesAdapter.getLastSelectedPosition();
             if (selected != -1) {
                 ResizeableItemViewHolder vh = (ResizeableItemViewHolder)
-                        getRv().findViewHolderForAdapterPosition(selected);
+                        rv.findViewHolderForAdapterPosition(selected);
                 if (vh != null) {
                     onListItemClick(vh);
                 }
@@ -74,7 +74,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             // minimal.
             if (unbinderList.size() > 40) {
                 repository.shutdown();
-                getRv().setAdapter(null);
+                rv.setAdapter(null);
                 resetRv();
             } else if (issuesAdapter != null) {
                 issuesAdapter.clearData();
@@ -83,7 +83,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             if (issuesAdapter != null) {
                 onParentChanged(projectProperties);
             } else {
-                getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+                rv.setAdapter(createNewIssuesAdapter(projectProperties));
             }
         }
         resizeRv(!parentWasEnlarged);
@@ -91,11 +91,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentChanged(ItemViewProperties itemViewProperties) {
-        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
-//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+        RecyclerView.LayoutManager _tempLm = rv.getLayoutManager();
+//        AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
 //        int lastSelectedPosition = adapter.getLastSelectedPosition();
 //        boolean somethingSelected = lastSelectedPosition > -1;
-//        getRv().scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
+//        rv.scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
 
         if (_tempLm instanceof ResizeableLayoutManager) {
             ((ResizeableLayoutManager) _tempLm).resetState(true);
@@ -109,7 +109,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentRemoved(ItemViewProperties projectProperties) {
         if (projectProperties != null) {
-            getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+            rv.setAdapter(createNewIssuesAdapter(projectProperties));
         }
         resizeRv(true);
         domainLink.onParentRemoved(projectProperties);

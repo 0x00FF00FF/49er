@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import io.reactivex.processors.PublishProcessor;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.util.TextUtils;
 
@@ -30,7 +31,7 @@ public abstract class AbstractItemRotator
     }
 
     @Override
-    public void postProcess(RecyclerView rv) {
+    public void postProcess(RecyclerView rv, PublishProcessor<Boolean> processor) {
         RecyclerView.Adapter _tempAdapter = rv.getAdapter();
         if (_tempAdapter == null) {
             Log.w(TAG, "postProcess: SKIP ITEM ROTATION, adapter is null.");
@@ -43,7 +44,7 @@ public abstract class AbstractItemRotator
                     "adapter item count does not match rv child count! " +
                     "(" + ic + " vs " + cc + ")");
         } else {
-            rotateItems(rv);
+            rotateItems(rv, processor);
         }
     }
 
