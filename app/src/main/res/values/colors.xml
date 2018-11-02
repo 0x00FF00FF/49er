@@ -13,6 +13,8 @@
     <color name="semitransparent_black_left_issues">#99000000</color>
     <color name="semitransparent_black_left_selected_issues">#66000000</color>
 
+    <color name="transient_semitransparent_background_margin">@color/indigo.100_blacked</color>
+
     <!--material.blueGray-->
     <color name="blueGray.050">#ECEFF1</color>
     <color name="blueGray.100">#CFD8DC</color>

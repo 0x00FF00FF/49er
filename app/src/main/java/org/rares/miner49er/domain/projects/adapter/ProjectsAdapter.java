@@ -16,7 +16,7 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectDiff;
-import org.rares.miner49er.domain.projects.viewholder.RotatingViewHolder;
+import org.rares.miner49er.domain.projects.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.util.TextUtils;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.List;
  */
 
 public class ProjectsAdapter
-        extends AbstractAdapter<RotatingViewHolder> {
+        extends AbstractAdapter<ProjectsViewHolder> {
 
     private static final String TAG = ProjectsAdapter.class.getSimpleName();
 
@@ -66,14 +66,14 @@ public class ProjectsAdapter
 
     @NonNull
     @Override
-    public RotatingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ProjectsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context ctx = parent.getContext();
 
         View projectItemView =
                 LayoutInflater.from(ctx)
-                        .inflate(R.layout.self_animated_resizeable_list_item, parent, false);
+                        .inflate(R.layout.list_item_project, parent, false);
 
-        final RotatingViewHolder pvh = new RotatingViewHolder(projectItemView);
+        final ProjectsViewHolder pvh = new ProjectsViewHolder(projectItemView);
 
         pvh.setItemClickListener(eventListener);
 
@@ -89,7 +89,7 @@ public class ProjectsAdapter
 
 
     @Override
-    public void onBindViewHolder(@NonNull RotatingViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (holder.isToBeRebound()) {
 //            holder.bindData(data.get(position), getLastSelectedPosition() != -1);

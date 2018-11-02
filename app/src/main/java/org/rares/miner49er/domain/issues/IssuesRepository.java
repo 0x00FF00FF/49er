@@ -195,7 +195,7 @@ public class IssuesRepository extends Repository<Issue> {
             converted.setColor(
                     UiUtil.getBrighterColor(
                             parentProperties.getItemBgColor(),
-                            (count++ % 2 == 0 ? 3 : 4) * 0.0250F));
+                            (count++ % 2 == 0 ? 2 : 4) * 0.0200F));
             projectDataList.add(converted);
         }
 

@@ -159,7 +159,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
             converted.setColor(
                     UiUtil.getBrighterColor(
                             parentProperties.getItemBgColor(),
-                            (count++ % 2 == 0 ? 3 : 4) * 0.0250F));
+                            (count++ % 2 == 0 ? 1 : 4) * 0.0100F));
 
             timeEntryDataList.add(converted);
         }

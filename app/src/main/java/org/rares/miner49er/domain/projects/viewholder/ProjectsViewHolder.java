@@ -11,6 +11,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
+import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
 import org.rares.miner49er.R;
+import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
@@ -39,9 +41,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 
-public class RotatingViewHolder extends ResizeableItemViewHolder implements org.rares.miner49er._abstract.ItemViewAnimator {
+public class ProjectsViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator {
 
-    private static final String TAG = RotatingViewHolder.class.getSimpleName();
+    private static final String TAG = ProjectsViewHolder.class.getSimpleName();
 
     @BindView(R.id.resizeable_list_item_container)
     ConstraintLayout topContainer;
@@ -72,7 +74,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 
     private int infoLabelId = -1;
 
-    public RotatingViewHolder(View itemView) {
+    public ProjectsViewHolder(View itemView) {
         super(itemView);
         setItemProperties(projectViewProperties);
         animationUpdateListener = new NoWidthUpdateListener(projectNameTextView);
@@ -120,7 +122,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         GlideApp
                 .with(itemView)
                 .load(pictureUrl)
-                .onlyRetrieveFromCache(true)
+//                .onlyRetrieveFromCache(true)
                 .placeholder(R.drawable.skull)
 //                .transform(new PositionedCrop(0.5F, 0.5F))
                 .into(projectImage);
@@ -166,7 +168,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
      * @param animationTime defines animation time
      */
     @Override
-    public void animateItem(boolean reverse, boolean selected, int animationTime) {
+    public ValueAnimator animateItem(boolean reverse, boolean selected, int animationTime) {
         // reverse + selected = this item was selected after another one was already selected
         // !reverse + selected = this item is the first to be selected
         // reverse + !selected = this item was not selected and returns to the expanded form
@@ -189,7 +191,8 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
 
         getAnimator().addListener(animationTextValidator);
         getAnimator().setDuration(animationTime);
-        getAnimator().start();
+//        getAnimator().start();
+        return getAnimator();
     }
 
     /**
@@ -218,14 +221,16 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             projectNameTextView.setBackgroundColor(collapsed ? animationDTO.maxBackgroundColor : animationDTO.minBackgroundColor);
 
             validatePosition(collapsed, animationDTO);
-//            projectNameTextView.setEllipsize(!collapsed);
+            projectNameTextView.setEllipsize(!collapsed);
         }
 
         projectLogoView.setAlpha(!collapsed ? .8F : selected ? 1 : 0.3F);
 
         if (infoLabel != null) {
             float currentAlpha = infoLabel.getAlpha();
+
             toggleInfoContainerVisiblity(!collapsed);
+
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
                 infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
             }
@@ -313,6 +318,12 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         final int maxMarginRight = projectNameTextView.getTargetMarginRight();
         final int maxMarginBottom = projectNameTextView.getTargetMarginBottom();
 
+        final int minShadowColor = projectNameTextView.getOriginalShadowColor();
+        final int maxShadowColor = projectNameTextView.getTargetShadowColor();
+
+        final int minShadowRadius = projectNameTextView.getOriginalShadowRadius();
+        final int maxShadowRadius = projectNameTextView.getTargetShadowRadius();
+
         adto.minRotation = startRotation;
         adto.maxRotation = endRotation;
         adto.minWidth = startWidth;
@@ -333,6 +344,10 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         adto.maxMarginTop = maxMarginTop;
         adto.maxMarginRight = maxMarginRight;
         adto.maxMarginBottom = maxMarginBottom;
+        adto.minShadowColor = minShadowColor;
+        adto.maxShadowColor = maxShadowColor;
+        adto.minShadowRadius = minShadowRadius;
+        adto.maxShadowRadius = maxShadowRadius;
 
         ViewGroup.LayoutParams lp = projectNameTextView.getLayoutParams();
         ViewGroup.MarginLayoutParams mlp = null;
@@ -366,6 +381,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
                 adto.minBackgroundColor = projectNameTextView.getBackgroundColor();
                 adto.minTextColor = projectNameTextView.getTextPaint().getColor();
                 adto.maxTextColor = 0xFFFFFFFF;
+                adto.maxShadowRadius = 8 * 3;
 //                adto.maxBackgroundColor = 0x77FFFFFF;
 
                 if (mlp != null) {
@@ -383,6 +399,8 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
                 adto.minHeight = projectNameTextView.getHeight();
                 adto.minBackgroundColor = projectNameTextView.getBackgroundColor();
                 adto.minTextColor = projectNameTextView.getTextPaint().getColor();
+                adto.minShadowRadius = projectNameTextView.getShadowRadius();
+                adto.minShadowColor = projectNameTextView.getShadowColor();
 
                 if (mlp != null) {
                     adto.minMarginLeft = mlp.leftMargin;
@@ -462,6 +480,11 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);
 
+        infoLabel.setHorizontallyScrolling(false);
+        infoLabel.setLines(1);
+        infoLabel.setSingleLine();
+        infoLabel.setEllipsize(TruncateAt.END);
+
         int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
         infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
@@ -482,14 +505,17 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             lp.bottomMargin = 0;
             projectNameTextView.setLayoutParams(lp);
         }
-        // TODO: animate using constraintSet
 
         toggleInfoContainerVisiblity(!collapsed);
 
         topContainer.addView(infoLabel);
 
+        projectLogoView.bringToFront();
+
         startInfoContainerFade(infoLabel.getAlpha());
     }
+
+
 
     class AnimationTextValidator extends AnimatorListenerAdapter {
         boolean reverse = false;
@@ -507,6 +533,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
                 projectImage.setVisibility(reverse ? View.VISIBLE : View.GONE);
             }
             projectLogoView.setAlpha(reverse ? .8F : selected ? 1 : 0.3F);
+            projectNameTextView.setEllipsize(reverse);
         }
 
         @Override
@@ -514,7 +541,7 @@ public class RotatingViewHolder extends ResizeableItemViewHolder implements org.
             if (!reverse) {
                 toggleItemText(true);
             }
-            projectNameTextView.setGravity(!reverse ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
+//            projectNameTextView.setGravity(!reverse ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
         }
     }
 

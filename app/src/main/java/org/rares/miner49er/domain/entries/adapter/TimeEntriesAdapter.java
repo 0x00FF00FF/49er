@@ -39,7 +39,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
 
         View projectItemView =
                 LayoutInflater.from(ctx)
-                        .inflate(R.layout.time_entry, parent, false);
+                        .inflate(R.layout.list_item_time_entry, parent, false);
 
         final TimeEntriesViewHolder tevh = new TimeEntriesViewHolder(projectItemView);
         tevh.setItemClickListener(eventListener);

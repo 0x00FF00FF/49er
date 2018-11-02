@@ -152,11 +152,18 @@ public abstract class ResizeableItemsUiOps
     protected void resizeRv(boolean enlarge) {
         boolean animationEnabled = true;
         AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
-//        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
         int width = enlarge ? ViewGroup.LayoutParams.MATCH_PARENT : rvCollapsedWidth;
         int elevation = enlarge ? 0 : (_tempAdapter == null ? 0 : _tempAdapter.getMaxElevation());
 
         ItemAnimationDto itemAnimationDto = new ItemAnimationDto(getRv(), elevation, width);
+//        if (rv.getLayoutParams().width != width) {
+//          -> this^ if block introduces a bug:
+//              repro:
+//              select an item,
+//              wait for the rv to be collapsed
+//              tap 3 times on another item in the list
+//              the new item is small (selected) and all of the others are big.
+//              >(i.e. the rv did not collapse when it should have)
         if (animationEnabled) {
             resizeAnimated(itemAnimationDto);
         } else {
@@ -166,6 +173,7 @@ public abstract class ResizeableItemsUiOps
             }
             getRv().requestLayout();
         }
+//        }
         // post process views
         if (resizePostProcessor != null) {
             resizePostProcessor.postProcess(getRv());
@@ -180,14 +188,17 @@ public abstract class ResizeableItemsUiOps
         float endElevation = animatedItem.getElevation();
         final int endWidth = animatedItem.getWidth();
         final int parentWidth = getParentWidth(v);
-        int startAnimationWidth = endWidth == ViewGroup.LayoutParams.MATCH_PARENT ? parentWidth : endWidth;
+        // when horizontal margins are added, we need to adapt the width
+        ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+        int endAnimationWidth = endWidth == ViewGroup.LayoutParams.MATCH_PARENT ? parentWidth - mlp.leftMargin - mlp.rightMargin : endWidth;
+
         int startWidth = v.getWidth();
         float startElevation = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             startElevation = v.getElevation();
         }
-
-        final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, startAnimationWidth);
+//        Log.v(TAG, "resizeAnimated: " + startWidth + " -> " + endAnimationWidth);
+        final PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", startWidth, endAnimationWidth);
         PropertyValuesHolder pvhE = PropertyValuesHolder.ofFloat("elevation", startElevation, endElevation);
         // background manipulation
 
@@ -202,17 +213,12 @@ public abstract class ResizeableItemsUiOps
         PropertyValuesHolder pvhBgCL = PropertyValuesHolder.ofObject("bgColorL", ArgbEvaluator.getInstance(), startLeftBgColor, endLeftBgColor);
         PropertyValuesHolder pvhBgCR = PropertyValuesHolder.ofObject("bgColorR", ArgbEvaluator.getInstance(), startRightBgColor, endRightBgColor);
 
-//        Animation animation = new AnimationSet(true);
-//
-//        LayoutAnimationController animationController = new LayoutAnimationController(animation);
-
         ValueAnimator anim = ValueAnimator.ofPropertyValuesHolder(pvhW, pvhE, pvhC, pvhBgCL, pvhBgCR);
 
         anim.removeAllUpdateListeners();
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-
 
                 Drawable bg = v.getBackground();
                 if (bg instanceof LayerDrawable) {
@@ -235,9 +241,10 @@ public abstract class ResizeableItemsUiOps
 
 
                 int animatedW = (int) animation.getAnimatedValue("width");
-                if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == parentWidth) {
+                if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == endAnimationWidth) {
                     animatedW = ViewGroup.LayoutParams.MATCH_PARENT;
                 }
+
                 float animatedE = (float) animation.getAnimatedValue("elevation");
                 v.getLayoutParams().width = animatedW;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

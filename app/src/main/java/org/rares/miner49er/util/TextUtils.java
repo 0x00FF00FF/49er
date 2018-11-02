@@ -14,6 +14,8 @@ public class TextUtils {
     public static final String TAG = TextUtils.class.getSimpleName();
 
     public static String extractInitials(String s) {
+        final byte MAX_LETTERS = 4;
+
         if (s == null || s.length() == 0) {
             return "";
         }
@@ -55,8 +57,8 @@ public class TextUtils {
 //        Log.i(TAG, "extractInitials: [" + builder.toString() + "]");
         String res = builder.toString();
 
-        if (res.length() > 3) {
-            res = res.substring(0,3);
+        if (res.length() > MAX_LETTERS) {
+            res = res.substring(0, MAX_LETTERS);
         }
         return res;
     }
@@ -99,7 +101,7 @@ public class TextUtils {
         return "";
     }
 
-    private static String clearNamePrefix(String s){
+    private static String clearNamePrefix(String s) {
         String res = s;
 
         res = res.replace("-", " ");

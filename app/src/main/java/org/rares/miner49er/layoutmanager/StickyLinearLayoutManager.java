@@ -179,7 +179,9 @@ public class StickyLinearLayoutManager
             removeAndRecycleView(labRatView, recycler);
         }
 
-        drawChildren(NONE, recycler, state);
+        if (!state.isMeasuring()) {
+            drawChildren(NONE, recycler, state);
+        }
 
         if (DEBUG && METHOD_DEBUG) {
             Log.d(TAG, "onLayoutChildren: -------------------e-n-d----------------------");
@@ -505,14 +507,7 @@ public class StickyLinearLayoutManager
 
                 int r, t, b, l;
                 t = i * decoratedChildHeight - lastTopY;
-//                 overlap items vertically so that
-//                 only one part of the margin will
-//                 be shown
-//                 max top will probably need to be
-//                 adjusted
-//                if (i > 0) {
-//                    t = t - 6 * i;
-//                }
+
                 b = t + decoratedChildHeight;
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     if (t > getHeight() + (decoratedChildHeight * extraChildren)) {
@@ -534,7 +529,6 @@ public class StickyLinearLayoutManager
                 }
 
                 if (i == selectedPosition) {
-                    // TODO: 8/29/18 swap selected view with new view? [contents]
                     if (DEBUG && METHOD_DEBUG) {
                         Log.e(TAG, "drawChildren: " + selectedPosition + " " + selectedView + " scrolling? " + scrolling);
                     }
@@ -556,15 +550,27 @@ public class StickyLinearLayoutManager
                 }
 
 
-                l = (int) Math.pow(2, 6 - i) * 3;
-
-                int lpWidth = item.getLayoutParams().width;
-                r = lpWidth == -1 ? getWidth() : lpWidth;
+                l = 0/*(int) Math.pow(2, 6 - i) * 3*/;
+                RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) item.getLayoutParams();
+                int lpWidth = lp.width;
+                r = lpWidth == -1 ?
+                        // for normal items, draw them with
+                        // the parent size, if they are to
+                        // MATCH their PARENT
+                        getWidth() :
+                        // for selected items, add margins,
+                        // because the margins are omitted
+                        // when resizing the selected item
+                        // ({@link #resizeSelectedItem()})
+                        lpWidth + lp.leftMargin + lp.rightMargin;
+                // ^ adding the margins, so that
+                // measurement will be done correctly
 
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     addView(item);
                 } else {
-                    // when first item in list is selected and sticky, adding items after it.
+                    // when the first item in the list is
+                    // selected and sticky, add items after it.
                     if (selectedPosition == 0) {
                         reversePosition++;
                     }
@@ -572,7 +578,8 @@ public class StickyLinearLayoutManager
                 }
 
                 if (newItemPosition != NONE) {
-                    // only force item state if scrolling while also expanding/collapsing
+                    // only force item state if scrolling
+                    // while also expanding/collapsing
                     if (postProcessorValidator != null) {
                         postProcessorValidator.validateItemPostProcess(
                                 item,
@@ -582,8 +589,34 @@ public class StickyLinearLayoutManager
                 }
                 // measure and lay out children after the post process validation
                 // so that we know we act on correct view positioning.
-                measureChildWithMargins(item, 0, 0);
-                layoutDecoratedWithMargins(item, 0, t, r, b);
+                if (i == selectedPosition) {
+                    measureChildWithMargins(item, 0, 0);
+                    // the lm uses layoutDecorated
+                    // (and not layoutDecoratedWithMargins)
+                    // and adds margins itself
+                    layoutDecorated(item,
+                            l + lp.leftMargin,
+                            t + lp.topMargin,
+                            // remember to add the left margin to
+                            // the layout call!
+                            // right margin is not taken into account here
+                            // because of the nature of the selected item
+                            // which can be larger than the RV
+                            // there probably are situations where
+                            // the lp.rightMargin should be taken
+                            // into account (e.g. if the selected
+                            // item would be smaller than the other ones)
+                            lp.width + lp.leftMargin,
+                            b - lp.bottomMargin);
+                } else {
+                    measureChildWithMargins(item, 0, 0);
+                    // normal items follow normal rules
+                    layoutDecorated(item,
+                            l + lp.leftMargin,
+                            t + lp.topMargin,
+                            r - lp.rightMargin,
+                            b - lp.bottomMargin);
+                }
 
 //                if (DEBUG && METHOD_DEBUG) {
 //                    Log.d(TAG, "drawChildren: newly added view: " + TextUtils.getItemText(item) +
@@ -603,8 +636,10 @@ public class StickyLinearLayoutManager
         } finally {
 
             if (selectedView != null) {
+                int l = 0;
+                int r = itemCollapsedSelectedWidth;
                 int t = (int) selectedView.getY();
-                int b = (int) (selectedView.getY() + decoratedChildHeight);
+                int b = t + decoratedChildHeight;
 
                 // always draw selected item inside the rv viewport
                 // selected item virtual position needs to be updated
@@ -628,12 +663,15 @@ public class StickyLinearLayoutManager
                 }
 
                 if (scrolling) {
-                    measureChildWithMargins(selectedView, 0, 0);
-                    layoutDecoratedWithMargins(selectedView,
-                            0,
-                            t,
-                            itemCollapsedSelectedWidth,
-                            b);
+                    RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) selectedView.getLayoutParams();
+//                    measureChildWithMargins(selectedView, 0, 0);
+                    measureChildWithMargins(selectedView, lp.leftMargin + lp.rightMargin, lp.topMargin + lp.bottomMargin);
+                    layoutDecoratedWithMargins(selectedView, l, t, r, b);
+//                    layoutDecorated(selectedView,
+//                            l + lp.leftMargin,
+//                            t + lp.topMargin,
+//                            r - lp.rightMargin,
+//                            b - lp.bottomMargin);
                 }
             }
 
@@ -768,6 +806,7 @@ public class StickyLinearLayoutManager
 
         int elevation;
         int width;
+        RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
 
         if (expandToMatchParent) {
             if (!animationEnabled) {
@@ -787,7 +826,7 @@ public class StickyLinearLayoutManager
                 }
             }
             elevation = maxItemElevation;
-            width = itemCollapsedSelectedWidth;
+            width = itemCollapsedSelectedWidth - lp.rightMargin - lp.leftMargin;
         }
 
         if (animationEnabled) {

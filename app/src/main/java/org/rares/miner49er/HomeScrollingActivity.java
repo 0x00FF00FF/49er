@@ -33,6 +33,7 @@ import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +148,7 @@ public class HomeScrollingActivity
     }
 
 
-//    @OnClick(R.id.fab)
+    //    @OnClick(R.id.fab)
     public void onClick(View view) {
 
         final SpannableStringBuilder snackbarText = new SpannableStringBuilder();
@@ -220,15 +221,16 @@ public class HomeScrollingActivity
 //        AccDecoration decoration = new AccDecoration();
 //        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
+//        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
         timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
-        final double shrinkRatio = 0.5;
+        final double shrinkRatio = 0.7;
         setupResizeableManager(
                 issuesManager,
                 BaseInterfaces.MAX_ELEVATION_ISSUES,
-                (int) (itemCollapsedSelectedWidth * shrinkRatio),
+                (int) (rvCollapsedWidth * shrinkRatio + UiUtil.pxFromDp(this, 4)),
                 (int) (rvCollapsedWidth * shrinkRatio));
         issuesRV.setLayoutManager(issuesManager);
         issuesUiOps = new IssuesUiOps(issuesRV);
@@ -281,7 +283,7 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
         // supportsPredictiveItemAnimations
-        Log.e(TAG, "setupRV: DONE ON CREATE");
+        Log.e(TAG, "setupRV: DONE");
     }
 
     private void setupResizeableManager(

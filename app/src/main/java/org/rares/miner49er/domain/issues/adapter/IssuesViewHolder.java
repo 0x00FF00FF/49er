@@ -8,13 +8,13 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.os.Build;
+import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
+import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
@@ -44,7 +44,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     private static final String TAG = IssuesViewHolder.class.getSimpleName();
 
     @BindView(R.id.resizeable_list_item_container)
-    RelativeLayout topContainer;
+    ConstraintLayout topContainer;
 
     @BindView(R.id.ratv_resource_name_item)
     RotationAwareTextView issueName;
@@ -129,7 +129,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      * @param animationTime defines animation time
      */
     @Override
-    public void animateItem(boolean reverse, boolean selected, int animationTime) {
+    public ValueAnimator animateItem(boolean reverse, boolean selected, int animationTime) {
         // reverse + selected = this item was selected after another one was already selected
         // !reverse + selected = this item is the first to be selected
         // reverse + !selected = this item was not selected and returns to the expanded form
@@ -147,11 +147,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         animatorHost.configureAnimator(reverse).addUpdateListener(animationUpdateListener);
         setAnimator(animatorHost.animator);
 
-        validatePosition(!reverse, dto);
+        validatePosition(!reverse, selected, dto);
 
         getAnimator().addListener(animationTextValidator);
         getAnimator().setDuration(animationTime);
-        getAnimator().start();
+//        getAnimator().start();
+        return getAnimator();
     }
 
 
@@ -180,21 +181,20 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             issueName.setTextColor(collapsed ? animationDTO.maxTextColor : animationDTO.minTextColor);
             issueName.setBackgroundColor(collapsed ? animationDTO.maxBackgroundColor : animationDTO.minBackgroundColor);
 
-            validatePosition(collapsed, animationDTO);
+            validatePosition(collapsed, selected, animationDTO);
             issueName.setEllipsize(!collapsed);
         }
 
         if (infoLabel != null) {
             float currentAlpha = infoLabel.getAlpha();
 
-            if (infoLabel.getVisibility() == View.GONE) {
-                toggleInfoContainerVisiblity(true);
-            }
-            if (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning())) {
+            toggleInfoContainerVisiblity(!collapsed);
+
+            if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
                 infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
             }
         } else {
-            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources()), fadeAnimationDelay);
+            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
         }
     }
 
@@ -224,8 +224,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         AnimationDTO adto = new AnimationDTO();
         final int startRotation = issueName.getOriginalRotation();
         final int endRotation = issueName.getTargetRotation();
-        final int startWidth = issueName.getOriginalWidth();
-        final int endWidth = 48;
+//        final int startWidth = issueName.getOriginalWidth();
+//        final int endWidth = 48;
         final int startHeight = (int) (originalTextSize * 1.25);
         final int endHeight = itemView.getHeight();
         final int startTextSize = issueName.getOriginalTextSize();
@@ -235,7 +235,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         final int startBackgroundColor = 0; // fully transparent black
         final int endBackgroundColor = issueName.getTargetBackgroundColor();
         final int selectedTextSize = (int) (endTextSize * 1.15F);
-        final int selectedWidth = endWidth * 2;
+//        final int selectedWidth = endWidth * 2;
 
         final int minMarginLeft = issueName.getOriginalMarginLeft();
         final int minMarginTop = issueName.getOriginalMarginTop();
@@ -249,8 +249,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
         adto.minRotation = startRotation;
         adto.maxRotation = endRotation;
-        adto.minWidth = startWidth;
-        adto.maxWidth = endWidth;
+//        adto.minWidth = startWidth;
+//        adto.maxWidth = endWidth;
         adto.minHeight = startHeight;
         adto.maxHeight = endHeight;
         adto.minTextSize = startTextSize;
@@ -295,7 +295,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 adto.minHeight = issueName.getHeight();
                 adto.minTextSize = issueName.getTextSize();
                 adto.minRotation = (int) issueName.getRotation();
-                adto.maxWidth = selectedWidth;
+//                adto.maxWidth = selectedWidth;
                 adto.maxTextSize = selectedTextSize;
                 adto.minBackgroundColor = issueName.getBackgroundColor();
                 adto.minTextColor = issueName.getTextPaint().getColor();
@@ -351,52 +351,36 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     /**
      * Validate size position, alignment, gravity for issueName
      */
-    private void validatePosition(boolean collapsed, AnimationDTO animationDTO) {
-
+    private void validatePosition(boolean collapsed, boolean selected, AnimationDTO animationDTO) {
         issueName.setGravity(collapsed ? RotationAwareTextView.GRAVITY_CENTER : RotationAwareTextView.GRAVITY_START);
 
-        ViewGroup.LayoutParams lp = issueName.getLayoutParams();
-        boolean matchParentWidth = lp.width == ViewGroup.LayoutParams.MATCH_PARENT;
+        ViewGroup.LayoutParams issueNameLp = issueName.getLayoutParams();
 
-        lp.width = matchParentWidth ? ViewGroup.LayoutParams.MATCH_PARENT : collapsed ? animationDTO.maxWidth : animationDTO.minWidth;
-        lp.height = collapsed ? ViewGroup.LayoutParams.MATCH_PARENT : (int) (originalTextSize * 1.25);
+        issueNameLp.width = 0;
+        issueNameLp.height = collapsed ? ViewGroup.LayoutParams.MATCH_PARENT : (int) (originalTextSize * 1.25);
 
         ViewGroup.MarginLayoutParams mlp = null;
-        if (lp instanceof ViewGroup.MarginLayoutParams) {
-            mlp = (ViewGroup.MarginLayoutParams) lp;
+        if (issueNameLp instanceof ViewGroup.MarginLayoutParams) {
+            mlp = (ViewGroup.MarginLayoutParams) issueNameLp;
             mlp.leftMargin = collapsed ? animationDTO.maxMarginLeft : animationDTO.minMarginLeft;
             mlp.topMargin = collapsed ? animationDTO.maxMarginTop : animationDTO.minMarginTop;
             mlp.rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
             mlp.bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
         }
-        RelativeLayout.LayoutParams rlp = null;
-        if (lp instanceof RelativeLayout.LayoutParams) {
-            rlp = (RelativeLayout.LayoutParams) lp;
+
+        ConstraintLayout.LayoutParams issueNameClp = null;
+        if (issueNameLp instanceof ConstraintLayout.LayoutParams) {
+            issueNameClp = (ConstraintLayout.LayoutParams) issueNameLp;
 
             int leftMargin = collapsed ? animationDTO.maxMarginLeft : animationDTO.minMarginLeft;
             int topMargin = collapsed ? animationDTO.maxMarginTop : animationDTO.minMarginTop;
             int rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
             int bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
 
-            rlp.leftMargin = leftMargin;
-            rlp.topMargin = topMargin;
-            rlp.rightMargin = rightMargin;
-            rlp.bottomMargin = bottomMargin;
-
-        }
-        if (rlp != null) {
-//            Log.i(TAG, "validatePosition: " +
-//                    " rlp.width " + rlp.width +
-//                    " rlp.height " + rlp.height +
-//                    " rlp.leftMargin " + rlp.leftMargin
-//            );
-            issueName.setLayoutParams(rlp);
-        } else {
-            if (mlp != null) {
-                issueName.setLayoutParams(mlp);
-            } else {
-                issueName.setLayoutParams(lp);
-            }
+            issueNameClp.leftMargin = leftMargin;
+            issueNameClp.topMargin = topMargin;
+            issueNameClp.rightMargin = rightMargin;
+            issueNameClp.bottomMargin = bottomMargin;
         }
     }
 
@@ -409,7 +393,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      * @param res needed to get the customizable
      *            resources (size, colors etc.)
      */
-    private void addInfoLabelToContainer(Resources res) {
+    private void addInfoLabelToContainer(Resources res, boolean collapsed) {
         if (res == null || issueName == null || topContainer == null || infoLabelId != -1) {
             Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequesites not met.");
             return;
@@ -425,20 +409,35 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);
 
+        infoLabel.setHorizontallyScrolling(false);
+        infoLabel.setLines(1);
+        infoLabel.setSingleLine();
+        infoLabel.setEllipsize(TruncateAt.END);
+
         int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
         infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        lp.addRule(RelativeLayout.BELOW, issueName.getId());
-        lp.addRule(RelativeLayout.ALIGN_LEFT, issueName.getId());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            lp.addRule(RelativeLayout.ALIGN_START, issueName.getId());
-        }
+        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        lp.topToBottom = issueName.getId();
+        lp.leftToLeft = issueName.getId();
+        lp.startToStart = issueName.getId();
+        lp.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+
         infoLabel.setLayoutParams(lp);
 
-        // TODO: 10/3/18 animate issueName y translation before adding the info label
+        if (issueName.getLayoutParams() instanceof ConstraintLayout.LayoutParams) {
+            lp = (ConstraintLayout.LayoutParams) issueName.getLayoutParams();
+            lp.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+            lp.bottomToTop = infoLabel.getId();
+
+            lp.goneBottomMargin = 0;
+            lp.bottomMargin = 0;
+            issueName.setLayoutParams(lp);
+        }
+
+        toggleInfoContainerVisiblity(!collapsed);
 
         topContainer.addView(infoLabel);
 
@@ -460,12 +459,9 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             if (issueName != null) {
                 issueName.setEllipsize(reverse);
             }
+            toggleInfoContainerVisiblity(reverse);
         }
 
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            validateItem(!reverse, selected);
-        }
     }
 
     /**

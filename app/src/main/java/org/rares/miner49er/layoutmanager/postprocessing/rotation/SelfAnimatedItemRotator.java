@@ -1,5 +1,6 @@
 package org.rares.miner49er.layoutmanager.postprocessing.rotation;
 
+import android.animation.ValueAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -16,9 +17,17 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
         super(rv);
     }
 
+
     @Override
     public void rotateItems(ViewGroup viewGroup) {
         int defaultAnimationTime = 200;
+
+        final int SELECTED = 1;
+        final int SELECTED_AFTER_SELECTED = 1 << 1;
+        final int DESELECTED_AFTER_SELECTED = 1 << 2;
+        final int EXPANDED = 1 << 3;
+        final int COLLAPSED = 1 << 4;
+
         RecyclerView rv = (RecyclerView) viewGroup;
         AbstractAdapter _tempAdapter = (AbstractAdapter) rv.getAdapter();
         for (int i = 0; i < viewGroup.getChildCount(); i++) {
@@ -31,6 +40,7 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
 
             // we only work with ItemViewAnimator+ viewHolder
             ItemViewAnimator h;
+            ValueAnimator itemAnimator = null;
 
             if (vh instanceof ItemViewAnimator) {
                 h = ((ItemViewAnimator) vh);
@@ -38,19 +48,26 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
                 continue;
             }
 
+            int state = 0;
+
             if (prevPos == -1 && lastPos != -1) {   // from big to small, no prev item selected
-                h.animateItem(false, vhPos == lastPos, defaultAnimationTime);
+                itemAnimator = h.animateItem(false, vhPos == lastPos, defaultAnimationTime);
+                state = COLLAPSED | (vhPos == lastPos ? SELECTED : 0);
             }
             if (prevPos != -1 && lastPos != -1) {   // changing from one selected item to another
+                state = COLLAPSED;
                 if (vhPos == prevPos) {
-                    h.animateItem(false, false, defaultAnimationTime);
+                    itemAnimator = h.animateItem(false, false, defaultAnimationTime);
+                    state |= DESELECTED_AFTER_SELECTED;
                 }
                 if (vhPos == lastPos) {
-                    h.animateItem(false, true, defaultAnimationTime);
+                    itemAnimator = h.animateItem(false, true, defaultAnimationTime);
+                    state |= SELECTED_AFTER_SELECTED;
+                    state |= SELECTED;
                 }
             }
             if (prevPos != -1 && lastPos == -1) {   // from small to big
-
+                state = EXPANDED;
                 /*
                  * A little inoffensive hack :)
                  * Because the StickyLayoutManager keeps
@@ -63,7 +80,16 @@ public class SelfAnimatedItemRotator extends AbstractItemRotator {
                     ((ResizeableItemViewHolder) h)
                             .bindData(_tempAdapter.getDisplayData(vhPos), false, false);
                 }
-                h.animateItem(true, vhPos == prevPos, defaultAnimationTime);
+                itemAnimator = h.animateItem(true, vhPos == prevPos, defaultAnimationTime);
+                state |= vhPos == prevPos ? DESELECTED_AFTER_SELECTED : 0;
+            }
+            if (itemAnimator != null) {
+                if (!((state & DESELECTED_AFTER_SELECTED) == DESELECTED_AFTER_SELECTED ||
+                        (state & SELECTED_AFTER_SELECTED) == SELECTED_AFTER_SELECTED) ||
+                        (state & EXPANDED) == EXPANDED) {
+                    itemAnimator.setStartDelay(100 + (i + 1) * 100);
+                }
+                itemAnimator.start();
             }
         }
         if (postProcessorConsumer != null) {

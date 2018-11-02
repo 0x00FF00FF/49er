@@ -1,5 +1,7 @@
 package org.rares.miner49er._abstract;
 
+import android.animation.ValueAnimator;
+
 public interface ItemViewAnimator {
 
     /**
@@ -8,7 +10,7 @@ public interface ItemViewAnimator {
      * @param selected
      * @param animationTime
      */
-    void animateItem(boolean reverse, boolean selected, int animationTime);
+    ValueAnimator animateItem(boolean reverse, boolean selected, int animationTime);
 
     void validateItem(boolean collapsed, boolean selected);
 

@@ -7,9 +7,9 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/projects_list_item_height"
         android:gravity="center|start"
-        android:background="@drawable/transient_semitransparent_rectangle"
-        tools:background="@drawable/transient_semitransparent_rectangle"
-        tools:layout_height="48dp"
+        android:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+        tools:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+        tools:layout_height="64dp"
 >
 
     <org.rares.ratv.rotationaware.RotationAwareTextView
@@ -32,6 +32,10 @@
             app:target_text_size="10sp"
             app:original_margin_left="@dimen/sv_margin"
             app:target_margin_left="0dp"
+            app:original_shadow_radius="0dp"
+            app:target_shadow_radius="0dp"
+            app:original_shadow_color="@color/pureWhite"
+            app:target_shadow_color="@color/pureWhite"
             tools:background="@color/projects.default.bae0e7"
             tools:text="something here like a project's name"
     />
@@ -52,7 +56,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="h,1:1"
             tools:visibility="visible"
-            android:contentDescription="@string/_issues_info_entries_label"/>
+            android:contentDescription="@string/_projects_logo_description"/>
 
     <android.support.constraint.Guideline
             android:id="@+id/half_vertical_guideline"
@@ -68,9 +72,11 @@
             android:layout_height="260dp"
             android:alpha="0.1"
             android:rotationX="50"
-            android:contentDescription="@string/_issues_info_entries_label"
+            android:contentDescription="@string/_projects_pictures_description"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/half_vertical_guideline"
+            tools:src="@drawable/skull"
+            tools:rotationX="50"
     />
 </android.support.constraint.ConstraintLayout>

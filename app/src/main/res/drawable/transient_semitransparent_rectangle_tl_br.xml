@@ -1,5 +1,5 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:top="@dimen/_list_item_invisible_margin" android:left="@dimen/_list_item_invisible_margin" android:right="@dimen/_list_item_invisible_margin" android:id="@+id/opaque_background">
+    <item android:top="@dimen/_list_item_invisible_margin" android:id="@+id/opaque_background">
         <shape android:shape="rectangle">
             <solid android:color="@color/indigo.300"/>
             <corners
@@ -8,7 +8,7 @@
             />
         </shape>
     </item>
-    <item android:top="@dimen/_list_item_invisible_margin" android:left="@dimen/_list_item_invisible_margin" android:right="@dimen/_list_item_invisible_margin" android:id="@+id/semitransparent_background">
+    <item android:top="@dimen/_list_item_invisible_margin" android:id="@+id/semitransparent_background">
         <shape
                 android:shape="rectangle"
         >
@@ -22,7 +22,7 @@
             />
         </shape>
     </item>
-    <item android:top="@dimen/_list_item_invisible_margin" android:left="@dimen/_list_item_invisible_margin" android:right="@dimen/_list_item_invisible_margin" android:id="@+id/outside_stroke">
+    <item android:top="@dimen/_list_item_invisible_margin" android:id="@+id/outside_stroke">
         <shape
                 android:shape="rectangle"
         >
@@ -33,7 +33,7 @@
 
             <stroke
                     android:width="@dimen/projects_list_item_background_stroke_width"
-                    android:color="@color/indigo.100_grayed"
+                    android:color="@color/transient_semitransparent_background_margin"
             />
         </shape>
     </item>

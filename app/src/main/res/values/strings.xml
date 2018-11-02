@@ -7,4 +7,6 @@
     <string name="_projects_info_issues_label">Issues:</string>
     <string name="_projects_info_users_label">Users:</string>
     <string name="_projects_info_total_hours">Hours:</string>
+    <string name="_projects_logo_description">Project Logo</string>
+    <string name="_projects_pictures_description">Project Picture</string>
 </resources>

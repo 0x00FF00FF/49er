@@ -37,7 +37,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);*/
 
         Resources res = getRv().getResources();
-        indigo = res.getColor(R.color.indigo_100_grayed);
+        indigo = res.getColor(R.color.transient_semitransparent_background_margin);
         white = res.getColor(R.color.pureWhite);
         bgLeft = res.getColor(R.color.semitransparent_black_left);
         bgRight = res.getColor(R.color.semitransparent_black_right);

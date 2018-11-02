@@ -15,8 +15,6 @@ public interface BaseInterfaces {
     int MAX_ELEVATION_ISSUES = MAX_ELEVATION_PROJECTS - 4;
     int MAX_ELEVATION_TIME_ENTRIES = MAX_ELEVATION_ISSUES - 4;
 
-    int TAG_ANIMATOR = Integer.MAX_VALUE - 4_1_47012;
-
     interface UnbinderHost {
         void registerUnbinder(Unbinder unbinder);
 

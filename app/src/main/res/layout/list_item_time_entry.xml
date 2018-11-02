@@ -5,7 +5,9 @@
               android:layout_height="@dimen/projects_list_item_height"
               android:orientation="horizontal"
               android:gravity="center|start"
-              android:background="@drawable/transient_semitransparent_rectangle"
+              android:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+              android:layout_marginStart="@dimen/_list_item_corner_radius_small"
+              android:layout_marginLeft="@dimen/_list_item_corner_radius_small"
 >
     <TextView
             android:id="@+id/user_initials_tv"

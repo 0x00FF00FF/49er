@@ -9,20 +9,38 @@
         android:fitsSystemWindows="true"
         tools:context="org.rares.miner49er.HomeScrollingActivity">
 
+    <android.support.constraint.Guideline
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/guideline_horizontal_end"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_end="30dp"
+    />
+
     <LinearLayout
             android:id="@+id/scroll_views_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="visible"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+    >
 
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_projects_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layoutAnimation="@anim/anim_rv_item"
-                tools:listitem="@layout/self_animated_resizeable_list_item"
+                tools:listitem="@layout/list_item_project"
                 tools:itemCount="8"
         />
 
@@ -30,16 +48,47 @@
                 android:id="@+id/rv_issues_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layoutAnimation="@anim/anim_rv_item"
+                android:layout_marginStart="@dimen/_list_item_invisible_margin"
+                android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+                android:background="@drawable/background_margin_rv"
         />
 
         <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_time_entries_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_list_item_invisible_margin"
+                android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+                android:background="@drawable/background_margin_rv"
         />
 
     </LinearLayout>
+
+    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintTop_toBottomOf="@id/guideline_horizontal_end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:rotation="180"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintTop_toTopOf="@id/scroll_views_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
 
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab2"
@@ -54,6 +103,7 @@
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="visible"
     />
 
 </android.support.constraint.ConstraintLayout>

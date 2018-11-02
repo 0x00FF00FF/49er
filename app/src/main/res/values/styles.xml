@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/pureWhite</item>
         <item name="colorPrimaryDark">@color/indigo.100_blacked</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowBackground">@color/indigo.300</item>
+        <item name="android:windowBackground">@drawable/background_app</item>
         <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
 
