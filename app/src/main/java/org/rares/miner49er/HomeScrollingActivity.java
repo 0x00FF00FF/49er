@@ -25,6 +25,8 @@ import butterknife.Unbinder;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.domain.entries.TimeEntriesUiOps;
+import org.rares.miner49er.domain.issues.AccDecoration;
+import org.rares.miner49er.domain.issues.IssuesItemDecoration;
 import org.rares.miner49er.domain.issues.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.ProjectsUiOps;
@@ -81,9 +83,11 @@ public class HomeScrollingActivity
     LinearLayout scrollViewsContainer;
 
     @BindDimen(R.dimen.projects_rv_collapsed_width)
+//    @BindDimen(R.dimen.projects_rv_collapsed_width_with_name)
     int rvCollapsedWidth;
 
     @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width)
+//    @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width_with_name)
     int itemCollapsedSelectedWidth;
 
     private TimeEntriesUiOps timeEntriesUiOps;
@@ -218,7 +222,7 @@ public class HomeScrollingActivity
         issuesRV.setItemViewCacheSize(14);
         timeEntriesRv.setItemViewCacheSize(14);
         timeEntriesRv.getRecycledViewPool().setMaxRecycledViews(0, 14);
-//        AccDecoration decoration = new AccDecoration();
+        AccDecoration decoration = new AccDecoration();
 //        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
@@ -226,18 +230,19 @@ public class HomeScrollingActivity
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
-        final double shrinkRatio = 0.7;
+        final double shrinkRatio = 1;
         setupResizeableManager(
                 issuesManager,
                 BaseInterfaces.MAX_ELEVATION_ISSUES,
-                (int) (rvCollapsedWidth * shrinkRatio + UiUtil.pxFromDp(this, 4)),
-                (int) (rvCollapsedWidth * shrinkRatio));
+                (int) UiUtil.pxFromDp(this, 58),
+                (int) UiUtil.pxFromDp(this, 56));
         issuesRV.setLayoutManager(issuesManager);
         issuesUiOps = new IssuesUiOps(issuesRV);
-        issuesUiOps.setRvCollapsedWidth((int) (rvCollapsedWidth * shrinkRatio));
+        issuesUiOps.setRvCollapsedWidth((int) UiUtil.pxFromDp(this, 56));
         issuesUiOps.setDomainLink(timeEntriesUiOps);
-//        decoration.setSelectedPosition(1);
+//        decoration.setSelectedPosition(1); // the selected position should get a different color
 //        issuesRV.addItemDecoration(decoration);
+        issuesRV.addItemDecoration(new IssuesItemDecoration());
 
         ResizePostProcessor.PostProcessor ipp = new SelfAnimatedItemRotator(issuesRV);
 //        ResizePostProcessor.PostProcessor ipp = new AnimatedItemRotator(issuesRV);

@@ -1,6 +1,7 @@
 package org.rares.miner49er._abstract;
 
 import android.animation.ValueAnimator;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import butterknife.ButterKnife;
@@ -18,7 +19,6 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  * @since 02.03.2018
  */
 
-// TODO: 4/23/18 this is going to be refactored. remove or rethink the item view properties.
 public abstract class ResizeableItemViewHolder
         extends RecyclerView.ViewHolder
         implements
@@ -46,6 +46,9 @@ public abstract class ResizeableItemViewHolder
     private boolean toBeRebound = true;
 
     private Unbinder unbinder;
+
+    protected Typeface typefaceLight = Typeface.create("sans-serif-light", Typeface.NORMAL);
+    protected Typeface typefaceRegular = Typeface.create("sans-serif", Typeface.NORMAL);
 
     protected RotationAwareUpdateListener animationUpdateListener;
     protected RotationAnimatorHost animatorHost;
@@ -79,6 +82,7 @@ public abstract class ResizeableItemViewHolder
      * items in this view holder will be resized) so
      * at times we need to show a short version of
      * the text.
+     *
      * @param shortVersion true to show the short version of the text
      */
     public void toggleItemText(boolean shortVersion) {
@@ -87,7 +91,10 @@ public abstract class ResizeableItemViewHolder
 
     /**
      * Convenience method that
+     *
      * @return the long version of the title
      */
-    public String getItemText(){return longTitle;}
+    public String getItemText() {
+        return longTitle;
+    }
 }

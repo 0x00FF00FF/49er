@@ -36,10 +36,21 @@ public class UiUtil {
         return Color.HSVToColor(hsv);
     }
 
+    public static int getTransparentColor(int color, int desiredAlpha) {
+        if (desiredAlpha < 0) {
+            desiredAlpha = 0;
+        }
+        if (desiredAlpha > 0xff) {
+            desiredAlpha = 0xff;
+        }
+        return Color.argb(desiredAlpha, Color.red(color), Color.green(color), Color.blue(color));
+    }
+
     /**
      * contrast : 0 to 10 brightness : -255 to 255
-     * @param mBitmap bitmap to change
-     * @param contrast 0:10
+     *
+     * @param mBitmap    bitmap to change
+     * @param contrast   0:10
      * @param brightness -255:255
      * @return new bitmap with modified brightness/contrast
      */

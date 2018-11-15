@@ -30,7 +30,7 @@
             app:text_size="@dimen/list_item_text_size"
             app:target_rotation="-90"
             app:target_text_size="10sp"
-            app:original_margin_left="@dimen/sv_margin"
+            app:original_margin_left="10dp"
             app:target_margin_left="0dp"
             app:original_shadow_radius="0dp"
             app:target_shadow_radius="0dp"

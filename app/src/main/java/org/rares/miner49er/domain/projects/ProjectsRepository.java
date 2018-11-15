@@ -259,7 +259,7 @@ public class ProjectsRepository extends Repository<Project> {
         return getDbItems(ProjectsTable.AllProjectsQuery, Project.class);
     }
 
-    private final String[] redColors = {"#7986CB", "#5C6BC0"};
+    private final String[] redColors = {"#AA7986CB", "#AA5C6BC0"};
     private final String[] blueColors = {"#9575CD", "#7E57C2"};
 
     private final String[] dummyData = {

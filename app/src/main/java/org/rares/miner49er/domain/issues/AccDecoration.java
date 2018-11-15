@@ -16,7 +16,7 @@ public class AccDecoration extends RecyclerView.ItemDecoration {
     public static final String TAG = AccDecoration.class.getSimpleName();
 
     @Setter
-    private boolean drawBranch = false;
+    private boolean drawBranch = true;
 
     @Setter
     private int selectedPosition = -1;
@@ -98,9 +98,9 @@ public class AccDecoration extends RecyclerView.ItemDecoration {
             // the item background so it would seem they
             // are correct even though they overlap a bit
             //
-            // start from x1=strokeWidth (plus marginLeft offset),
-            // if not last item. x1=strokeWidth/2 (plus marginLeft
-            // offset) if current item is the last
+            // start from x1=strokeWidth (plus marginLeft offset),  // !important: for no background, there is no
+            // if not last item. x1=strokeWidth/2 (plus marginLeft  // difference between last and non-last items
+            // offset) if current item is the last                  // so that is commented out
             // ^ this is because for the last item, the line
             // only goes to the right, under the item, which
             // is not the case for the other items, where
@@ -116,7 +116,7 @@ public class AccDecoration extends RecyclerView.ItemDecoration {
             int x2 = (2 * strokeWidth + cornerRadius);
             int y2cl = (int) (y2 + cornerRadius - strokeWidth);
             drawCurvedLine(c,
-                    marginLeft + strokeWidth / (i == parent.getChildCount() - 1 && lastChildShowing ? 2 : 1),
+                    marginLeft + strokeWidth / 2/*(i == parent.getChildCount() - 1 && lastChildShowing ? 2 : 1)*/,
                     (int) y2 - cornerRadius / 2,
                     marginLeft + x2, y2cl, -cornerRadius, p);
 
@@ -127,7 +127,7 @@ public class AccDecoration extends RecyclerView.ItemDecoration {
             // width minus corner radius and stroke width].
             // uses a gradient
             LinearGradient gradient = new LinearGradient(
-                    0, 0, parent.getWidth() * 0.75F + cornerRadius, 0,
+                    0, 0, parent.getWidth() + cornerRadius, 0,
                     new int[]{selectedPosition == -1 ? mainColor : selectedColor, secondaryColor}, new float[]{0.3F, 0.9F},
                     Shader.TileMode.CLAMP);
             p.setShader(gradient);

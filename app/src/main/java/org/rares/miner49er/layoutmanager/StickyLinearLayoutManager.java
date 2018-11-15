@@ -176,7 +176,8 @@ public class StickyLinearLayoutManager
             decoratedChildWidth = getDecoratedMeasuredWidth(labRatView);
             decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
             itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
-            removeAndRecycleView(labRatView, recycler);
+//            removeAndRecycleView(labRatView, recycler);
+            recycler.recycleView(labRatView);
         }
 
         if (!state.isMeasuring()) {
@@ -404,6 +405,14 @@ public class StickyLinearLayoutManager
 //                    " SELECTED VIEW: " + selectedView +
 //                    " (" + TextUtils.getItemText(selectedView) + ")");
         }
+
+        // // TODO: 11/8/18: fix item bring to front
+        // it works ok unless the selected item is the first
+        // or last - repro:
+        // disable elevation, uncomment these:
+//        if (selectedView != null) {
+//            selectedView.bringToFront();
+//        }
 
         try {
             // first of all, update first visible position.
@@ -834,8 +843,8 @@ public class StickyLinearLayoutManager
         }
 
         if (selectedView == null) {
-//            requestLayout();
             selectedView = itemView;
+//            selectedView.bringToFront();
             return animatedItems;
         }
 
@@ -849,8 +858,8 @@ public class StickyLinearLayoutManager
             if (animationEnabled) {
                 animatedItems.add(new ItemAnimationDto(selectedView, 0, ViewGroup.LayoutParams.MATCH_PARENT));
             }
-//            requestLayout();
             selectedView = itemView;
+//            selectedView.bringToFront();
         } else {
             selectedView = null;
         }

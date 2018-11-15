@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.projects;
 
-import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import io.reactivex.functions.Consumer;
@@ -9,7 +8,6 @@ import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
-import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 
 import java.util.List;
@@ -35,22 +33,7 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         projectsRepository = new ProjectsRepository();
         repository = projectsRepository;
 
-        Resources res = getRv().getResources();
-        indigo = res.getColor(R.color.transient_semitransparent_background_margin);
-        white = res.getColor(R.color.pureWhite);
-        bgLeft = res.getColor(R.color.semitransparent_black_left);
-        bgRight = res.getColor(R.color.semitransparent_black_right);
-        bgLeftSelected = res.getColor(R.color.semitransparent_black_left_selected);
-        bgRightSelected = res.getColor(R.color.semitransparent_black_right_selected);
-    }
-
-    @Override
-    public boolean onListItemClick(ResizeableItemViewHolder holder) {
-        boolean enlarge = super.onListItemClick(holder);
-        if (!enlarge) {
-            projectsListResizeListener.onProjectsListShrink();
-        }
-        return enlarge;
+        selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
     }
 
     /**

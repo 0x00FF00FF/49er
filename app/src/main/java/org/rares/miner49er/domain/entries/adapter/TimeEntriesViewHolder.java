@@ -29,14 +29,21 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
     @BindView(R.id.day_tv)
     TextView day;
 
+    public TimeEntriesViewHolder(View itemView) {
+        super(itemView);
+        setItemProperties(new TimeEntryViewProperties());
+        userInitials.setTypeface(typefaceLight);
+        day.setTypeface(typefaceLight);
+    }
+
     @Override
     public void bindData(Object data, boolean shortVersion, boolean selected) {
         TimeEntryData entryData = (TimeEntryData) data;
 //        itemView.setBackgroundColor(entryData.getColor());
 
         Drawable d = itemView.getBackground();
-        d.mutate();
         if (d instanceof LayerDrawable) {
+            d.mutate();
             LayerDrawable ld = (LayerDrawable) d;
             GradientDrawable opaqueBackground = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
             if (opaqueBackground != null) {
@@ -52,11 +59,6 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
         String entryDate = dateTime.toString(pattern);
 
         day.setText(entryDate);
-    }
-
-    public TimeEntriesViewHolder(View itemView) {
-        super(itemView);
-        setItemProperties(new TimeEntryViewProperties());
     }
 
 }

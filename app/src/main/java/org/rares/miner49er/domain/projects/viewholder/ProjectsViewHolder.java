@@ -74,6 +74,9 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
     private int infoLabelId = -1;
 
+    private boolean __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED = false;
+    private boolean __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED = false;
+
     public ProjectsViewHolder(View itemView) {
         super(itemView);
         setItemProperties(projectViewProperties);
@@ -88,12 +91,14 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setId(data.getId());
 
-        shortTitle = TextUtils.extractInitials(data.getName());
+        shortTitle = __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED ? TextUtils.extractVowels(data.getName()) : "";
+        shortTitle = __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED && selected ? TextUtils.extractVowels(data.getName()) : shortTitle;
+
         longTitle = data.getName();
 
         Drawable d = itemView.getBackground();
-        d.mutate();
         if (d instanceof LayerDrawable) {
+            d.mutate();
             LayerDrawable ld = (LayerDrawable) d;
             GradientDrawable gd = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
             if (gd != null) {
@@ -305,7 +310,7 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
         final int endTextColor = projectNameTextView.getTargetTextColor();
         final int startBackgroundColor = 0; // fully transparent black
         final int endBackgroundColor = projectNameTextView.getTargetBackgroundColor();
-        final int selectedTextSize = (int) (endTextSize * 1.5F);
+        final int selectedTextSize = startTextSize/*(int) (endTextSize * 1.5F)*/;
         final int selectedWidth = endWidth * 2;
 
         final int minMarginLeft = projectNameTextView.getOriginalMarginLeft();
@@ -381,7 +386,7 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
                 adto.minBackgroundColor = projectNameTextView.getBackgroundColor();
                 adto.minTextColor = projectNameTextView.getTextPaint().getColor();
                 adto.maxTextColor = 0xFFFFFFFF;
-                adto.maxShadowRadius = 8 * 3;
+//                adto.maxShadowRadius = 8 * 3;
 //                adto.maxBackgroundColor = 0x77FFFFFF;
 
                 if (mlp != null) {
@@ -514,7 +519,6 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
         startInfoContainerFade(infoLabel.getAlpha());
     }
-
 
 
     class AnimationTextValidator extends AnimatorListenerAdapter {

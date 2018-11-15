@@ -5,9 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
@@ -18,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
+import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -47,6 +45,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     ConstraintLayout topContainer;
 
     @BindView(R.id.ratv_resource_name_item)
+    @Getter
     RotationAwareTextView issueName;
 
     private int originalTextSize = 60;  ////////////
@@ -64,7 +63,6 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private int infoLabelId = -1;
 
-
     public IssuesViewHolder(View itemView) {
         super(itemView);
         setItemProperties(new IssuesViewProperties());
@@ -74,6 +72,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         // and we don't want that (bad visuals).
         animationUpdateListener = new NoWidthUpdateListener(issueName);
         animatorHost = new DefaultRotationAnimatorHost(issueName.gatherAnimationData());
+
+        issueName.getTextPaint().setTypeface(typefaceLight);
     }
 
     @Override
@@ -82,22 +82,22 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         shortTitle = TextUtils.extractInitials(data.getName());
         longTitle = TextUtils.capitalize(data.getName());
 
-        Drawable d = itemView.getBackground();
-        d.mutate();
+/*        Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
+            d.mutate();
             LayerDrawable ld = (LayerDrawable) d;
             GradientDrawable opaqueBackground = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
             if (opaqueBackground != null) {
                 opaqueBackground.setColor(data.getColor());
             }
-        }
+        }*/
         getItemProperties().setItemBgColor(data.getColor());
         getItemProperties().setId(data.getId());
 
         List<TimeEntryData> entries = data.getTimeEntries();
-        int entriesNumber = 0;
-        int userHours = 0;
-        int totalHours = 0;
+        float entriesNumber = 10.555F;
+        float userHours = 330F;
+        float totalHours = 60000.1234F;
         if (entries != null) {
             entriesNumber = entries.size();
             for (TimeEntryData entry : entries) {
@@ -247,6 +247,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         final int maxMarginRight = issueName.getTargetMarginRight();
         final int maxMarginBottom = issueName.getTargetMarginBottom();
 
+        final int selectedLeftMargin = (int) UiUtil.pxFromDp(itemView.getContext(), 2);
+
         adto.minRotation = startRotation;
         adto.maxRotation = endRotation;
 //        adto.minWidth = startWidth;
@@ -308,6 +310,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                     adto.minMarginRight = mlp.rightMargin;
                     adto.minMarginBottom = mlp.bottomMargin;
                 }
+                adto.maxMarginLeft = selectedLeftMargin;
 
             } else {
                 // get current values and animate to collapsed form
@@ -414,6 +417,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabel.setSingleLine();
         infoLabel.setEllipsize(TruncateAt.END);
 
+        infoLabel.setTypeface(typefaceLight);
+
         int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
         infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 
@@ -460,8 +465,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 issueName.setEllipsize(reverse);
             }
             toggleInfoContainerVisiblity(reverse);
+            issueName.getTextPaint().setTypeface(selected ? reverse ? typefaceLight : typefaceRegular : typefaceLight);
         }
-
     }
 
     /**
@@ -488,13 +493,18 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         }
     }
 
-    private void populateInfoLabel(int entriesValue,
+    private void populateInfoLabel(float entriesValue,
                                    float userHoursValue,
                                    float totalHoursValue) {
+
+//        float entriesNumber = 100.44F;
+//        float userHours = 100.24F;
+//        float totalHours = 60000.1234F;
+
         infoLabelString = String.format(
-                entriesLabel + "%2s " +
-                        userHoursLabel + "%3.1s " +
-                        totalHoursLabel + "%3.1s ",
+                entriesLabel + "%3.2s " +
+                        userHoursLabel + "%3.2s " +
+                        totalHoursLabel + "%3.2s ",
                 entriesValue,
                 userHoursValue,
                 totalHoursValue

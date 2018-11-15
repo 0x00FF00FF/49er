@@ -4,7 +4,8 @@
             <solid android:color="@color/indigo.300"/>
             <corners
                     android:topLeftRadius="@dimen/_list_item_corner_radius_large"
-                    android:bottomRightRadius="@dimen/_list_item_corner_radius_large"
+                    android:bottomLeftRadius="@dimen/_list_item_corner_radius_large"
+
             />
         </shape>
     </item>
@@ -14,7 +15,8 @@
         >
             <corners
                     android:topLeftRadius="@dimen/_list_item_corner_radius_large"
-                    android:bottomRightRadius="@dimen/_list_item_corner_radius_large"
+                    android:bottomLeftRadius="@dimen/_list_item_corner_radius_large"
+
             />
             <gradient
                     android:startColor="@color/semitransparent_black_left"
@@ -28,7 +30,8 @@
         >
             <corners
                     android:topLeftRadius="@dimen/_list_item_corner_radius_small"
-                    android:bottomRightRadius="@dimen/_list_item_corner_radius_small"
+                    android:bottomLeftRadius="@dimen/_list_item_corner_radius_small"
+
             />
 
             <stroke

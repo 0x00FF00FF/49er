@@ -15,6 +15,20 @@ public interface BaseInterfaces {
     int MAX_ELEVATION_ISSUES = MAX_ELEVATION_PROJECTS - 4;
     int MAX_ELEVATION_TIME_ENTRIES = MAX_ELEVATION_ISSUES - 4;
 
+    short ANIMATION_DURATION = 200;
+
+    interface SetValues {
+        byte NOT_SET = -1;
+        byte DISABLED = 0;
+        byte ENABLED = 1;
+    }
+
+    interface ColorAnimation {
+        int DO_NOT_TOUCH = 0x00_FF0100;
+        int NOT_SET = 0x00_010000;
+        int ITEM_DATA = 0x00_000001;
+    }
+
     interface UnbinderHost {
         void registerUnbinder(Unbinder unbinder);
 
@@ -25,6 +39,12 @@ public interface BaseInterfaces {
 
     interface ResizeableItems {
 
+        String ANIMATION_WIDTH = "width";
+        String ANIMATION_ELEVATION = "elevation";
+        String ANIMATION_SOLID_COLOR = "bgColorSolid";
+        String ANIMATION_STROKE_COLOR = "strokeColor";
+        String ANIMATION_OVERLAY_LEFT_COLOR = "bgColorL";
+        String ANIMATION_OVERLAY_RIGHT_COLOR = "bgColorR";
 
         /**
          * Used to show the final state of the recycler view.
@@ -54,6 +74,7 @@ public interface BaseInterfaces {
 
     interface RvResizeListener {
         void onRvGrow();
+
         void onRvShrink();
     }
 
@@ -67,7 +88,8 @@ public interface BaseInterfaces {
          */
 //        void onListItemClick(ItemViewProperties itemViewProperties);
         boolean onListItemClick(ResizeableItemViewHolder holder);
-        void onListItemChanged( ItemViewProperties itemViewProperties);
+
+        void onListItemChanged(ItemViewProperties itemViewProperties);
     }
 
     interface DomainLink {

@@ -11,10 +11,11 @@ import org.rares.ratv.rotationaware.RotationAwareTextView;
 
 public class TextUtils {
 
+    private static final byte MAX_LETTERS = 4;
+
     public static final String TAG = TextUtils.class.getSimpleName();
 
     public static String extractInitials(String s) {
-        final byte MAX_LETTERS = 4;
 
         if (s == null || s.length() == 0) {
             return "";
@@ -61,6 +62,17 @@ public class TextUtils {
             res = res.substring(0, MAX_LETTERS);
         }
         return res;
+    }
+
+    public static String extractVowels(String str) {
+        String vowels = "[aeiouAEIOU\u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]";
+        String punctuation = "[`~!@#$%^&*()_+|=\\[\\]{};':\",/<>?\\-.]";
+        String processed = str
+                .substring(vowels.contains(String.valueOf(str.charAt(0))) ? 1 : 0)
+                .replaceAll(vowels, "")
+                .replaceAll(punctuation, "")
+                .toUpperCase();
+        return processed.length() > MAX_LETTERS ? processed.substring(0, MAX_LETTERS) : processed;
     }
 
     public static String capitalize(String str) {
