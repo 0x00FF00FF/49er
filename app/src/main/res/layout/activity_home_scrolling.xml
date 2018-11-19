@@ -9,6 +9,57 @@
         android:fitsSystemWindows="true"
         tools:context="org.rares.miner49er.HomeScrollingActivity">
 
+    <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/transient_semitransparent_rectangle_app_bar"
+            app:layout_constraintTop_toTopOf="parent"
+    >
+        <android.support.constraint.ConstraintLayout
+                android:id="@+id/toolbar_constraint_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <ImageView
+                    app:srcCompat="@drawable/icon_path_left_arrow"
+                    android:id="@+id/arrow_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/_toolbar_back_button"
+                    android:visibility="visible"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+            />
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:text="@string/app_name"
+                      android:textColor="@color/pureWhite"
+                      android:gravity="center|start"
+                      android:textSize="20sp"
+                      android:layout_marginLeft="@dimen/sv_margin"
+                      android:layout_marginStart="@dimen/sv_margin"
+                      app:layout_constraintStart_toEndOf="@id/arrow_back"
+                      app:layout_constraintTop_toTopOf="parent"
+                      app:layout_constraintBottom_toBottomOf="parent"
+            />
+            <ImageView
+                    app:srcCompat="@drawable/icon_path_more_vertical"
+                    android:id="@+id/more_actions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/_toolbar_back_button"
+                    android:layout_marginEnd="@dimen/text_margin"
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:visibility="visible"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+            />
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v7.widget.Toolbar>
+
     <android.support.constraint.Guideline
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -31,7 +82,7 @@
             android:layout_marginEnd="@dimen/_list_item_invisible_margin"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
             app:layout_constraintBottom_toBottomOf="parent"
     >
 
@@ -97,7 +148,7 @@
             android:layout_marginEnd="6dp"
             android:layout_marginRight="6dp"
             app:backgroundTint="@color/colorPrimary"
-            app:srcCompat="@android:drawable/ic_menu_mapmode"
+            app:srcCompat="@drawable/icon_path_sync"
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

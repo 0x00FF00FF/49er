@@ -478,7 +478,7 @@ public class StickyLinearLayoutManager
             }
 
             int to = newItemPosition == BOTTOM || newItemPosition == NONE ?
-                    lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);   // FIXME: 8/28/18 <<<<
+                    lastVisiblePosition + (decoratedChildHeight * extraChildren) : getPosition(item);   // FIXME: 8/28/18 <<<< [possible npe on get position]
 
             if (DEBUG && METHOD_DEBUG) {
                 Log.w(TAG, "drawChildren: lastVisiblePosition: " + lastVisiblePosition);

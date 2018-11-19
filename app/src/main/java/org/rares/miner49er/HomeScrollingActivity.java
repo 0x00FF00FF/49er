@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -70,8 +71,8 @@ public class HomeScrollingActivity
 //    @BindView(R.id.fab)
 //    FloatingActionButton fab;
 
-//    @BindView(R.id.toolbar)
-//    Toolbar toolbar;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     @BindView(R.id.main_container)
     ConstraintLayout mainContainer;
@@ -107,6 +108,7 @@ public class HomeScrollingActivity
 //        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
         setContentView(R.layout.activity_home_scrolling);
+        setSupportActionBar(toolbar);
 
         unbinder = ButterKnife.bind(this);
 //        registerUnbinder(unbinder);
