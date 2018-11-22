@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
+import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -59,8 +60,6 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
     private TextView infoLabel = null;
 
-    private String infoLabelString;
-
     @BindString(R.string._projects_info_issues_label)
     String issuesLabel;
     @BindString(R.string._projects_info_users_label)
@@ -74,7 +73,9 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
     private int infoLabelId = -1;
 
+    @Setter
     private boolean __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED = false;
+    @Setter
     private boolean __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED = false;
 
     public ProjectsViewHolder(View itemView) {

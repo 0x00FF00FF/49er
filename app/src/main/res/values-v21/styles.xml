@@ -1,0 +1,31 @@
+<resources>
+    <style name="Custom.Widget.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <!--<style name="Custom.Widget.Toolbar" parent="Widget.AppCompat.Toolbar">-->
+        <!--<item name="maxButtonHeight">48dp</item>-->
+        <!--<item name="android:paddingLeft">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="android:paddingRight">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="contentInsetStart">@dimen/first_keyline</item>-->
+        <!--<item name="android:background">@drawable/transient_semitransparent_rectangle_app_bar</item>-->
+        <!--<item name="titleTextColor">@color/pureWhite</item>-->
+        <!--<item name="subtitleTextColor">@color/pureWhite</item>-->
+        <!--<item name="android:popupTheme">@style/Custom.Widget.ActionButton.Overflow.Menu</item>-->
+    <!--</style>-->
+
+    <!--<style name="Custom.Widget.Toolbar.Button.Navigation" parent="Widget.AppCompat.Toolbar.Button.Navigation">-->
+        <!--<item name="android:minWidth">48dp</item>-->
+    <!--</style>-->
+
+    <!--<style name="Custom.Widget.ActionMode" parent="Widget.AppCompat.ActionMode">-->
+        <!--<item name="background">@drawable/transient_semitransparent_rectangle_app_bar</item>-->
+        <!--<item name="titleTextColor">@color/pureWhite</item>-->
+        <!--<item name="subtitleTextColor">@color/pureWhite</item>-->
+        <!--<item name="android:paddingLeft">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="android:paddingRight">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="android:actionBarPopupTheme">@style/Custom.Widget.ActionButton.Overflow.Menu</item>-->
+    <!--</style>-->
+
+</resources>

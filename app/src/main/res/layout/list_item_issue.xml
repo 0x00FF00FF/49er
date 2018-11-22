@@ -26,7 +26,7 @@
             app:layout_constraintVertical_chainStyle="packed"
             app:background_color="#00FFFFFF"
             app:target_background_color="#00FFFFFF"
-            app:text_color="#AAFFFFFF"
+            app:text_color="#CCFFFFFF"
             app:target_text_color="#88FFFFFF"
             app:text_size="@dimen/list_item_text_size"
             app:target_rotation="-90"

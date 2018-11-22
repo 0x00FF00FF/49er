@@ -43,14 +43,98 @@
     </style>
 
     <style name="AppTheme.NoActionBar">
+
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+
+
+        <!--toolbar overflow menu ... icon color-->
+        <item name="android:textColorSecondary">@android:color/white</item>
+
+        <!-- Toolbar styles -->
+        <item name="toolbarStyle">@style/Custom.Widget.Toolbar</item>
+        <item name="toolbarNavigationButtonStyle">@style/Custom.Widget.Toolbar.Button.Navigation</item>
+
+        <item name="actionOverflowButtonStyle">@style/Custom.Widget.ActionButton.Overflow</item>
+
+        <!--<item name="windowActionModeOverlay">true</item>-->
+
+        <!-- Action Mode styles -->
+        <!--<item name="actionModeStyle">@style/Custom.Widget.ActionMode</item>-->
+        <!--<item name="actionModeCloseButtonStyle">@style/Custom.Widget.ActionButton.CloseMode</item>-->
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    <style name="Custom.Widget.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="maxButtonHeight">48dp</item>
+        <item name="android:paddingLeft">@dimen/toolbar_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/toolbar_horizontal_padding</item>
+        <item name="contentInsetStart">@dimen/toolbar_first_keyline</item>
+        <item name="android:background">@drawable/transient_semitransparent_rectangle_app_bar</item>
+        <item name="titleTextColor">@color/pureWhite</item>
+        <item name="subtitleTextColor">@color/pureWhite</item>
+        <item name="popupTheme">@style/Custom.Widget.ActionButton.Overflow.Menu</item>
+    </style>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="Custom.Widget.Toolbar.Button.Navigation" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:minWidth">48dp</item>
+    </style>
+
+    <style name="Custom.Widget.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <!--
+        When navigation icon is used [contentInsetStart]
+        value should be equal second keyline.
+        It can be set as view/app attribute.                    -->
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+    </style>
 
 
+    <!--<style name="Custom.Widget.ActionMode" parent="Widget.AppCompat.ActionMode">-->
+        <!--<item name="background">@drawable/transient_semitransparent_rectangle_app_bar</item>-->
+        <!--<item name="titleTextColor">@color/pureWhite</item>-->
+        <!--<item name="subtitleTextColor">@color/pureWhite</item>-->
+        <!--<item name="android:paddingLeft">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="android:paddingRight">@dimen/toolbar_horizontal_padding</item>-->
+        <!--<item name="popupTheme">@style/Custom.Widget.ActionButton.Overflow.Menu</item>-->
+    <!--</style>-->
+
+    <!--<style name="Custom.Widget.ActionButton.CloseMode" parent="Widget.AppCompat.ActionButton.CloseMode">-->
+        <!--<item name="android:layout_marginRight">20dp</item>-->
+    <!--</style>-->
+
+    <style name="Custom.Widget.ActionButton.Overflow.Menu" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:background">@drawable/background_menu_drawable</item>
+        <item name="android:textColor">@color/pureWhite</item>
+    </style>
+
+    <style name="Custom_TextAppearance_Widget_AppCompat_Toolbar_Title">
+        <item name="android:textSize">@dimen/toolbar_title_text_size</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/pureWhite</item>
+    </style>
+
+    <style name="Custom_TextAppearance_Widget_AppCompat_Toolbar_Title_Action">
+        <item name="android:textSize">@dimen/toolbar_title_text_size</item>
+        <item name="fontFamily">sans-serif-light</item>
+        <item name="android:textColor">@color/pureWhite</item>
+    </style>
+
+    <style name="Custom_TextAppearance_Widget_AppCompat_Toolbar_Subtitle">
+        <item name="android:textSize">@dimen/toolbar_subtitle_text_size</item>
+        <item name="fontFamily">sans-serif-light</item>
+        <item name="android:textColor">@color/android_color_dim_foreground_dark</item>
+    </style>
 
 </resources>
+
+
+        <!--
+
+        toolbar specifications:
+                https://medium.com/@lucasurbas/making-android-toolbar-responsive-2627d4e07129
+                https://material.io/design/components/app-bars-top.html#specs
+
+
+
+         -->

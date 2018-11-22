@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Miner 49er</string>
     <string name="action_settings">Settings</string>
+    <string name="action_more_settings">Other settings</string>
     <string name="_issues_info_entries_label">Entries:</string>
     <string name="_issues_info_user_hours_label">User Hours:</string>
     <string name="_issues_info_total_hours_label">Total Hours:</string>
@@ -9,5 +10,13 @@
     <string name="_projects_info_total_hours">Hours:</string>
     <string name="_projects_logo_description">Project Logo</string>
     <string name="_projects_pictures_description">Project Picture</string>
-    <string name="_toolbar_back_button">Go back a level</string>
+    <string name="_toolbar_back_button_description">Go back a level</string>
+
+
+    <!--actions-->
+    <string name="action_add">Add</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_details">Details</string>
+    <string name="action_done">Done</string>
 </resources>

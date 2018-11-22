@@ -27,7 +27,7 @@ public abstract class ResizeableItemViewHolder
 
     private static final String TAG = ResizeableItemViewHolder.class.getSimpleName();
 
-
+    @Getter
     protected String shortTitle = "", longTitle = "";
 
     @Getter
@@ -52,6 +52,9 @@ public abstract class ResizeableItemViewHolder
 
     protected RotationAwareUpdateListener animationUpdateListener;
     protected RotationAnimatorHost animatorHost;
+
+    @Getter
+    protected String infoLabelString;
 
     public abstract void bindData(Object data, boolean shortVersion, boolean selected);
 

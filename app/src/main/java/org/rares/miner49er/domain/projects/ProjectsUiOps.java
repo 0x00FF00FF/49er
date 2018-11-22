@@ -1,6 +1,8 @@
 package org.rares.miner49er.domain.projects;
 
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
@@ -8,7 +10,11 @@ import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
+import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.ui.actionmode.ProjectsActionModeCallback;
 
 import java.util.List;
 
@@ -18,7 +24,7 @@ import java.util.List;
  * @since 01.03.2018
  */
 
-public class ProjectsUiOps extends ResizeableItemsUiOps {
+public class ProjectsUiOps extends ResizeableItemsUiOps implements ProjectsActionModeCallback.ActionListener {
 
     @Setter
     private ProjectsInterfaces.ProjectsResizeListener projectsListResizeListener;
@@ -26,6 +32,8 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
     private static final String TAG = ProjectsUiOps.class.getSimpleName();
 
     private ProjectsRepository projectsRepository;
+
+    private ProjectsActionModeCallback callback = null;
 
     public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
@@ -44,6 +52,43 @@ public class ProjectsUiOps extends ResizeableItemsUiOps {
         projectsRepository
                 .setup()
                 .registerSubscriber((Consumer<List>) getRv().getAdapter());
+    }
+
+    @Override
+    public boolean onListItemClick(ResizeableItemViewHolder holder) {
+        final ListState state = getRvState();
+        boolean enlarge = super.onListItemClick(holder);
+
+        ProjectsAdapter adapter = (ProjectsAdapter) getRv().getAdapter();
+        int projectId = ((ProjectData) adapter.getDisplayData(holder.getAdapterPosition())).getId();
+        if (callback == null) {
+            // TODO
+            Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+            callback = new ProjectsActionModeCallback(t);
+            callback.setActionListener(this);
+        }
+
+        callback.setTitle(holder.getLongTitle())
+                .setSubtitle(holder.getInfoLabelString())
+                .setProjectId(projectId);
+
+        if (enlarge) {
+            callback.endActionMode();
+        } else {
+            if (state == ListState.LARGE) {
+                callback.startActionMode();
+            }
+        }
+
+        return enlarge;
+    }
+
+    @Override
+    public void onEndActionMode() {
+        ProjectsAdapter adapter = (ProjectsAdapter) getRv().getAdapter();
+        ResizeableItemViewHolder holder =
+                (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(adapter.getLastSelectedPosition());
+        onListItemClick(holder);
     }
 
     /**

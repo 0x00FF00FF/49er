@@ -23,7 +23,6 @@ import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.domain.entries.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.AccDecoration;
@@ -71,7 +70,7 @@ public class HomeScrollingActivity
 //    @BindView(R.id.fab)
 //    FloatingActionButton fab;
 
-    @BindView(R.id.toolbar)
+    @BindView(R.id.toolbar_c)
     Toolbar toolbar;
 
     @BindView(R.id.main_container)
@@ -85,11 +84,11 @@ public class HomeScrollingActivity
 
     @BindDimen(R.dimen.projects_rv_collapsed_width)
 //    @BindDimen(R.dimen.projects_rv_collapsed_width_with_name)
-    int rvCollapsedWidth;
+            int rvCollapsedWidth;
 
     @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width)
 //    @BindDimen(R.dimen.projects_rv_collapsed_selected_item_width_with_name)
-    int itemCollapsedSelectedWidth;
+            int itemCollapsedSelectedWidth;
 
     private TimeEntriesUiOps timeEntriesUiOps;
     private IssuesUiOps issuesUiOps;
@@ -107,7 +106,18 @@ public class HomeScrollingActivity
 //        dp2px = DisplayUtil.pxFromDp(this, 100);
 //        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
+
         setContentView(R.layout.activity_home_scrolling);
+
+        if (toolbar == null) {
+            toolbar = findViewById(R.id.toolbar_c);
+        }
+
+
+//        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
+//        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
+
+        toolbar.inflateMenu(R.menu.menu_home_scrolling);
         setSupportActionBar(toolbar);
 
         unbinder = ButterKnife.bind(this);
@@ -115,7 +125,7 @@ public class HomeScrollingActivity
 
         setupRV();
 
-        fab2.setOnClickListener(new View.OnClickListener() {
+/*        fab2.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -126,7 +136,7 @@ public class HomeScrollingActivity
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }
-        });
+        });*/
 
         /*
         fab2.setOnTouchListener(new View.OnTouchListener() {
@@ -152,7 +162,6 @@ public class HomeScrollingActivity
 
 
     }
-
 
     //    @OnClick(R.id.fab)
     public void onClick(View view) {
