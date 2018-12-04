@@ -6,4 +6,5 @@
     <integer name="id_item_text"/>
     <integer name="id_item_width"/>
     <integer name="id_item_height"/>
+    <integer name="tag_toolbar_action_manager"/>
 </resources>

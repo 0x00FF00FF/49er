@@ -10,7 +10,10 @@
     <string name="_projects_info_total_hours">Hours:</string>
     <string name="_projects_logo_description">Project Logo</string>
     <string name="_projects_pictures_description">Project Picture</string>
-    <string name="_toolbar_back_button_description">Go back a level</string>
+
+    <string name="_projects_info_template" formatted="false">Issues: %s Users: %s Hours: %s</string>
+
+    <string name="_toolbar_back_button_description">Go back</string>
 
 
     <!--actions-->
@@ -19,4 +22,36 @@
     <string name="action_remove">Remove</string>
     <string name="action_details">Details</string>
     <string name="action_done">Done</string>
+    <string name="action_add_favorite">Favorite</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_add_user">Add User</string>
+    <string name="action_auto_add_hours">Auto Add Hours</string>
+    <string name="action_sort">Sort</string>
+
+    <string name="btn_cancel">Cancel</string>
+
+    <!--project form-->
+    <string name="project_form_header">Adding a project</string>
+    <string name="helper_required">Fields marked with * are required.</string>
+
+    <string name="hint_project_name">Project name *</string>
+    <string name="helper_project_name">Insert the project name.</string>
+
+    <string name="hint_project_short_name">Project short name</string>
+    <string name="helper_project_short_name">Insert a short version of the project name. Must be at most 4 letters.</string>
+    <string name="helper_project_short_name_too_long">The short name should be at most 4 letters.</string>
+
+    <string name="hint_project_description">Project description</string>
+    <string name="helper_project_description">Insert the project description.</string>
+
+    <string name="hint_project_icon">Project icon</string>
+    <string name="helper_project_icon">Set the project icon.</string>
+
+    <string name="hint_project_owner">Project owner *</string>
+    <string name="helper_project_owner">Set the project owner.</string>
+
+    <string name="hint_project_team">Project team</string>
+    <string name="helper_project_team">Insert the project team here.</string>
+
 </resources>

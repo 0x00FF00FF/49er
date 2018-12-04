@@ -10,18 +10,19 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ColorAnimation;
-import org.rares.miner49er.BaseInterfaces.ResizeableItems;
+import org.rares.miner49er.BaseInterfaces.SelectableItemsManager;
 import org.rares.miner49er.BaseInterfaces.SetValues;
 import org.rares.miner49er.R;
 import org.rares.miner49er.layoutmanager.ItemAnimationDto;
@@ -42,7 +43,7 @@ import java.util.List;
 public abstract class ResizeableItemsUiOps
         implements
         BaseInterfaces.ListItemEventListener,
-        BaseInterfaces.ResizeableItems,     // is this really necessary?
+        BaseInterfaces.SelectableItemsManager,
         ResizePostProcessor.PostProcessorConsumer,
         BaseInterfaces.UnbinderHost {
 
@@ -69,9 +70,10 @@ public abstract class ResizeableItemsUiOps
 
     protected Repository repository;
 
+    protected FragmentManager fragmentManager;
 
     /**
-     * Determines if background animation should happen: <br />
+     * Determines if item selection background animation should happen: <br />
      * {@link SetValues#NOT_SET} - use defaults <br />
      * {@link SetValues#ENABLED} - enable background animation <br />
      * {@link SetValues#DISABLED} - do not use background animation <br />
@@ -93,12 +95,8 @@ public abstract class ResizeableItemsUiOps
     protected int colorBgRightSelected = ColorAnimation.NOT_SET;
     protected int colorBgSolid = ColorAnimation.DO_NOT_TOUCH;
 
-    @Override
-    public void resetLastSelectedId() {
-        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
-        _tempAdapter.setLastSelectedPosition(-1);
-    }
 
+    // section ListItemEventListener
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
 
@@ -114,14 +112,6 @@ public abstract class ResizeableItemsUiOps
         if (layoutManager instanceof ResizeableLayoutManager) {
             ResizeableLayoutManager mgr = (ResizeableLayoutManager) layoutManager;
             {
-
-                /*-
-                FIXME
-                this block smells.
-                the layout manager needs to get the view itself, not to have it supplied;
-                the way this is now, there can be differences between the selected position and the selected view
-                 -*/
-
                 mgr.setSelectedPosition(enlarge ? -1 : adapterPosition);
                 List<ItemAnimationDto> animatedItemsList = mgr.resizeSelectedView(holder.itemView, enlarge);
                 for (ItemAnimationDto ia : animatedItemsList) {
@@ -140,7 +130,9 @@ public abstract class ResizeableItemsUiOps
     public void onListItemChanged(ItemViewProperties ivp) {
         domainLink.onParentChanged(ivp);
     }
+    // end section ListItemEventListener
 
+    // section SelectableItemsManager
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
         AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
@@ -162,6 +154,24 @@ public abstract class ResizeableItemsUiOps
         _tempAdapter.setLastSelectedPosition(selectedPosition);
         return false;
     }
+
+    @Override
+    public void resetLastSelectedId() {
+        AbstractAdapter _tempAdapter = (AbstractAdapter) getRv().getAdapter();
+        _tempAdapter.setLastSelectedPosition(-1);
+    }
+
+    @Override
+    public int getSelectedItemId() {
+        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+        return adapter.getLastSelectedPosition();
+    }
+
+    @Override
+    public ResizeableItemViewHolder getSelectedViewHolder() {
+        return (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(getSelectedItemId());
+    }
+    // end section SelectableItemsManager
 
     private void dispatchResizeEvents(boolean enlarge) {
         for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
@@ -210,6 +220,7 @@ public abstract class ResizeableItemsUiOps
         }
     }
 
+    //section Resize Animation
     private void prepareWidthAnimation
             (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
 
@@ -223,8 +234,8 @@ public abstract class ResizeableItemsUiOps
             startElevation = v.getElevation();
         }
 
-        valuesHolderList.add(PropertyValuesHolder.ofInt(ResizeableItems.ANIMATION_WIDTH, startWidth, endWidth));
-        valuesHolderList.add(PropertyValuesHolder.ofFloat(ResizeableItems.ANIMATION_ELEVATION, startElevation, endElevation));
+        valuesHolderList.add(PropertyValuesHolder.ofInt(SelectableItemsManager.ANIMATION_WIDTH, startWidth, endWidth));
+        valuesHolderList.add(PropertyValuesHolder.ofFloat(SelectableItemsManager.ANIMATION_ELEVATION, startElevation, endElevation));
     }
 
     private void prepareBackgroundAnimation
@@ -309,20 +320,20 @@ public abstract class ResizeableItemsUiOps
 
             valuesHolderList.add(
                     PropertyValuesHolder.ofObject(
-                            ResizeableItems.ANIMATION_SOLID_COLOR, argbEvaluator, startSolidColor, endSolidColor));
+                            BaseInterfaces.SelectableItemsManager.ANIMATION_SOLID_COLOR, argbEvaluator, startSolidColor, endSolidColor));
 //            Log.i(TAG, "prepareBackgroundAnimation: ANIMATION_SOLID_COLOR: " + Integer.toHexString(startSolidColor) + " " + Integer.toHexString(endSolidColor));
         }
 
         valuesHolderList.add(PropertyValuesHolder.ofObject(
-                ResizeableItems.ANIMATION_STROKE_COLOR, argbEvaluator, startMarginColor, endMarginColor));
+                SelectableItemsManager.ANIMATION_STROKE_COLOR, argbEvaluator, startMarginColor, endMarginColor));
 
 //        Log.i(TAG, "prepareBackgroundAnimation: ANIMATION_STROKE_COLOR: " + Integer.toHexString(startMarginColor) + " " + Integer.toHexString(endMarginColor));
 
         valuesHolderList.add(PropertyValuesHolder.ofObject(
-                ResizeableItems.ANIMATION_OVERLAY_LEFT_COLOR, argbEvaluator, startLeftBgColor, endLeftBgColor));
+                SelectableItemsManager.ANIMATION_OVERLAY_LEFT_COLOR, argbEvaluator, startLeftBgColor, endLeftBgColor));
 //        Log.i(TAG, "prepareBackgroundAnimation: ANIMATION_OVERLAY_LEFT_COLOR: " + Integer.toHexString(startLeftBgColor) + " " + Integer.toHexString(endLeftBgColor));
         valuesHolderList.add(PropertyValuesHolder.ofObject(
-                ResizeableItems.ANIMATION_OVERLAY_RIGHT_COLOR, argbEvaluator, startRightBgColor, endRightBgColor));
+                SelectableItemsManager.ANIMATION_OVERLAY_RIGHT_COLOR, argbEvaluator, startRightBgColor, endRightBgColor));
 //        Log.i(TAG, "prepareBackgroundAnimation: ANIMATION_OVERLAY_RIGHT_COLOR: " + Integer.toHexString(startRightBgColor) + " " + Integer.toHexString(endRightBgColor));
     }
 
@@ -354,13 +365,13 @@ public abstract class ResizeableItemsUiOps
 
             if (bg instanceof LayerDrawable) {
                 bg.mutate();
-                Object animatedValue = animation.getAnimatedValue(ResizeableItems.ANIMATION_STROKE_COLOR);
+                Object animatedValue = animation.getAnimatedValue(SelectableItemsManager.ANIMATION_STROKE_COLOR);
                 int animatedC = animatedValue == null ? ColorAnimation.NOT_SET : (int) animatedValue;
-                animatedValue = animation.getAnimatedValue(ResizeableItems.ANIMATION_OVERLAY_LEFT_COLOR);
+                animatedValue = animation.getAnimatedValue(BaseInterfaces.SelectableItemsManager.ANIMATION_OVERLAY_LEFT_COLOR);
                 int animatedBgL = animatedValue == null ? ColorAnimation.NOT_SET : (int) animatedValue;
-                animatedValue = animation.getAnimatedValue(ResizeableItems.ANIMATION_OVERLAY_RIGHT_COLOR);
+                animatedValue = animation.getAnimatedValue(SelectableItemsManager.ANIMATION_OVERLAY_RIGHT_COLOR);
                 int animatedBgR = animatedValue == null ? ColorAnimation.NOT_SET : (int) animatedValue;
-                animatedValue = animation.getAnimatedValue(ResizeableItems.ANIMATION_SOLID_COLOR);
+                animatedValue = animation.getAnimatedValue(SelectableItemsManager.ANIMATION_SOLID_COLOR);
                 int animatedBgSolid = animatedValue == null ? ColorAnimation.NOT_SET : (int) animatedValue;
 
                 LayerDrawable backgroundLayers = (LayerDrawable) bg;
@@ -401,7 +412,7 @@ public abstract class ResizeableItemsUiOps
 
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
-            int animatedW = (int) animation.getAnimatedValue(ResizeableItems.ANIMATION_WIDTH);
+            int animatedW = (int) animation.getAnimatedValue(SelectableItemsManager.ANIMATION_WIDTH);
 //            if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animatedW == endAnimationWidth) {
             if (endWidth == ViewGroup.LayoutParams.MATCH_PARENT && animation.getAnimatedFraction() == 1) {
                 animatedW = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -409,7 +420,7 @@ public abstract class ResizeableItemsUiOps
 
             animatedView.getLayoutParams().width = animatedW;
 
-            float animatedE = (float) animation.getAnimatedValue(ResizeableItems.ANIMATION_ELEVATION);
+            float animatedE = (float) animation.getAnimatedValue(SelectableItemsManager.ANIMATION_ELEVATION);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 animatedView.setElevation(animatedE);
             } /*else {
@@ -527,26 +538,6 @@ public abstract class ResizeableItemsUiOps
         return containerWidth;
     }
 
-    public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
-        resizePostProcessor = postProcessor;
-// TODO: 9/24/18  the following block might not be needed. investigate.
-        {
-            RecyclerView.LayoutManager lm = getRv().getLayoutManager();
-            if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
-                ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
-                        .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
-            }
-        }
-    }
-
-    @Override
-    public void onPostProcessEnd() {
-        if (rvState == ListState.LARGE) {
-            AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
-            adapter.setPreviouslySelectedPosition(-1);
-        }
-    }
-
     /**
      * Configures an animator adapter to trigger callbacks when the item animation ends.
      * @param animated the animated view.
@@ -601,7 +592,47 @@ public abstract class ResizeableItemsUiOps
     public final void addRvResizeListener(BaseInterfaces.RvResizeListener listener) {
         resizeListeners.add(listener);
     }
+    // end section Resize Animation
 
+    // section Post-Processing
+    public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
+        resizePostProcessor = postProcessor;
+// TODO: 9/24/18  the following block might not be needed. investigate.
+        {
+            RecyclerView.LayoutManager lm = getRv().getLayoutManager();
+            if (lm instanceof ResizePostProcessor.PostProcessorValidatorConsumer) {
+                ((ResizePostProcessor.PostProcessorValidatorConsumer) lm)
+                        .setPostProcessorValidator(resizePostProcessor.getPostProcessorValidator());
+            }
+        }
+    }
+    @Override
+    public void onPostProcessEnd() {
+        if (rvState == ListState.LARGE) {
+            AbstractAdapter adapter = (AbstractAdapter) rv.getAdapter();
+            adapter.setPreviouslySelectedPosition(-1);
+        }
+    }
+    // end section Post-Processing
+
+    // start section MenuActions
+
+    public void setFragmentManager(FragmentManager fragmentManager) {
+        this.fragmentManager = fragmentManager;
+        configureMenuActionsProvider(fragmentManager);
+    }
+
+    /**
+     * The ui ops classes contain menu actions providers that
+     * would need at some point to start different fragments
+     * @param fm the fragment manger to pass to the menu
+     *           actions providers
+     */
+    protected abstract void configureMenuActionsProvider(FragmentManager fm);
+
+    // end section MenuActions
+
+    // section repository/data
     /**
      * Convenience method to ease up on demand data refresh.
      */
@@ -610,8 +641,9 @@ public abstract class ResizeableItemsUiOps
             repository.refreshData(onlyLocal);
         }
     }
+    // end section repository/data
 
-
+    // section cleanup
     @Override
     public void registerUnbinder(Unbinder unbinder) {
         if (!unbinderList.contains(unbinder)) {
@@ -659,6 +691,7 @@ public abstract class ResizeableItemsUiOps
         }
         clearBindings();
     }
+    // end section cleanup
 
     protected abstract AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties);
 

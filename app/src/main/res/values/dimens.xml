@@ -26,5 +26,8 @@
     <dimen name="toolbar_title_text_size">20sp</dimen>
     <dimen name="toolbar_subtitle_text_size">12sp</dimen>
 
+    <dimen name="toolbar_material_height_regular">56dp</dimen>
+
+    <dimen name="material_textinput_box_corner_radius_medium">4dp</dimen>
 </resources>
 

@@ -1,9 +1,9 @@
 package org.rares.miner49er.layoutmanager;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.AttributeSet;
 import android.view.View;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import lombok.Setter;
 
 import java.util.Collections;

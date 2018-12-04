@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.projects;
+package org.rares.miner49er.domain.projects.repository;
 
 import android.graphics.Color;
 import android.util.Log;
@@ -37,7 +37,7 @@ public class ProjectsRepository extends Repository<Project> {
 
     private ProjectsSort projectsSort = new ProjectsSort();
 
-    ProjectsRepository() {
+    public ProjectsRepository() {
 
         ns.registerProjectsConsumer(this);
         projectTableObservable =

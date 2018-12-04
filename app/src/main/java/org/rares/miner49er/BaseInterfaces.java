@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import butterknife.Unbinder;
+import io.reactivex.annotations.Nullable;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 
@@ -37,7 +38,7 @@ public interface BaseInterfaces {
         void clearBindings();
     }
 
-    interface ResizeableItems {
+    interface SelectableItemsManager {
 
         String ANIMATION_WIDTH = "width";
         String ANIMATION_ELEVATION = "elevation";
@@ -70,6 +71,17 @@ public interface BaseInterfaces {
          * @return - true if a click was performed on an already selected item
          */
         boolean selectItem(int selectedId);
+
+        /**
+         * @return The selected item id in the db. <br />-1 if nothing is selected.
+         */
+        int getSelectedItemId();
+
+        /**
+         * @return The selected item view holder or null.
+         */
+        @Nullable
+        ResizeableItemViewHolder getSelectedViewHolder();
     }
 
     interface RvResizeListener {

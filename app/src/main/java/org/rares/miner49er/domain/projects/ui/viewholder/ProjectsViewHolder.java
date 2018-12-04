@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.projects.viewholder;
+package org.rares.miner49er.domain.projects.ui.viewholder;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
@@ -18,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import lombok.Setter;

@@ -2,13 +2,6 @@ package org.rares.miner49er;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
@@ -19,22 +12,31 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
-import org.rares.miner49er.domain.entries.TimeEntriesUiOps;
-import org.rares.miner49er.domain.issues.AccDecoration;
-import org.rares.miner49er.domain.issues.IssuesItemDecoration;
-import org.rares.miner49er.domain.issues.IssuesUiOps;
+import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
+import org.rares.miner49er.domain.issues.decoration.AccDecoration;
+import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
+import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
-import org.rares.miner49er.domain.projects.ProjectsUiOps;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
+import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
+import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
@@ -117,7 +119,8 @@ public class HomeScrollingActivity
 //        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
 //        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
 
-        toolbar.inflateMenu(R.menu.menu_home_scrolling);
+
+        toolbar.inflateMenu(R.menu.menu_home);
         setSupportActionBar(toolbar);
 
         unbinder = ButterKnife.bind(this);
@@ -125,7 +128,7 @@ public class HomeScrollingActivity
 
         setupRV();
 
-/*        fab2.setOnClickListener(new View.OnClickListener() {
+        fab2.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -136,7 +139,7 @@ public class HomeScrollingActivity
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }
-        });*/
+        });
 
         /*
         fab2.setOnTouchListener(new View.OnTouchListener() {
@@ -174,7 +177,7 @@ public class HomeScrollingActivity
 
         Snackbar snackbar = Snackbar.make(view, snackbarText, Snackbar.LENGTH_LONG);
         View snackbarView = snackbar.getView();
-        TextView textView = snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
         textView.setMaxLines(3);
 
         snackbarText.clear();
@@ -184,7 +187,7 @@ public class HomeScrollingActivity
         snackbar.setAction(" ➡️ ", (v) -> {
             Snackbar snackbar_ = Snackbar.make(v, snackbarText, Snackbar.LENGTH_LONG);
             View snackbarView_ = snackbar_.getView();
-            TextView textView_ = snackbarView_.findViewById(android.support.design.R.id.snackbar_text);
+            TextView textView_ = snackbarView_.findViewById(com.google.android.material.R.id.snackbar_text);
             textView_.setMaxLines(3);
             snackbar_.show();
         }).show();
@@ -195,7 +198,18 @@ public class HomeScrollingActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_home_scrolling, menu);
+        getMenuInflater().inflate(R.menu.menu_home, menu);
+        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0);
+        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem removeItem = menu.findItem(R.id.action_remove);
+        if (removeItem != null) {
+            removeItem.setEnabled(false);
+        }
         return true;
     }
 
@@ -263,6 +277,7 @@ public class HomeScrollingActivity
         issuesUiOps.setResizePostProcessor(ipp);
 
         projectsUiOps = new ProjectsUiOps(projectsRV);
+        projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
@@ -335,7 +350,18 @@ public class HomeScrollingActivity
         }*/
     }
 
-//    @Override
+    @Override
+    public void onBackPressed() {
+        ToolbarActionManager toolbarManager = (ToolbarActionManager) toolbar.getTag(R.integer.tag_toolbar_action_manager);
+        if (toolbarManager != null) {
+            if (toolbarManager.onBackPressed()) {
+                return;
+            }
+        }
+        super.onBackPressed();
+    }
+
+    //    @Override
 //    public void registerUnbinder(Unbinder unbinder) {
 //        unbinderList.add(unbinder);
 //    }

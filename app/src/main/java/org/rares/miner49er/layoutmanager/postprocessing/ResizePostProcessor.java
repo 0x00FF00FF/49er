@@ -1,7 +1,7 @@
 package org.rares.miner49er.layoutmanager.postprocessing;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 
 // TODO: this seems a bit tangled up
 public interface ResizePostProcessor {

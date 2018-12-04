@@ -1,7 +1,7 @@
 package org.rares.miner49er.persistence.resolvers;
 
 import android.content.ContentValues;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver;
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery;
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery;

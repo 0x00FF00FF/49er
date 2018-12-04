@@ -1,8 +1,8 @@
 package org.rares.miner49er.domain.entries.model;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.util.DiffUtil;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
 import lombok.Getter;
 import lombok.Setter;
 
