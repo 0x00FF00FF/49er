@@ -80,8 +80,7 @@ public class ProjectMenuActionsProvider implements GenericMenuActions {
                         .show(projectEditFormFragment)
                         .commit();
             }
-            toolbarActionManager.addActionListener(projectAddActionListener);
-            toolbarActionManager.startActionMode();
+            toolbarActionManager.registerActionListener(projectAddActionListener);
         }
         return true;
     }

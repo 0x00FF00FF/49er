@@ -96,7 +96,6 @@ public abstract class ResizeableItemsUiOps
     protected int colorBgSolid = ColorAnimation.DO_NOT_TOUCH;
 
 
-    // section ListItemEventListener
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
 
@@ -130,9 +129,7 @@ public abstract class ResizeableItemsUiOps
     public void onListItemChanged(ItemViewProperties ivp) {
         domainLink.onParentChanged(ivp);
     }
-    // end section ListItemEventListener
 
-    // section SelectableItemsManager
     public boolean selectItem(int selectedPosition) {
         // check if selected position is valid
         AbstractAdapter _tempAdapter = ((AbstractAdapter) getRv().getAdapter());
@@ -164,14 +161,13 @@ public abstract class ResizeableItemsUiOps
     @Override
     public int getSelectedItemId() {
         AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
-        return adapter.getLastSelectedPosition();
+        return adapter == null ? -1 : adapter.getLastSelectedPosition();
     }
 
     @Override
     public ResizeableItemViewHolder getSelectedViewHolder() {
         return (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(getSelectedItemId());
     }
-    // end section SelectableItemsManager
 
     private void dispatchResizeEvents(boolean enlarge) {
         for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
@@ -220,9 +216,8 @@ public abstract class ResizeableItemsUiOps
         }
     }
 
-    //section Resize Animation
     private void prepareWidthAnimation
-            (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
+    (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
 
         final View v = animationData.getAnimatedView();
         final float endElevation = animationData.getElevation();
@@ -449,10 +444,11 @@ public abstract class ResizeableItemsUiOps
 
     /**
      * Computes the value of the final width, based on preference (MATCH_PARENT or desired width).
+     *
      * @param width desired width. can be -1 for match_parent or an actual value.
      *              if match_parent is selected, it will compute the parent view's
      *              width and subtract the left and right margins
-     * @param v the target view
+     * @param v     the target view
      * @return the final width for the animation (in pixels), based on the desired width. will not be -1
      */
     private int getEndAnimationWidth(int width, View v) {
@@ -467,9 +463,10 @@ public abstract class ResizeableItemsUiOps
 
     /**
      * Resize a recycler view item (the selected or previously selected item)
+     *
      * @param animationDto - dto containing animation data (end width, end elevation)
-     * @param selected - if true, this item is selected
-     * @param collapsed - if true, the recycler view is in a collapsed state
+     * @param selected     - if true, this item is selected
+     * @param collapsed    - if true, the recycler view is in a collapsed state
      */
     private void resizeItemAnimated(ItemAnimationDto animationDto, boolean selected, boolean collapsed) {
         final View animatedView = animationDto.getAnimatedView();
@@ -502,6 +499,7 @@ public abstract class ResizeableItemsUiOps
     /**
      * Configures colors for background manipulation on item click.
      * Override this for custom colors.
+     *
      * @param holder - the viewHolder for the selected item.
      */
     protected void setupSelectedItemAnimation(ResizeableItemViewHolder holder) {
@@ -540,6 +538,7 @@ public abstract class ResizeableItemsUiOps
 
     /**
      * Configures an animator adapter to trigger callbacks when the item animation ends.
+     *
      * @param animated the animated view.
      * @return a {@link AnimatorListenerAdapter} if item background manipulation
      * is disabled or not set ({@link #enableBackground}), that sets the item view
@@ -592,9 +591,7 @@ public abstract class ResizeableItemsUiOps
     public final void addRvResizeListener(BaseInterfaces.RvResizeListener listener) {
         resizeListeners.add(listener);
     }
-    // end section Resize Animation
 
-    // section Post-Processing
     public void setResizePostProcessor(ResizePostProcessor.PostProcessor postProcessor) {
         resizePostProcessor = postProcessor;
 // TODO: 9/24/18  the following block might not be needed. investigate.
@@ -606,6 +603,7 @@ public abstract class ResizeableItemsUiOps
             }
         }
     }
+
     @Override
     public void onPostProcessEnd() {
         if (rvState == ListState.LARGE) {
@@ -613,9 +611,7 @@ public abstract class ResizeableItemsUiOps
             adapter.setPreviouslySelectedPosition(-1);
         }
     }
-    // end section Post-Processing
 
-    // start section MenuActions
 
     public void setFragmentManager(FragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -625,14 +621,14 @@ public abstract class ResizeableItemsUiOps
     /**
      * The ui ops classes contain menu actions providers that
      * would need at some point to start different fragments
+     *
      * @param fm the fragment manger to pass to the menu
      *           actions providers
      */
     protected abstract void configureMenuActionsProvider(FragmentManager fm);
 
-    // end section MenuActions
 
-    // section repository/data
+
     /**
      * Convenience method to ease up on demand data refresh.
      */
@@ -641,9 +637,7 @@ public abstract class ResizeableItemsUiOps
             repository.refreshData(onlyLocal);
         }
     }
-    // end section repository/data
 
-    // section cleanup
     @Override
     public void registerUnbinder(Unbinder unbinder) {
         if (!unbinderList.contains(unbinder)) {
@@ -691,7 +685,6 @@ public abstract class ResizeableItemsUiOps
         }
         clearBindings();
     }
-    // end section cleanup
 
     protected abstract AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties);
 

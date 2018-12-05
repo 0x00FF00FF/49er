@@ -8,7 +8,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
-import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
@@ -47,6 +46,8 @@ public class ProjectsUiOps
 
     private ProjectMenuActionsProvider menuActionsProvider;
 
+    private boolean requireActionMode = false;
+
     public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
         setRv(rv);
@@ -68,7 +69,6 @@ public class ProjectsUiOps
 
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
-        final ListState state = getRvState();
         boolean enlarge = super.onListItemClick(holder);
 
         if (toolbarManager == null) {
@@ -76,14 +76,11 @@ public class ProjectsUiOps
         }
 
         if (enlarge) {
-            toolbarManager.endActionMode();
+            requireActionMode = false;
+            toolbarManager.unregisterActionListener(this);
         } else {
-            if (state == ListState.LARGE) {
-//                toolbarManager.addActionListener(this);
-                toolbarManager.startActionMode();
-            } else {
-                toolbarManager.refreshActionMode();
-            }
+            requireActionMode = true;
+            toolbarManager.registerActionListener(this);
         }
 
         return enlarge;
@@ -92,11 +89,10 @@ public class ProjectsUiOps
     @Override
     public boolean onToolbarBackPressed() {
         ResizeableItemViewHolder vh = getSelectedViewHolder();
-        final ListState beforeState = getRvState();
         if (vh != null) {
             onListItemClick(vh);
         }
-        return !beforeState.equals(getRvState());
+        return false; // toolbarManager should not unregister this component
     }
 
     @Override
@@ -105,6 +101,7 @@ public class ProjectsUiOps
         ResizeableItemViewHolder selectedHolder = getSelectedViewHolder();
 
         config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
+        config.requireActionMode = requireActionMode;
 
         if (selectedHolder != null) {
             config.menuId = R.menu.menu_generic_actions;
@@ -138,12 +135,13 @@ public class ProjectsUiOps
         if (menuActionsProvider == null) {
             menuActionsProvider = new ProjectMenuActionsProvider(fragmentManager, toolbarManager);
         }
-        toolbarManager.addActionListener(this);
+        toolbarManager.registerActionListener(this);
     }
 
     private void provideToolbarActionManager() {
-        // TODO: 12/4/18 provide the toolbar
+        // TODO: 12/4/18 have the toolbar supplied, do not "grab"
         Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+
         if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
             toolbarManager = new ToolbarActionManager(t);
             t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
@@ -162,41 +160,6 @@ public class ProjectsUiOps
     @Override
     protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
         return null;
-    }
-
-    /**
-     * Removes a project from the list.
-     * Calls {@link DomainLink} to act on the event.
-     */
-    // TODO: 02.03.2018 refactor
-    public void removeItem() {
-//        RecyclerView.LayoutManager llm = getRv().getLayoutManager();
-//        int itemCount = getRv().getAdapter().getItemCount();
-//        if (itemCount > 0) {
-//            View child = llm.getChildAt(0);
-//
-//            ItemViewProperties projectViewProperties =
-//                    ((ResizeableViewHolder) getRv().getChildViewHolder(child)).getItemProperties();
-//            // ^
-//            if (projectViewProperties.getItemContainerCustomId() == getLastSelectedId()) {
-//                if (itemCount > 1) {
-//                    child = llm.getChildAt(1);
-//
-//                    projectViewProperties =
-//                            ((ResizeableViewHolder) getRv().getChildViewHolder(child)).getItemProperties();
-//                    // ^
-//                    resizeItems(projectViewProperties.getItemContainerCustomId());
-//
-//                    domainLink.onParentRemoved(projectViewProperties);
-//                    // ^
-//                } else {
-//                    domainLink.onParentRemoved(null);
-//                    resizeAnimated(resizeItems(getLastSelectedId()));
-//                }
-//            }
-//        }
-//        ((ProjectsAdapter) getRv().getAdapter()).removeItem();
-//        // ^
     }
 
 }

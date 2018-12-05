@@ -36,6 +36,9 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private ToolbarActionManager toolbarManager = null;
 
+    // this component always requires action mode
+    private final boolean requiresActionMode = true;
+
     public IssuesUiOps(RecyclerView rv) {
         setRv(rv);
         issuesRepository.setup();
@@ -44,7 +47,6 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public boolean onListItemClick(ResizeableItemViewHolder holder) {
-        final ListState state = getRvState();
         boolean enlarge = super.onListItemClick(holder);
 
         if (toolbarManager == null) {
@@ -53,14 +55,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         }
 
         if (enlarge) {
-            toolbarManager.removeActionListener(this);
+            toolbarManager.unregisterActionListener(this);
         } else {
-            if (state == ListState.LARGE) {
-                // the toolbar should already be in action mode
-                toolbarManager.addActionListener(this);
-            }
-            toolbarManager.refreshActionMode();
+            toolbarManager.registerActionListener(this);
         }
+
         return enlarge;
     }
 
@@ -69,21 +68,23 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         IssuesAdapter adapter = (IssuesAdapter) getRv().getAdapter();
         ResizeableItemViewHolder holder =
                 (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(adapter.getLastSelectedPosition());
-        final ListState beforeState = getRvState();
         onListItemClick(holder);
-        return !beforeState.equals(getRvState());
+        return false; // toolbarManager should not unregister this component
     }
 
     @Override
     public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
         // for now, re-use the generic one configured in the projects
         ResizeableItemViewHolder holder = getSelectedViewHolder();
+
         if (holder != null) {
 //            config.title = holder.getLongTitle();
 //            config.subtitle = holder.getInfoLabelString();
             config.subtitle = holder.getLongTitle();
             config.subtitleRes = 0;
         }
+
+        config.requireActionMode = requiresActionMode;
 
         config.createGenericMenu = true;
 
