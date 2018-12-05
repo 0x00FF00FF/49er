@@ -1,13 +1,15 @@
-package org.rares.miner49er.domain.entries;
+package org.rares.miner49er.domain.entries.ui.control;
 
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
+import org.rares.miner49er.domain.entries.repository.TimeEntriesRepository;
 
 /**
  * @author rares
@@ -47,6 +49,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 //            RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) unbinder;
 //            Log.v(TAG, "onParentChanged: " + unbinder + "" + TextUtils.getItemText(vh.itemView));
 //        }
+    }
+
+    @Override
+    protected void configureMenuActionsProvider(FragmentManager fm) {
+
     }
 
     @Override

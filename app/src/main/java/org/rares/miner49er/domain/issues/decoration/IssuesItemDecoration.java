@@ -1,13 +1,13 @@
-package org.rares.miner49er.domain.issues;
+package org.rares.miner49er.domain.issues.decoration;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 

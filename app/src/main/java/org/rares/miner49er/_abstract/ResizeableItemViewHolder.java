@@ -2,8 +2,8 @@ package org.rares.miner49er._abstract;
 
 import android.animation.ValueAnimator;
 import android.graphics.Typeface;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 import org.rares.ratv.rotationaware.animation.RotationAnimatorHost;
 import org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener;
 
-import static android.support.v7.widget.RecyclerView.NO_POSITION;
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
 /**
  * @author rares
@@ -27,7 +27,7 @@ public abstract class ResizeableItemViewHolder
 
     private static final String TAG = ResizeableItemViewHolder.class.getSimpleName();
 
-
+    @Getter
     protected String shortTitle = "", longTitle = "";
 
     @Getter
@@ -52,6 +52,9 @@ public abstract class ResizeableItemViewHolder
 
     protected RotationAwareUpdateListener animationUpdateListener;
     protected RotationAnimatorHost animatorHost;
+
+    @Getter
+    protected String infoLabelString;
 
     public abstract void bindData(Object data, boolean shortVersion, boolean selected);
 

@@ -17,4 +17,17 @@
     <dimen name="_list_item_corner_radius_small">12dp</dimen>
     <dimen name="_list_item_corner_radius_large">15dp</dimen>
     <dimen name="_list_item_invisible_margin">2dp</dimen>
+
+    <!--custom toolbar-->
+    <dimen name="toolbar_first_keyline">16dp</dimen>
+    <dimen name="toolbar_second_keyline">72dp</dimen>
+    <dimen name="toolbar_horizontal_padding">4dp</dimen>
+
+    <dimen name="toolbar_title_text_size">20sp</dimen>
+    <dimen name="toolbar_subtitle_text_size">12sp</dimen>
+
+    <dimen name="toolbar_material_height_regular">56dp</dimen>
+
+    <dimen name="material_textinput_box_corner_radius_medium">4dp</dimen>
 </resources>
+

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="colorPrimary">#283593</color>
     <color name="colorPrimaryDark">#1A237E</color>
     <color name="colorAccent">#FF4081</color>
     <color name="greatGreen">#88FF00</color>
     <color name="pureWhite">#FFFFFF</color>
+
+    <color name="colorOnPrimary">@color/colorPrimaryDark</color>
 
     <color name="semitransparent_black_left">#BB000000</color>
     <color name="semitransparent_black_right">#33000000</color>
@@ -13,7 +15,16 @@
     <color name="semitransparent_black_left_issues">#99000000</color>
     <color name="semitransparent_black_left_selected_issues">#66000000</color>
 
-    <color name="transient_semitransparent_background_margin">@color/indigo.100_blacked</color>
+    <color name="transient_semitransparent_background_margin">@color/indigo_100_blacked</color>
+
+    <color name="error_color">@color/pink.A400</color>
+    <color name="hint_color_active">@color/indigo.A100</color>
+    <color name="hint_color_inactive">@color/indigo.200</color>
+
+    <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">@color/hint_color_inactive</color>
+
+    <color name="design_dark_default_color_surface" tools:override="true">@android:color/transparent</color>
+    <color name="design_default_color_surface" tools:override="true">@android:color/transparent</color>
 
     <!--material.blueGray-->
     <color name="blueGray.050">#ECEFF1</color>
@@ -28,9 +39,9 @@
     <color name="blueGray.900">#263238</color>
 
     <!--material.indigo-->
-    <color name="indigo.100_blacked">#30344B</color>
-    <color name="indigo.100_blacked_transparent">#4030344B</color>
-    <color name="indigo.100_grayed">#606586</color>
+    <color name="indigo_100_blacked">#30344B</color>
+    <color name="indigo_100_blacked_transparent">#4030344B</color>
+    <color name="indigo_100_grayed">#606586</color>
     <color name="indigo.050">#E8EAF6</color>
     <color name="indigo.100">#c5cae9</color>
     <color name="indigo.200">#9FA8DA</color>
@@ -42,6 +53,7 @@
     <color name="indigo.800">#283593</color>
     <color name="indigo.900">#1A237E</color>
     <color name="indigo.A100">#8C9EFF</color>
+    <color name="indigo.A100_grayed">#535d91</color>
     <color name="indigo.A200">#536DFE</color>
     <color name="indigo.A400">#3D5AFE</color>
     <color name="indigo.A700">#304FFE</color>

@@ -1,19 +1,20 @@
 package org.rares.miner49er.domain.issues.adapter;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListUpdateCallback;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.model.IssuesDiff;
+import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
 import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.util.TextUtils;
 

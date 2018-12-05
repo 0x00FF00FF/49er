@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.entries;
+package org.rares.miner49er.domain.entries.repository;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
@@ -34,7 +34,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
             .whereArgs(parentProperties.getId())
             .build();
 
-    TimeEntriesRepository() {
+    public TimeEntriesRepository() {
 //        ns.registerTimeEntriesConsumer(this);
 //        timeEntriesTableObservable =
 //                storio
@@ -44,7 +44,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     }
 
     @Override
-    protected TimeEntriesRepository setup() {
+    public TimeEntriesRepository setup() {
         if (disposables.isDisposed()) {
             disposables = new CompositeDisposable();
         }

@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.issues.adapter;
+package org.rares.miner49er.domain.issues.ui.viewholder;
 
 import org.rares.miner49er._abstract.ItemViewProperties;
 

@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.issues;
+package org.rares.miner49er.domain.issues.repository;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
@@ -30,7 +30,7 @@ public class IssuesRepository extends Repository<Issue> {
     private Flowable<Changes> issueTableObservable;
     private Query issuesQuery;
 
-    IssuesRepository() {
+    public IssuesRepository() {
 //        ns.registerIssuesConsumer(this);
 //        issueTableObservable =
 //                storio

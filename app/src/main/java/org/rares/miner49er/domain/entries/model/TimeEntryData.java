@@ -1,7 +1,7 @@
 package org.rares.miner49er.domain.entries.model;
 
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.rares.miner49er.util.TextUtils;

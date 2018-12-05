@@ -1,8 +1,8 @@
 package org.rares.miner49er.layoutmanager.postprocessing.rotation;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 
 public interface ItemRotator extends ResizePostProcessor {

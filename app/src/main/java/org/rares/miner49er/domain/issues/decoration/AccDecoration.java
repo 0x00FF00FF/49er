@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.issues;
+package org.rares.miner49er.domain.issues.decoration;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,8 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Shader;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 import lombok.Setter;
 import org.rares.miner49er.R;
 

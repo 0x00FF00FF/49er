@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="org.rares.miner49er.HomeScrollingActivity">
+    <item
+            android:id="@+id/action_set_auto_add_hours"
+            android:orderInCategory="100"
+            android:title="@string/action_auto_add_hours"
+            android:icon="@drawable/icon_path_auto_add_time_2"
+            android:checkable="true"
+            app:showAsAction="never"
+    />
+</menu>

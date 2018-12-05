@@ -1,11 +1,10 @@
-package org.rares.miner49er.domain.issues.adapter;
+package org.rares.miner49er.domain.issues.ui.viewholder;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
-import android.support.constraint.ConstraintLayout;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
@@ -13,6 +12,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import lombok.Getter;
@@ -58,8 +58,6 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     String totalHoursLabel;
 
     private TextView infoLabel = null;
-
-    private String infoLabelString;
 
     private int infoLabelId = -1;
 
