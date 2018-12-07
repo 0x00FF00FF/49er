@@ -92,7 +92,7 @@ public class ProjectsUiOps
         if (vh != null) {
             onListItemClick(vh);
         }
-        return false; // toolbarManager should not unregister this component
+        return vh == null; // toolbarManager should not unregister this component if there is something selected
     }
 
     @Override
