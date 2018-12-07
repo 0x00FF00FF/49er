@@ -73,9 +73,12 @@ public class ProjectMenuActionsProvider implements GenericMenuActions {
         if (menuActionId == R.id.action_add_project) {
 
             if (fragmentManager.findFragmentByTag(ProjectEditFormFragment.TAG) == null) {
+
                 fragmentManager
                         .beginTransaction()
-                        .add(R.id.main_container, projectEditFormFragment, ProjectEditFormFragment.TAG)
+                        .setCustomAnimations(
+                                R.anim.item_animation_from_left, R.anim.item_animation_to_left)
+                        .replace(R.id.main_container, projectEditFormFragment, ProjectEditFormFragment.TAG)
                         .addToBackStack(ProjectEditFormFragment.TAG)
                         .show(projectEditFormFragment)
                         .commit();

@@ -138,7 +138,7 @@
     </style>
 
     <style name="TempCardViewStyle" parent="CardView.Dark">
-        <item name="cardBackgroundColor">@color/pureWhite</item>
+        <item name="cardBackgroundColor">@color/indigo.A100_grayed</item>
         <item name="cardCornerRadius">4dp</item>
     </style>
 

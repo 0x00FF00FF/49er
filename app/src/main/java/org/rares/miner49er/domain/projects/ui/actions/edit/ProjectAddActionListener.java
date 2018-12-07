@@ -1,8 +1,8 @@
 package org.rares.miner49er.domain.projects.ui.actions.edit;
 
 import android.util.Log;
-import androidx.appcompat.app.AppCompatActivity;
 import org.rares.miner49er.R;
+import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.EmptyActionsProvider;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -17,7 +17,7 @@ public class ProjectAddActionListener implements ToolbarActionManager.MenuAction
 
     private static final String TAG = ProjectAddActionListener.class.getSimpleName();
 
-    private ProjectEditFormFragment fragment;
+    private ActionFragment fragment;
 
     public ProjectAddActionListener(ProjectEditFormFragment fragment) {
         this.fragment = fragment;
@@ -25,8 +25,7 @@ public class ProjectAddActionListener implements ToolbarActionManager.MenuAction
 
     @Override
     public boolean onToolbarBackPressed() {
-        // get fragment manager and handle back pressed
-        ((AppCompatActivity) fragment.getContext()).getSupportFragmentManager().popBackStack();
+        fragment.prepareExit();
         return true; // toolbar manager should unregister this listener
     }
 
@@ -55,8 +54,8 @@ public class ProjectAddActionListener implements ToolbarActionManager.MenuAction
         @Override
         public boolean add(int id) {
             Log.i(TAG, "add: validate + add [ " + id + "]");
-            if (fragment.validate()) {
-                return fragment.addProject();
+            if (fragment.validateForm()) {
+                return fragment.applyAction();
             }
             return false;
         }

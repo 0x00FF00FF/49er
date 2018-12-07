@@ -378,6 +378,8 @@ public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         ensureStackNotEmpty();
+        toolbar.getMenu().close();
+
         int itemId = item.getItemId();
         GenericMenuActions listener = actionListenerStack.peek().getMenuActionsProvider();
 
