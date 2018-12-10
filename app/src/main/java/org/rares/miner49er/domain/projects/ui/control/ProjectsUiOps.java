@@ -24,6 +24,7 @@ import java.util.List;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
 
 /**
@@ -106,14 +107,21 @@ public class ProjectsUiOps
         if (selectedHolder != null) {
             config.menuId = R.menu.menu_generic_actions;
             config.additionalMenuId = R.menu.menu_additional_projects;
-            config.additionalResources = new int[1][3];
+            config.additionalResources = new int[1][4];
             config.createGenericMenu = true;
             config.titleRes = 0;
             config.subtitleRes = 0;
 
+            config.overrideGenericMenuResources = new int[1][4];
+            config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
+            config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
+            config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+            config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
+
             config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
             config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
             config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+            config.additionalResources[0][ITEM_NAME] = 0;
             Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_add_user: " + R.drawable.icon_path_add_user);
             config.title = selectedHolder.getLongTitle();
             // refresh infoLabel

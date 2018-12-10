@@ -12,6 +12,7 @@ import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_WITH_TE
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
 public class ProjectAddActionListener implements ToolbarActionManager.MenuActionListener {
 
@@ -35,10 +36,14 @@ public class ProjectAddActionListener implements ToolbarActionManager.MenuAction
         config.subtitle = "";
         config.createGenericMenu = false;
         config.menuId = R.menu.menu_action_done;
-        config.menuResources = new int[1][3];
+        config.overrideGenericMenuResources = null;
+
+        config.menuResources = new int[1][4];
         config.menuResources[0][ITEM_ID] = R.id.action_add;
         config.menuResources[0][ICON_ID] = 0;
+        config.menuResources[0][ITEM_NAME] = 0;
         config.menuResources[0][FLAGS] = SHOW_AS_ACTION_WITH_TEXT | SHOW_AS_ACTION_ALWAYS;
+
         config.additionalMenuId = 0;
         config.additionalResources = null;
         config.requireActionMode = true;

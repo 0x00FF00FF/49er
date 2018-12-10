@@ -29,6 +29,10 @@
     <string name="action_auto_add_hours">Auto Add Hours</string>
     <string name="action_sort">Sort</string>
 
+    <string name="action_add_project">Add a project</string>
+    <string name="action_add_issue">Add an issue</string>
+    <string name="action_add_time_entry">Add a time entry</string>
+
     <string name="btn_cancel">Cancel</string>
 
     <!--project form-->
@@ -39,7 +43,8 @@
     <string name="helper_project_name">Insert the project name.</string>
 
     <string name="hint_project_short_name">Project short name</string>
-    <string name="helper_project_short_name">Insert a short version of the project name. Must be at most 4 letters.</string>
+    <string name="helper_project_short_name">Insert a short version of the project name. Must be at most 4 letters.
+    </string>
     <string name="helper_project_short_name_too_long">The short name should be at most 4 letters.</string>
 
     <string name="hint_project_description">Project description</string>
