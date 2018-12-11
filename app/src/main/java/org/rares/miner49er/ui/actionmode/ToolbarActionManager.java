@@ -432,6 +432,11 @@ public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
 
     }
 
+//    public interface ActionListenerManager {
+//        void registerActionListener(MenuActionListener listener);
+//        void unregisterActionListener(MenuActionListener listener);
+//    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         ensureStackNotEmpty();

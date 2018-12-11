@@ -7,11 +7,19 @@ import lombok.Setter;
 public abstract class ActionFragment extends Fragment {
 
     public abstract boolean applyAction();
+
     public abstract boolean validateForm();
+
     public abstract void prepareEntry();
+
     public abstract void prepareExit();
 
+    protected View replacedView;
 
     @Setter
-    protected View replacedView;
+    protected FragmentDismissListener dismissListener;
+
+    public interface FragmentDismissListener {
+        void onFragmentDismiss();
+    }
 }

@@ -14,15 +14,15 @@ public class ProjectMenuActionsProvider implements GenericMenuActions {
     private FragmentManager fragmentManager;
     ToolbarActionManager toolbarActionManager;
 
+    private ProjectEditFormFragment projectEditFormFragment;
+    private ProjectAddActionListener projectAddActionListener;
+
     ProjectMenuActionsProvider(FragmentManager fragmentManager, ToolbarActionManager toolbarManager) {
         this.fragmentManager = fragmentManager;
         toolbarActionManager = toolbarManager;
         projectEditFormFragment = new ProjectEditFormFragment();
-        projectAddActionListener = new ProjectAddActionListener(projectEditFormFragment);
+        projectAddActionListener = new ProjectAddActionListener(projectEditFormFragment, toolbarActionManager);
     }
-
-    private ProjectEditFormFragment projectEditFormFragment;
-    private ProjectAddActionListener projectAddActionListener;
 
     @Override
     public boolean add(int id) {

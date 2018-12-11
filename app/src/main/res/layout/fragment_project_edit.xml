@@ -12,6 +12,7 @@
         android:paddingBottom="@dimen/projects_list_item_background_stroke_width"
 >
     <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/content_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
     >
@@ -148,6 +149,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
+                android:layout_marginTop="@dimen/sv_margin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/project_owner_input_layout"
@@ -295,8 +297,10 @@
                 android:layout_height="wrap_content"
                 android:text="@string/helper_required"
                 android:textColor="@color/indigo.100"
+                android:textSize="@dimen/list_item_secondary_text_size"
                 android:layout_marginEnd="@dimen/sv_margin"
                 android:layout_marginRight="@dimen/sv_margin"
+                android:layout_marginTop="@dimen/sv_margin"
                 app:layout_constraintTop_toBottomOf="@id/users_scroll_view"
                 app:layout_constraintEnd_toEndOf="parent"
         />

@@ -59,4 +59,8 @@
     <string name="hint_project_team">Project team</string>
     <string name="helper_project_team">Insert the project team here.</string>
 
+    <string name="error_field_required">This field is required.</string>
+    <string name="error_field_contains_illegal_characters">This field contains illegal characters.</string>
+
+    <string name="error_name_unavailable">This name is unavailable.</string>
 </resources>

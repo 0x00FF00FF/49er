@@ -14,14 +14,20 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
-public class ProjectAddActionListener implements ToolbarActionManager.MenuActionListener {
+public class ProjectAddActionListener
+        implements
+        ToolbarActionManager.MenuActionListener,
+        ActionFragment.FragmentDismissListener {
 
     private static final String TAG = ProjectAddActionListener.class.getSimpleName();
 
     private ActionFragment fragment;
+    private ToolbarActionManager toolbarActionManager;
 
-    public ProjectAddActionListener(ProjectEditFormFragment fragment) {
+    public ProjectAddActionListener(ProjectEditFormFragment fragment, ToolbarActionManager toolbarActionManager) {
         this.fragment = fragment;
+        this.toolbarActionManager = toolbarActionManager;
+        this.fragment.setDismissListener(this);
     }
 
     @Override
@@ -60,9 +66,18 @@ public class ProjectAddActionListener implements ToolbarActionManager.MenuAction
         public boolean add(int id) {
             Log.i(TAG, "add: validate + add [ " + id + "]");
             if (fragment.validateForm()) {
-                return fragment.applyAction();
+                if (fragment.applyAction()) {
+                    fragment.prepareExit();
+                    fragment.getFragmentManager().popBackStack();
+                    onFragmentDismiss();
+                }
             }
-            return false;
+            return true;
         }
     };
+
+    @Override
+    public void onFragmentDismiss() {
+        toolbarActionManager.unregisterActionListener(this);
+    }
 }
