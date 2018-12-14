@@ -33,6 +33,8 @@
     <string name="action_add_issue">Add an issue</string>
     <string name="action_add_time_entry">Add a time entry</string>
 
+    <string name="action_undo">Undo</string>
+
     <string name="btn_cancel">Cancel</string>
 
     <!--project form-->
@@ -59,7 +61,10 @@
     <string name="hint_project_team">Project team</string>
     <string name="helper_project_team">Insert the project team here.</string>
 
+    <string name="success_project_add" formatted="false">The %s project has been successfully created.</string>
+
     <string name="error_field_required">This field is required.</string>
+    <string name="error_field_already_exists">This name already exists.</string>
     <string name="error_field_contains_illegal_characters">This field contains illegal characters.</string>
 
     <string name="error_name_unavailable">This name is unavailable.</string>

@@ -1,27 +1,26 @@
 package org.rares.miner49er.domain.projects.ui.control;
 
-import android.util.Log;
 import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectAddActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditFormFragment;
+import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
-import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 
 public class ProjectMenuActionsProvider implements GenericMenuActions {
 
     private static final String TAG = ProjectMenuActionsProvider.class.getSimpleName();
     private FragmentManager fragmentManager;
-    ToolbarActionManager toolbarActionManager;
+    private ActionListenerManager actionManager;
 
     private ProjectEditFormFragment projectEditFormFragment;
     private ProjectAddActionListener projectAddActionListener;
 
-    ProjectMenuActionsProvider(FragmentManager fragmentManager, ToolbarActionManager toolbarManager) {
+    ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager) {
         this.fragmentManager = fragmentManager;
-        toolbarActionManager = toolbarManager;
+        actionManager = manager;
         projectEditFormFragment = new ProjectEditFormFragment();
-        projectAddActionListener = new ProjectAddActionListener(projectEditFormFragment, toolbarActionManager);
+        projectAddActionListener = new ProjectAddActionListener(projectEditFormFragment, actionManager);
     }
 
     @Override
@@ -63,8 +62,6 @@ public class ProjectMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean menuAction(int menuActionId, int id) {
-        Log.i(TAG, "menuAction:  here");
-
 
         if (menuActionId == R.id.action_add_user) {
             // show add user fragment
@@ -83,7 +80,7 @@ public class ProjectMenuActionsProvider implements GenericMenuActions {
                         .show(projectEditFormFragment)
                         .commit();
             }
-            toolbarActionManager.registerActionListener(projectAddActionListener);
+            actionManager.registerActionListener(projectAddActionListener);
         }
         return true;
     }

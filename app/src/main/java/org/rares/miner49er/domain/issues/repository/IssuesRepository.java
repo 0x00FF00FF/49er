@@ -14,8 +14,8 @@ import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
-import org.rares.miner49er.persistence.tables.IssueTable;
-import org.rares.miner49er.persistence.tables.TimeEntryTable;
+import org.rares.miner49er.persistence.storio.tables.IssueTable;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -39,23 +39,21 @@ public class IssuesRepository extends Repository<Issue> {
     }
 
     @Override
-    public IssuesRepository setup() {
+    public void setup() {
 
         if (disposables.isDisposed()) {
             disposables = new CompositeDisposable();
         }
 
-        return this;
     }
 
     @Override
-    public IssuesRepository shutdown() {
+    public void shutdown() {
         disposables.dispose();
-        return this;
     }
 
     @Override
-    protected IssuesRepository prepareEntities(List<Issue> entityList) {
+    protected boolean prepareEntities(List<Issue> entityList) {
 
         for (Issue i : entityList) {
             if (i.getTimeEntries() != null) {
@@ -116,20 +114,19 @@ public class IssuesRepository extends Repository<Issue> {
                 .asRxCompletable()
                 .subscribe();
 
-        return this;
+        return false;
     }
 
     @Override
-    protected IssuesRepository clearTables(StorIOSQLite.LowLevel ll) {
+    protected void clearTables(StorIOSQLite.LowLevel ll) {
 //        for (DeleteQuery query : queries) {
 //            Log.i(TAG, "clearTables: " + query);
 //            ll.delete(query);
 //        }
-        return this;
     }
 
     @Override
-    public IssuesRepository registerSubscriber(Consumer<List> consumer) {
+    public void registerSubscriber(Consumer<List> consumer) {
 
         disposables.add(
 //                Flowable.merge(
@@ -149,17 +146,15 @@ public class IssuesRepository extends Repository<Issue> {
                         .subscribe(consumer)
         );
 
-        return this;
     }
 
     @Override
-    protected IssuesRepository refreshQuery() {
+    protected void refreshQuery() {
         issuesQuery = Query.builder()
                 .table(IssueTable.NAME)
                 .where(IssueTable.PROJECT_ID_COLUMN + " = ? ")
                 .whereArgs(parentProperties.getId())
                 .build();
-        return this;
     }
 
     @Override
@@ -207,7 +202,7 @@ public class IssuesRepository extends Repository<Issue> {
         List<Issue> dataList = new ArrayList<>();
         for (int i = 0; i < NumberUtils.getRandomInt(5, 30); i++) {
             Issue data = new Issue();
-            data.setId(-1);
+            data.setId(-1L);
             data.setName("Issue #" + i);
             dataList.add(data);
         }

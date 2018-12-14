@@ -14,7 +14,7 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
-import org.rares.miner49er.domain.projects.repository.ProjectsRepository;
+import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
@@ -63,9 +63,8 @@ public class ProjectsUiOps
      */
     public void setupRepository() {
         Log.e(TAG, "setupRepository() called");
-        projectsRepository
-                .setup()
-                .registerSubscriber((Consumer<List>) getRv().getAdapter());
+        projectsRepository.setup();
+        projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
     }
 
     @Override

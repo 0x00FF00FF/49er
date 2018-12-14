@@ -53,8 +53,8 @@ public class UserDiff extends DiffUtil.Callback {
         if (!newData.getName().equals(oldData.getName())) {
             diffBundle.putString("name", newData.getName());
         }
-        if (newData.getId() != oldData.getId()) {
-            diffBundle.putInt("id", newData.getId());
+        if (!newData.getId().equals(oldData.getId())) {
+            diffBundle.putLong("id", newData.getId());
         }
         if (newData.getRole() != oldData.getRole()) {
             diffBundle.putInt("role", newData.getRole());
@@ -71,7 +71,7 @@ public class UserDiff extends DiffUtil.Callback {
         if (diffBundle.size() == 0) {
             return null;
         } else {
-            diffBundle.putInt("id", newData.getId());
+            diffBundle.putLong("id", newData.getId());
         }
         return diffBundle;
 

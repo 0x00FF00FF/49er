@@ -31,7 +31,7 @@ public class IssuesDiff extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return oldIssueData.get(oldItemPosition).getId() == newIssueData.get(newItemPosition).getId();
+        return oldIssueData.get(oldItemPosition).getId().equals(newIssueData.get(newItemPosition).getId());
     }
 
     @Override
@@ -52,8 +52,8 @@ public class IssuesDiff extends DiffUtil.Callback {
         if (newData.getDateAdded() != (oldData.getDateAdded())) {
             bundle.putLong("DateAdded", newData.getDateAdded());
         }
-        if (newData.getProjectId() != (oldData.getProjectId())) {
-            bundle.putInt("ProjectId", newData.getProjectId());
+        if (!newData.getProjectId().equals(oldData.getProjectId())) {
+            bundle.putLong("ProjectId", newData.getProjectId());
         }
         if (newData.getColor() != oldData.getColor()) {
             bundle.putInt("Color", newData.getColor());
@@ -61,7 +61,7 @@ public class IssuesDiff extends DiffUtil.Callback {
         if (bundle.size() == 0) {
             return null;
         } else {
-            bundle.putInt("id", newData.getId());
+            bundle.putLong("id", newData.getId());
         }
         return bundle;
     }

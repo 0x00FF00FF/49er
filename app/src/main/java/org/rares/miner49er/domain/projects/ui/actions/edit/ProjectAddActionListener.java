@@ -3,6 +3,7 @@ package org.rares.miner49er.domain.projects.ui.actions.edit;
 import android.util.Log;
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.EmptyActionsProvider;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -22,11 +23,11 @@ public class ProjectAddActionListener
     private static final String TAG = ProjectAddActionListener.class.getSimpleName();
 
     private ActionFragment fragment;
-    private ToolbarActionManager toolbarActionManager;
+    private ActionListenerManager actionManager;
 
-    public ProjectAddActionListener(ProjectEditFormFragment fragment, ToolbarActionManager toolbarActionManager) {
+    public ProjectAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
         this.fragment = fragment;
-        this.toolbarActionManager = toolbarActionManager;
+        this.actionManager = actionManager;
         this.fragment.setDismissListener(this);
     }
 
@@ -78,6 +79,6 @@ public class ProjectAddActionListener
 
     @Override
     public void onFragmentDismiss() {
-        toolbarActionManager.unregisterActionListener(this);
+        actionManager.unregisterActionListener(this);
     }
 }

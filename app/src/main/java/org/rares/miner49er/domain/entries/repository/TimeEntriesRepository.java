@@ -14,7 +14,7 @@ import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
-import org.rares.miner49er.persistence.tables.TimeEntryTable;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -44,16 +44,16 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     }
 
     @Override
-    public TimeEntriesRepository setup() {
+    public void setup() {
         if (disposables.isDisposed()) {
             disposables = new CompositeDisposable();
         }
 
-        return this;
+
     }
 
     @Override
-    public TimeEntriesRepository registerSubscriber(Consumer<List> consumer) {
+    public void registerSubscriber(Consumer<List> consumer) {
 //        disposables.add(
 //                timeEntriesTableObservable
 //                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
@@ -73,11 +73,11 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer));
 
-        return this;
+
     }
 
     @Override
-    protected TimeEntriesRepository prepareEntities(List<TimeEntry> entityList) {
+    protected boolean prepareEntities(List<TimeEntry> entityList) {
         for (TimeEntry te : entityList) {
             if (te.getUserId() == 0) {
                 te.setUserId(te.getUser().getId());
@@ -106,28 +106,28 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                 .asRxCompletable()
                 .subscribe();
 
-        return this;
+        return false;
     }
 
     @Override
-    protected TimeEntriesRepository clearTables(StorIOSQLite.LowLevel ll) {
-        return this;
+    protected void clearTables(StorIOSQLite.LowLevel ll) {
+
     }
 
     @Override
-    public TimeEntriesRepository shutdown() {
+    public void shutdown() {
         disposables.dispose();
-        return this;
+
     }
 
     @Override
-    protected TimeEntriesRepository refreshQuery() {
+    protected void refreshQuery() {
         timeEntriesQuery = Query.builder()
                 .table(TimeEntryTable.NAME)
                 .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
                 .whereArgs(parentProperties.getId())
                 .build();
-        return this;
+
     }
 
     @Override
@@ -178,19 +178,19 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 
         User u = new User();
         u.setName("Fat Frumos");
-        u.setId(14);
+        u.setId(14L);
         u.setPhoto("");
 
         for (int i = 0; i < entries; i++) {
             TimeEntry ted = new TimeEntry();
-            ted.setId(-1);
+            ted.setId(-1L);
             ted.setWorkDate(dt.plusDays(i).getMillis());
             ted.setDateAdded(dt.withDayOfYear(i + 1).getMillis());
             ted.setHours(6);
             ted.setUser(u);
             ted.setUserId(u.getId());
             ted.setComments("pff...");
-            ted.setIssueId(-1);
+            ted.setIssueId(-1L);
             sortedData.add(ted);
         }
 

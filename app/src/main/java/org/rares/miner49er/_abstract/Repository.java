@@ -13,25 +13,34 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
-import org.rares.miner49er.persistence.StorioFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
-import org.rares.miner49er.persistence.resolvers.IssueStorIOSQLitePutResolver;
-import org.rares.miner49er.persistence.resolvers.ProjectStorIOSQLitePutResolver;
-import org.rares.miner49er.persistence.resolvers.TimeEntryStorIOSQLitePutResolver;
-import org.rares.miner49er.persistence.resolvers.UserStorIOSQLitePutResolver;
-import org.rares.miner49er.persistence.tables.IssueTable;
-import org.rares.miner49er.persistence.tables.ProjectsTable;
-import org.rares.miner49er.persistence.tables.TimeEntryTable;
-import org.rares.miner49er.persistence.tables.UserTable;
+import org.rares.miner49er.persistence.storio.StorioFactory;
+import org.rares.miner49er.persistence.storio.resolvers.IssueStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.storio.resolvers.ProjectTeamPutResolver;
+import org.rares.miner49er.persistence.storio.resolvers.TimeEntryStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.storio.tables.IssueTable;
+import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
+import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+// TODO: 12/11/18 SOME refactoring needed:
+
+/* things to improve:
+ * - use this repository with a background update service
+ * - use other algorithm to update the data
+ * - move unrelated functions in other classes
+ * - use the DAO classes to persist entities
+ */
 
 @SuppressLint("UseSparseArrays")
 public abstract class Repository<T>
@@ -48,15 +57,22 @@ public abstract class Repository<T>
             userActionsObservable =
             userActionProcessor
                     .subscribeOn(Schedulers.io())
-                    /*.doOnSubscribe((action) -> refreshData(false))*/;
+            /*.doOnSubscribe((action) -> refreshData(false))*/;
 
     protected PublishProcessor<List<T>> demoProcessor = PublishProcessor.create();
 
-    protected abstract Repository<T> setup();
+    protected abstract void setup();
 
-    public abstract Repository<T> registerSubscriber(Consumer<List> consumer);
+    public abstract void registerSubscriber(Consumer<List> consumer);
 
-    protected abstract Repository<T> prepareEntities(List<T> entityList);
+    /**
+     * Prepare the entities for storing.
+     *
+     * @param entityList the list of entities subject to persistence.
+     * @return <code>true</code> if the implementation uses the low level api <br />
+     * <code>false</code> if the implementation stores the entities itself.
+     */
+    protected abstract boolean prepareEntities(List<T> entityList);
 
     /**
      * Implementation specific clearing of tables.
@@ -67,22 +83,22 @@ public abstract class Repository<T>
      * @param ll the {@link com.pushtorefresh.storio3.sqlite.StorIOSQLite.LowLevel}
      *           that knows about the transaction
      */
-    protected abstract Repository<T> clearTables(StorIOSQLite.LowLevel ll);
+    protected abstract void clearTables(StorIOSQLite.LowLevel ll);
 
-    public abstract Repository<T> shutdown();
+    public abstract void shutdown();
 
     /**
      * Creates some fake data. <br/>
      */
     protected abstract List<T> initializeFakeData();
 
-    protected Map<Integer, User> usersToAdd = new HashMap<>();
-    protected Map<Integer, Issue> issuesToAdd = new HashMap<>();
-    protected Map<Integer, Project> projectsToAdd = new HashMap<>();
-    protected Map<Integer, TimeEntry> timeEntriesToAdd = new HashMap<>();
+    protected Map<Long, User> usersToAdd = new HashMap<>();
+    protected Map<Long, Issue> issuesToAdd = new HashMap<>();
+    protected Map<Long, Project> projectsToAdd = new HashMap<>();
+    protected Map<Long, TimeEntry> timeEntriesToAdd = new HashMap<>();
 
     protected UserStorIOSQLitePutResolver userPutResolver = null;
-    protected ProjectStorIOSQLitePutResolver projectPutResolver = null;
+    protected ProjectTeamPutResolver projectPutResolver = null;
     protected IssueStorIOSQLitePutResolver issuePutResolver = null;
     protected TimeEntryStorIOSQLitePutResolver timeEntryPutResolver = null;
 
@@ -90,17 +106,16 @@ public abstract class Repository<T>
 
     protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class);
 
-    public Repository<T> setParentProperties(ItemViewProperties ivp) {
+    public void setParentProperties(ItemViewProperties ivp) {
         if (ivp.getId() != 0) {
             parentProperties.setId(ivp.getId());
         }
         parentProperties.setItemBgColor(ivp.getItemBgColor());
 
         refreshQuery();
-        return this;
     }
 
-    protected abstract Repository<T> refreshQuery();
+    protected abstract void refreshQuery();
 
     private void insertIssue(IssueStorIOSQLitePutResolver putResolver, StorIOSQLite.LowLevel ll, Issue entity) {
         ll.insert(putResolver.mapToInsertQuery(entity), putResolver.mapToContentValues(entity));
@@ -110,7 +125,7 @@ public abstract class Repository<T>
         ll.insert(putResolver.mapToInsertQuery(entity), putResolver.mapToContentValues(entity));
     }
 
-    private void insertProject(ProjectStorIOSQLitePutResolver putResolver, StorIOSQLite.LowLevel ll, Project entity) {
+    private void insertProject(ProjectTeamPutResolver putResolver, StorIOSQLite.LowLevel ll, Project entity) {
         ll.insert(putResolver.mapToInsertQuery(entity), putResolver.mapToContentValues(entity));
     }
 
@@ -130,11 +145,24 @@ public abstract class Repository<T>
                 .executeAsBlocking();
     }
 
-
+    /**
+     * Concrete repository registers itself to the networking service
+     * as an &lt;entity&gt; list consumer.
+     * Whenever a list of entities is fetched, this method is called
+     * which calls, in its turn, the {@link #prepareEntities} specialized
+     * method, then persists the data using storio low level api.
+     *
+     * @param list list of T entities to be stored
+     * @throws Exception ... or does it?
+     */
     @Override
     public void accept(List<T> list) throws Exception {
         Single<List<T>> persistSingle = Single.just(list).subscribeOn(Schedulers.io());
-        Disposable persistDisposable = persistSingle.subscribe(this::prepareEntities);
+        Disposable persistDisposable = persistSingle.subscribe((entityList) -> {
+            if (prepareEntities(entityList)) {
+                persistEntities();
+            }
+        });
 
         disposables.add(persistDisposable);
     }
@@ -157,12 +185,9 @@ public abstract class Repository<T>
 
     /**
      * Persists the &lt;entities&gt;ToAdd using
-     * storio low level api. protected because
-     * it can be called by child classes; final
-     * because it should not be overridden by
-     * child classes.
+     * storio low level api.
      */
-    protected final void persistEntities() {
+    private void persistEntities() {
 
         long s = System.currentTimeMillis();
 
@@ -177,7 +202,7 @@ public abstract class Repository<T>
             userPutResolver = (UserStorIOSQLitePutResolver) userTypeMapping.putResolver();
         }
         if (projectTypeMapping != null) {
-            projectPutResolver = (ProjectStorIOSQLitePutResolver) projectTypeMapping.putResolver();
+            projectPutResolver = (ProjectTeamPutResolver) projectTypeMapping.putResolver();
         }
         if (issueTypeMapping != null) {
             issuePutResolver = (IssueStorIOSQLitePutResolver) issueTypeMapping.putResolver();
@@ -196,16 +221,16 @@ public abstract class Repository<T>
                 insertUser(userPutResolver, ll, user);
             }
 
-            for (TimeEntry timeEntry : timeEntriesToAdd.values()) {
-                insertTimeEntry(timeEntryPutResolver, ll, timeEntry);
+            for (Project project : projectsToAdd.values()) {
+                projectPutResolver.performPut(storio, project);
             }
 
             for (Issue issue : issuesToAdd.values()) {
                 insertIssue(issuePutResolver, ll, issue);
             }
 
-            for (Project project : projectsToAdd.values()) {
-                insertProject(projectPutResolver, ll, project);
+            for (TimeEntry timeEntry : timeEntriesToAdd.values()) {
+                insertTimeEntry(timeEntryPutResolver, ll, timeEntry);
             }
 
             ll.setTransactionSuccessful();

@@ -25,7 +25,10 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
 // TODO: 11/29/18  singleton this
-public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
+public class ToolbarActionManager
+        implements
+        ActionListenerManager,
+        Toolbar.OnMenuItemClickListener {
 
     public static final String TAG = ToolbarActionManager.class.getSimpleName();
 
@@ -49,6 +52,7 @@ public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
      *
      * @param listener component that listens to events or commands sent by the manager {@link MenuActionListener}
      */
+    @Override
     public void registerActionListener(MenuActionListener listener) {
         if (actionListenerStack.isEmpty() || !actionListenerStack.peek().equals(listener)) {
 
@@ -67,8 +71,9 @@ public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
     /**
      * Removes the listener if it's ready to pop or throws an exception if not.
      *
-     * @param listener component that listens to events or commands sent by the manager {@link MenuActionListener}
+     * @param listener component that listens to events or commands sent by the manager: {@link MenuActionListener}
      */
+    @Override
     public boolean unregisterActionListener(MenuActionListener listener) {
         if (listener != null && listener.equals(actionListenerStack.peek())) {
             if (actionListenerStack.size() > 1) {
@@ -432,10 +437,7 @@ public class ToolbarActionManager implements Toolbar.OnMenuItemClickListener {
 
     }
 
-//    public interface ActionListenerManager {
-//        void registerActionListener(MenuActionListener listener);
-//        void unregisterActionListener(MenuActionListener listener);
-//    }
+
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {

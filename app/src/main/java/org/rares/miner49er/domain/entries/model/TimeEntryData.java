@@ -2,8 +2,10 @@ package org.rares.miner49er.domain.entries.model;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.util.TextUtils;
 
 /**
@@ -11,16 +13,17 @@ import org.rares.miner49er.util.TextUtils;
  * @since 14.03.2018
  */
 
-@Data
-public class TimeEntryData {
+@Getter
+@Setter
+public class TimeEntryData extends AbstractViewModel {
 
-    private long id;
-    private long issueId;
+//    private long id;
+    private Long issueId;
     private long dateAdded;
     private long workDate;
     private String comments;
 
-    private long userId;
+    private Long userId;
     private String userName;
     private String userPhoto;
     private int color;
@@ -29,8 +32,8 @@ public class TimeEntryData {
     private int hours;
 
     public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {
-        return id == otherTimeEntry.id &&
-                issueId == otherTimeEntry.issueId &&
+        return id.equals(otherTimeEntry.id) &&
+                issueId.equals(otherTimeEntry.issueId) &&
                 hours == otherTimeEntry.hours &&
                 workDate == otherTimeEntry.workDate &&
                 dateAdded == otherTimeEntry.dateAdded &&

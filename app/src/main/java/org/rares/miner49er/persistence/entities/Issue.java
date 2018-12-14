@@ -13,9 +13,9 @@ import java.util.List;
 /*@StorIOSQLiteType(table = "issues")*/
 public class Issue {
 
-    /*@StorIOSQLiteColumn(name = "_id", key = true)     */          int id;
-    /*@StorIOSQLiteColumn(name = "_project_id")         */          int projectId;
-    /*@StorIOSQLiteColumn(name = "_user_id")            */          int ownerId;
+    /*@StorIOSQLiteColumn(name = "_id", key = true)     */          Long id;
+    /*@StorIOSQLiteColumn(name = "_project_id")         */          Long projectId;
+    /*@StorIOSQLiteColumn(name = "_user_id")            */          Long ownerId;
     /*@StorIOSQLiteColumn(name = "date_added")          */          long dateAdded;
     /*@StorIOSQLiteColumn(name = "date_due")            */          long dateDue;
     /*@StorIOSQLiteColumn(name = "last_updated")        */          long lastUpdated;

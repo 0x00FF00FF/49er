@@ -1,26 +1,38 @@
 package org.rares.miner49er.domain.projects.ui.actions.edit;
 
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.GenericDaoFactory;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.UiUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProjectEditFormFragment extends ActionFragment {
 
@@ -57,8 +69,28 @@ public class ProjectEditFormFragment extends ActionFragment {
     String errRequired;
     @BindString(R.string.error_field_contains_illegal_characters)
     String errCharacters;
+    @BindString(R.string.error_field_already_exists)
+    String errExists;
+    @BindString(R.string.success_project_add)
+    String successfulAdd;
+
+    @BindColor(R.color.indigo_100_blacked)
+    int snackbarBackgroundColor;
+
+    @BindColor(R.color.pureWhite)
+    int snackbarTextColor;
+
+    private GenericDAO<ProjectData> projectsDAO;
+    private GenericDAO<UserData> usersDAO;
 
     public ProjectEditFormFragment() {
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        projectsDAO = GenericDaoFactory.ofType(ProjectData.class);
+        usersDAO = GenericDaoFactory.ofType(UserData.class);
     }
 
     @Override
@@ -155,6 +187,11 @@ public class ProjectEditFormFragment extends ActionFragment {
             if (!validateCharacters(editTextProjectName, inputLayoutProjectName)) {
                 validForm = false;
                 scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+            } else {
+                if (!validateExistingName(editTextProjectName, inputLayoutProjectName)) {
+                    validForm = false;
+                    scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+                }
             }
         }
 
@@ -195,8 +232,51 @@ public class ProjectEditFormFragment extends ActionFragment {
         return addProject();
     }
 
-    public boolean addProject() {
-//        repository.add()
+    private boolean addProject() {
+        final ProjectData newProject = new ProjectData();
+        newProject.setName(editTextProjectName.getEditableText().toString());
+        newProject.setDescription(editTextProjectDescription.getEditableText().toString());
+        newProject.setIcon(editTextProjectIcon.getEditableText().toString());
+        newProject.setOwner(usersDAO.get(1)); //
+        newProject.setDateAdded(System.currentTimeMillis());
+        newProject.setPicture(editTextProjectIcon.getEditableText().toString());
+
+        List<UserData> users = usersDAO.getAll();
+        Log.w(TAG, "addProject: all users: " +users.size() );
+        List<UserData> team = new ArrayList<>();
+        for (UserData u : users) {
+            if (u.getRole() != 12) {
+                team.add(u);
+            }
+            if (team.size() > 6) {
+                break;
+            }
+        }
+        Log.d(TAG, "addProject: >>> " + team.size());
+        newProject.setTeam(team);
+
+        final long newProjectId = projectsDAO.insert(newProject);
+        Log.i(TAG, "addProject: NEW PROJECT ID: " + newProjectId);
+        newProject.setId(newProjectId);
+        Log.d(TAG, "addProject: NEW PROJECT.ID:" + newProject.getId());
+
+        resetFields();
+        final String snackbarText = String.format(successfulAdd, editTextProjectName.getEditableText().toString());
+        Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_INDEFINITE);
+//        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
+        View snackbarView = snackbar.getView();
+
+        snackbarView.setBackgroundColor(snackbarBackgroundColor);
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(snackbarTextColor);
+
+        snackbar.setAction(R.string.action_undo, v -> {
+            projectsDAO.delete(newProject);
+            snackbar.dismiss();
+        });
+
+        snackbar.show();
         return true;
     }
 
@@ -215,22 +295,37 @@ public class ProjectEditFormFragment extends ActionFragment {
     }
 
     private boolean validateEmptyText(TextInputEditText editText, TextInputLayout layout) {
-        if ("".equals(editText.getText().toString())) {
+        if (!"".equals(editText.getText().toString().trim())) {
+            layout.setError("");
+        } else {
+            editText.setText("");
             layout.setError(errRequired);
             return false;
-        } else {
-            layout.setError("");
         }
         return true;
     }
 
     private boolean validateCharacters(TextInputEditText editText, TextInputLayout layout) {
-        if (editText.getText().toString().contains("#")) {
+        if (!editText.getText().toString().contains("#")) {
+            layout.setError("");
+        } else {
             layout.setError(errCharacters);
             return false;
-        } else {
-            layout.setError("");
         }
         return true;
     }
+
+    private boolean validateExistingName(TextInputEditText editText, TextInputLayout layout) {
+        List<ProjectData> projects = projectsDAO.getMatching(editText.getEditableText().toString());
+        Log.d(TAG, "validateExistingName: projects==null? " + (projects == null));
+        if (projects == null || projects.isEmpty()) {
+            layout.setError("");
+            return true;
+        } else {
+            Log.i(TAG, "validateExistingName: " + projects.size());
+            layout.setError(errExists);
+        }
+        return false;
+    }
+
 }
