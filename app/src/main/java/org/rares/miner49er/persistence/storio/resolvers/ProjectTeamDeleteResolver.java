@@ -11,6 +11,10 @@ import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
 public class ProjectTeamDeleteResolver extends ProjectStorIOSQLiteDeleteResolver {
     public static final String TAG = ProjectTeamDeleteResolver.class.getSimpleName();
 
+    /*
+     * THIS IS NOT NEEDED ANYMORE DUE TO CASCADE DELETE
+     */
+
     @NonNull
     @Override
     public DeleteResult performDelete(@NonNull StorIOSQLite storIOSQLite, @NonNull Project project) {

@@ -11,6 +11,6 @@ public class ProjectSQLiteTypeMapping extends SQLiteTypeMapping<Project> {
     public ProjectSQLiteTypeMapping(UserProjectPutResolver userProjectPutResolver) {
         super(new ProjectTeamPutResolver(userProjectPutResolver),
                 new ProjectTeamGetResolver(),
-                new ProjectTeamDeleteResolver());
+                new ProjectStorIOSQLiteDeleteResolver());
     }
 }
