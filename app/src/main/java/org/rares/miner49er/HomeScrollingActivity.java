@@ -104,9 +104,9 @@ public class HomeScrollingActivity
 
         NetworkingService.INSTANCE.start();
 
-//        px2dp = DisplayUtil.dpFromPx(this, 100);
-//        dp2px = DisplayUtil.pxFromDp(this, 100);
-//        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
+        px2dp = UiUtil.dpFromPx(this, 100);
+        dp2px = UiUtil.pxFromDp(this, 100);
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
 
         setContentView(R.layout.activity_home_scrolling);

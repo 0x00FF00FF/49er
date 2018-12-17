@@ -7,6 +7,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.style.ImageSpan;
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
+import org.rares.miner49er.util.UiUtil;
 
 import java.lang.ref.WeakReference;
 
@@ -15,8 +17,13 @@ public class CenteredImageSpan extends ImageSpan {
 
     public static final String TAG = CenteredImageSpan.class.getSimpleName();
 
+    private Context ctx;
+    private int drawableResource;
+
     public CenteredImageSpan(Context context, final int drawableRes) {
         super(context, drawableRes);
+        ctx = context;
+        drawableResource = drawableRes;
 //        Log.d(TAG, "CenteredImageSpan: " + hashCode() + " " + drawableRes);
     }
 
@@ -24,7 +31,9 @@ public class CenteredImageSpan extends ImageSpan {
     public int getSize(Paint paint, CharSequence text,
                        int start, int end,
                        Paint.FontMetricsInt fm) {
+        final int iconDimensions = (int) UiUtil.pxFromDp(ctx, 24);
         Drawable d = getCachedDrawable();
+        d.setBounds(0, 0, iconDimensions, iconDimensions);
         Rect rect = d.getBounds();
 
         if (fm != null) {
@@ -67,6 +76,9 @@ public class CenteredImageSpan extends ImageSpan {
 
         if (d == null) {
             d = getDrawable();
+            if (d == null) {
+                d = AppCompatResources.getDrawable(ctx, drawableResource);
+            }
             mDrawableRef = new WeakReference<>(d);
         }
 

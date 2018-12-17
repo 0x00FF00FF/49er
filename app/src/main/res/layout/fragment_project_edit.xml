@@ -309,8 +309,6 @@
                 android:id="@+id/btn_cancel_add_project"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/icon_path_add"
-                android:drawableStart="@drawable/icon_path_add"
                 android:text="@string/btn_cancel"
                 android:layout_marginLeft="@dimen/sv_margin"
                 android:layout_marginStart="@dimen/sv_margin"
