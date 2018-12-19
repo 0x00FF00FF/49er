@@ -26,7 +26,6 @@ public class UsersDAO implements GenericDAO<UserData> {
     @Override
     public List<UserData> getAll() {
         List<User> users = UserStorIOSQLiteGetResolver.getAll(storIOSQLite);
-        Log.e(TAG, "getAll: >>>>>> " + users.size() );
         return convertDbModelList(users);
     }
 
@@ -113,7 +112,7 @@ public class UsersDAO implements GenericDAO<UserData> {
             return null;
         }
 
-        Log.i(TAG, "convertDbModel id: " + entity.getId());
+        Log.i(TAG, "convertDbModel: >>>> " + entity.toString());
 
         UserData converted = new UserData();
         converted.setId(entity.getId());

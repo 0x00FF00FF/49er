@@ -1,7 +1,7 @@
-package org.rares.miner49er.domain.projects.ui.actions.edit;
+package org.rares.miner49er.domain.projects.ui.actions.add;
 
-import android.util.Log;
 import org.rares.miner49er.R;
+import org.rares.miner49er.ui.actionmode.ActionEnforcer;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.EmptyActionsProvider;
@@ -18,7 +18,7 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 public class ProjectAddActionListener
         implements
         ToolbarActionManager.MenuActionListener,
-        ActionFragment.FragmentDismissListener {
+        ActionEnforcer.FragmentResultListener {
 
     private static final String TAG = ProjectAddActionListener.class.getSimpleName();
 
@@ -28,18 +28,18 @@ public class ProjectAddActionListener
     public ProjectAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
         this.fragment = fragment;
         this.actionManager = actionManager;
-        this.fragment.setDismissListener(this);
+        this.fragment.setResultListener(this);
     }
 
     @Override
     public boolean onToolbarBackPressed() {
         fragment.prepareExit();
-        return true; // toolbar manager should unregister this listener
+        return false; // toolbar manager should not unregister this listener, as it unregisters itself
     }
 
     @Override
     public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
-        config.titleRes = R.string.project_form_header;
+        config.titleRes = R.string.project_form_header_add;
         config.subtitle = "";
         config.createGenericMenu = false;
         config.menuId = R.menu.menu_action_done;
@@ -64,15 +64,8 @@ public class ProjectAddActionListener
 
     private GenericMenuActions actionsProvider = new EmptyActionsProvider() {
         @Override
-        public boolean add(int id) {
-            Log.i(TAG, "add: validate + add [ " + id + "]");
-            if (fragment.validateForm()) {
-                if (fragment.applyAction()) {
-                    fragment.prepareExit();
-                    fragment.getFragmentManager().popBackStack();
-                    onFragmentDismiss();
-                }
-            }
+        public boolean add(long id) {
+            fragment.applyAction();
             return true;
         }
     };

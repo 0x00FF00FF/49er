@@ -29,9 +29,9 @@ public class ProjectTeamGetResolver extends ProjectStorIOSQLiteGetResolver {
                 .get()
                 .listOfObjects(User.class)
                 .withQuery(RawQuery.builder()
-                        .query("SELECT * FROM " + UserTable.NAME +
+                        .query("SELECT " + UserTable.NAME + ".* FROM " + UserTable.NAME +
                                 " JOIN " + UserProjectTable.NAME +
-                                " ON " + UserProjectTable.USER_ID_COLUMN + " = " + UserTable.NAME + "." + UserTable.ID_COLUMN +
+                                " ON " + UserTable.NAME + "." + UserTable.ID_COLUMN + " = " + UserProjectTable.USER_ID_COLUMN +
                                 " AND " + UserProjectTable.PROJECT_ID_COLUMN + " = ?")
                         .args(projectId)
                         .build())

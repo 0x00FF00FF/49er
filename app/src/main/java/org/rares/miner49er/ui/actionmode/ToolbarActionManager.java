@@ -13,6 +13,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.internal.view.SupportMenuItem;
+import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.custom.spannable.CenteredImageSpan;
 
@@ -45,6 +46,9 @@ public class ToolbarActionManager
         this.toolbar = toolbar;
         toolbar.setOnMenuItemClickListener(this);
     }
+
+    @Setter
+    private long entityId;
 
     /**
      * Adds the listener to the action stack, if necessary.
@@ -138,7 +142,7 @@ public class ToolbarActionManager
         createCustomHomeMenu();
     }
 
-    private void refreshActionMode() {
+    public void refreshActionMode() {
         ensureStackNotEmpty();
         actionListenerStack.peek().configureCustomActionMenu(config);
 
@@ -453,24 +457,24 @@ public class ToolbarActionManager
         switch (itemId) {
             // generic list (applicable to any selected domain):
             case R.id.action_add:
-                return listener.add(0);
+                return listener.add(entityId);
             case R.id.action_remove:
-                return listener.remove(0);
+                return listener.remove(entityId);
             case R.id.action_details:
-                return listener.details(0);
+                return listener.details(entityId);
             case R.id.action_edit:
-                return listener.edit(0);
+                return listener.edit(entityId);
             case R.id.action_favorite:
-                return listener.favorite(0);
+                return listener.favorite(entityId);
             case R.id.action_search:
-                return listener.search(0);
+                return listener.search(entityId);
             case R.id.action_filter:
-                return listener.filter(0);
+                return listener.filter(entityId);
             // the menu that appears on the projects list:
             case R.id.action_add_project:
             case R.id.action_settings:
             default: {
-                return listener.menuAction(itemId, 0);
+                return listener.menuAction(itemId, entityId);
             }
         }
     }

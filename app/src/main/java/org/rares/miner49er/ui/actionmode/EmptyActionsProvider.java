@@ -2,42 +2,42 @@ package org.rares.miner49er.ui.actionmode;
 
 public class EmptyActionsProvider implements GenericMenuActions {
     @Override
-    public boolean add(int id) {
+    public boolean add(long id) {
         return true;
     }
 
     @Override
-    public boolean edit(int id) {
+    public boolean edit(long id) {
         return true;
     }
 
     @Override
-    public boolean remove(int id) {
+    public boolean remove(long id) {
         return true;
     }
 
     @Override
-    public boolean details(int id) {
+    public boolean details(long id) {
         return true;
     }
 
     @Override
-    public boolean favorite(int id) {
+    public boolean favorite(long id) {
         return true;
     }
 
     @Override
-    public boolean search(int id) {
+    public boolean search(long id) {
         return true;
     }
 
     @Override
-    public boolean filter(int id) {
+    public boolean filter(long id) {
         return true;
     }
 
     @Override
-    public boolean menuAction(int menuActionId, int id) {
+    public boolean menuAction(int menuActionId, long id) {
         return true;
     }
 }

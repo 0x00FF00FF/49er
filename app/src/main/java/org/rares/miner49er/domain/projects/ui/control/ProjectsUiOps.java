@@ -80,10 +80,19 @@ public class ProjectsUiOps
             toolbarManager.unregisterActionListener(this);
         } else {
             requireActionMode = true;
+            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
             toolbarManager.registerActionListener(this);
         }
 
         return enlarge;
+    }
+
+    @Override
+    public void onListItemChanged(ItemViewProperties ivp) {
+        super.onListItemChanged(ivp);
+        if (ivp.getName() != null) {
+            ((Toolbar) ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c)).setTitle(ivp.getName());    //
+        }
     }
 
     @Override
@@ -121,7 +130,7 @@ public class ProjectsUiOps
             config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
             config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
             config.additionalResources[0][ITEM_NAME] = 0;
-            Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_add_user: " + R.drawable.icon_path_add_user);
+
             config.title = selectedHolder.getLongTitle();
             // refresh infoLabel
             config.subtitle = selectedHolder.getInfoLabelString();

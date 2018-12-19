@@ -176,13 +176,17 @@ public class ProjectsAdapter
                 if (position == sp) {
                     if (payload instanceof Bundle) {
                         Bundle p = (Bundle) payload;
-                        int id = p.getInt("id");
+                        long id = p.getLong("id");
                         int color = p.getInt("color", 0);
+                        String name = p.getString("name");
                         if (color != 0) {
                             vp.setItemBgColor(color);
                         }
                         if (id != 0) {
                             vp.setId(id);
+                        }
+                        if (name != null) {
+                            vp.setName(name);
                         }
                         eventListener.onListItemChanged(vp);
                     }

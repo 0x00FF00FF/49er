@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.projects.ui.actions.edit;
+package org.rares.miner49er.domain.projects.ui.actions.add;
 
 
 import android.os.Bundle;
@@ -14,29 +14,28 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
+import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_DESCRIPTION;
+import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_ICON;
+import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_NAME;
+import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_OWNER_NAME;
 
-public class ProjectEditFormFragment extends ActionFragment {
+public class ProjectAddFormFragment extends ActionFragment {
 
-    public static final String TAG = ProjectEditFormFragment.class.getSimpleName();
+    public static final String TAG = ProjectAddFormFragment.class.getSimpleName();
 
-
-    public static ProjectEditFormFragment newInstance(long projectId) {
-        Bundle args = new Bundle();
-        args.putLong(KEY_PROJECT_ID, projectId);
-
-        ProjectEditFormFragment fragment = new ProjectEditFormFragment();
-        fragment.setArguments(args);
-        return fragment;
+    public static ProjectAddFormFragment newInstance() {
+        return new ProjectAddFormFragment();
     }
 
-    public ProjectEditFormFragment() {
+    public ProjectAddFormFragment() {
     }
 
     @Override
@@ -47,28 +46,22 @@ public class ProjectEditFormFragment extends ActionFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        createView(inflater, container);
-        Object pid = getArguments().get(KEY_PROJECT_ID);
-        if (pid == null) {
-            throw new IllegalStateException("To edit a project you need an id.");
-        }
-        populateFields(getArguments().getLong(KEY_PROJECT_ID));
-        return  rootView;
+        return createView(inflater, container);
     }
 
     @Override
     public void onStart() {
         super.onStart();
 //        UiUtil.sendViewToBack(getView());
-        if (projectData != null && projectData.getId() > 0) {
-            populateFields(projectData.getId());
-        }
     }
+
+
 
     @Override
     @OnClick(R.id.btn_add_project)
     public void applyAction() {
-        if (validateForm() && saveProject()) {
+        boolean ok = validateForm() && addProject();
+        if (ok) {
             prepareExit();
         }
     }
@@ -77,7 +70,7 @@ public class ProjectEditFormFragment extends ActionFragment {
         boolean validForm = true;
         int scrollToY = container.getHeight();
         int diff = (int) UiUtil.pxFromDp(getContext(), 15);
-// TODO: 12/19/18 should still validate for existing names (other than self)
+
         if (!validateEmptyText(editTextProjectName, inputLayoutProjectName)) {
             validForm = false;
             scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
@@ -85,6 +78,11 @@ public class ProjectEditFormFragment extends ActionFragment {
             if (!validateCharacters(editTextProjectName, inputLayoutProjectName)) {
                 validForm = false;
                 scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+            } else {
+                if (!validateExistingName(editTextProjectName, inputLayoutProjectName)) {
+                    validForm = false;
+                    scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+                }
             }
         }
 
@@ -121,17 +119,31 @@ public class ProjectEditFormFragment extends ActionFragment {
     }
 
 
-    private boolean saveProject() {
+    private boolean addProject() {
+        final ProjectData newProject = new ProjectData();
+        newProject.setName(editTextProjectName.getEditableText().toString());
+        newProject.setDescription(editTextProjectDescription.getEditableText().toString());
+        newProject.setIcon(editTextProjectIcon.getEditableText().toString());
+        newProject.setOwner(usersDAO.get(1)); //
+        newProject.setDateAdded(System.currentTimeMillis());
+        newProject.setPicture(editTextProjectIcon.getEditableText().toString());
 
-        projectData.setName(editTextProjectName.getEditableText().toString());
-        projectData.setDescription(editTextProjectDescription.getEditableText().toString());
-        projectData.setIcon(editTextProjectIcon.getEditableText().toString());
-        projectData.setPicture(editTextProjectIcon.getEditableText().toString());
+        List<UserData> users = usersDAO.getAll();
+        List<UserData> team = new ArrayList<>();
+        for (UserData u : users) {
+            if (u.getRole() != 12) {
+                team.add(u);
+            }
+            if (team.size() > 6) {
+                break;
+            }
+        }
+        newProject.setTeam(team);
 
-        projectsDAO.update(projectData);
+        final long newProjectId = projectsDAO.insert(newProject);
+        newProject.setId(newProjectId);
 
-        final String snackbarText = String.format(successfulUpdate, editTextProjectName.getEditableText().toString());
-
+        final String snackbarText = String.format(successfulAdd, editTextProjectName.getEditableText().toString());
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
         View snackbarView = snackbar.getView();
@@ -141,7 +153,8 @@ public class ProjectEditFormFragment extends ActionFragment {
         TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
         textView.setTextColor(snackbarTextColor);
 
-        snackbar.setAction(R.string.action_dismiss, v -> {
+        snackbar.setAction(R.string.action_undo, v -> {
+            projectsDAO.delete(newProject);
             snackbar.dismiss();
         });
 
@@ -150,26 +163,38 @@ public class ProjectEditFormFragment extends ActionFragment {
         return true;
     }
 
-    public void populateFields(long projectId) {
-        if (projectId <= 0) {
-            return;
-        }
+    private void populateFields(Bundle bundle) {
 
-        projectData = projectsDAO.get(projectId);
+        String name = bundle.getString(KEY_NAME);
+        if (name == null) {
+            name = "";
+        }
+        String description = bundle.getString(KEY_DESCRIPTION);
+        if (description == null) {
+            description = "";
+        }
+        String icon = bundle.getString(KEY_ICON);
+        if (icon == null) {
+            icon = "";
+        }
+        String ownerName = bundle.getString(KEY_OWNER_NAME);
+        if (ownerName == null) {
+            ownerName = "";
+        }
 
         inputLayoutProjectName.setError("");
-        editTextProjectName.setText(projectData.getName());
+        editTextProjectName.setText(name);
+
         inputLayoutProjectShortName.setError("");
-        editTextProjectShortName.setText(TextUtils.extractVowels(projectData.getName()));
+        editTextProjectShortName.setText(TextUtils.extractVowels(name));
+
         inputLayoutProjectDescription.setError("");
-        editTextProjectDescription.setText(projectData.getDescription());
+        editTextProjectDescription.setText(description);
+
         inputLayoutProjectIcon.setError("");
-        editTextProjectIcon.setText(projectData.getIcon());
+        editTextProjectIcon.setText(icon);
+
         inputLayoutProjectOwner.setError("");
-        String ownerName = "";
-        if (projectData.getOwner() != null) {
-            ownerName = projectData.getOwner().getName();
-        }
         editTextProjectOwner.setText(ownerName);
     }
 
@@ -195,7 +220,6 @@ public class ProjectEditFormFragment extends ActionFragment {
     }
 
     private boolean validateExistingName(TextInputEditText editText, TextInputLayout layout) {
-        // TODO: 12/19/18 should still validate for existing names (other than self)
         List<ProjectData> projects = projectsDAO.getMatching(editText.getEditableText().toString());
         Log.d(TAG, "validateExistingName: projects==null? " + (projects == null));
         if (projects == null || projects.isEmpty()) {

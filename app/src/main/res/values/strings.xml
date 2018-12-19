@@ -34,11 +34,14 @@
     <string name="action_add_time_entry">Add a time entry</string>
 
     <string name="action_undo">Undo</string>
+    <string name="action_ok">OK</string>
+    <string name="action_dismiss">Dismiss</string>
 
     <string name="btn_cancel">Cancel</string>
 
     <!--project form-->
-    <string name="project_form_header">Adding a project</string>
+    <string name="project_form_header_add">Adding a project</string>
+    <string name="project_form_header_edit">Editing a project</string>
     <string name="helper_required">Fields marked with * are required.</string>
 
     <string name="hint_project_name">Project name *</string>
@@ -61,7 +64,8 @@
     <string name="hint_project_team">Project team</string>
     <string name="helper_project_team">Insert the project team here.</string>
 
-    <string name="success_project_add" formatted="false">The %s project has been successfully created.</string>
+    <string name="success_project_add">The %s project has been successfully created.</string>
+    <string name="success_project_save">The %s project has been saved.</string>
 
     <string name="error_field_required">This field is required.</string>
     <string name="error_field_already_exists">This name already exists.</string>

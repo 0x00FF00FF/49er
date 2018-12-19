@@ -8,7 +8,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean add(int id);
+    boolean add(long id);
 
     /**
      * Start the procedure to edit a &lt;something&gt;.
@@ -16,7 +16,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean edit(int id);
+    boolean edit(long id);
 
     /**
      * Start the procedure to remove a &lt;something&gt;.
@@ -24,7 +24,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean remove(int id);
+    boolean remove(long id);
 
     /**
      * Shows details for &lt;something&gt;.
@@ -32,7 +32,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean details(int id);
+    boolean details(long id);
 
     /**
      * Adds &lt;something&gt; to the list of favorites.
@@ -40,7 +40,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean favorite(int id);
+    boolean favorite(long id);
 
     /**
      * Search for &lt;something&gt;.
@@ -48,7 +48,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean search(int id);
+    boolean search(long id);
 
     /**
      * Filter &lt;something&gt;.
@@ -56,7 +56,7 @@ public interface GenericMenuActions {
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      * @param id the id of the entity to act upon
      */
-    boolean filter(int id);
+    boolean filter(long id);
 
     /**
      * For other than generic actions.
@@ -65,5 +65,5 @@ public interface GenericMenuActions {
      * @param id the id of the entity to act upon
      * @return <code>true</code> if the event was handled, <code>false</code> otherwise.
      */
-    boolean menuAction(int menuActionId, int id);
+    boolean menuAction(int menuActionId, long id);
 }

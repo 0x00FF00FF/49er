@@ -20,7 +20,7 @@ public interface GenericDAO<EntityType extends AbstractViewModel> {
 
     default void assertInsertReady(EntityType toInsert) {
         if (toInsert.getId() != null) {
-            throw new IllegalStateException("New entities need to null id! " + toInsert.getId());
+            throw new IllegalStateException("New entities need to have null id! " + toInsert.getId());
         }
     }
 

@@ -407,6 +407,13 @@ public class HomeScrollingActivity
     protected void onDestroy() {
         super.onDestroy();
 
+//        // clear backstack for now. no fragment re-creation.
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        if (fragmentManager.getBackStackEntryCount() > 0) {
+//            int id = fragmentManager.getBackStackEntryAt(0).getId();
+//            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+//        }
+
         NetworkingService.INSTANCE.end();
 
         unbinder.unbind();

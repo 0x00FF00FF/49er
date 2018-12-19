@@ -47,6 +47,7 @@ public class ProjectsDAO implements GenericDAO<ProjectData> {
 
     @Override
     public long insert(ProjectData toInsert) {
+        Log.d(TAG, "insert() called with: toInsert = [" + toInsert + "]");
         assertInsertReady(toInsert);
         return storio.put()
                 .object(convertViewModel(toInsert))
