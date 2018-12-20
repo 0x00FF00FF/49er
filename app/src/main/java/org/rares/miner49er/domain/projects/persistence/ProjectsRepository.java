@@ -225,12 +225,11 @@ public class ProjectsRepository extends Repository<Project> {
             converted.setPicture(p.getPicture());
             converted.setIcon(p.getIcon());
             // color will be deducted from icon (RenderScript?)
-            converted.setColor(Color.parseColor(local ? localColors[i % 2] : remoteColors[i % 2]));
+            converted.setColor(Color.parseColor(localColors[i % 2]));
             projectDataList.add(converted);
         }
 
         if (counter > 100) {
-            i = 0;
             counter = 0;
         }
 

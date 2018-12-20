@@ -9,6 +9,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
@@ -22,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ProjectActionFragment extends ActionFragment {
-    @BindView(R.id.content_container)       // <-- move these from here :|
+
+    @BindView(R.id.content_container)
     protected ConstraintLayout container;
 
     @BindView(R.id.project_name_input_layout)
@@ -45,6 +47,11 @@ public abstract class ProjectActionFragment extends ActionFragment {
     protected TextInputLayout inputLayoutProjectOwner;
     @BindView(R.id.project_owner_input_layout_edit)
     protected TextInputEditText editTextProjectOwner;
+
+    @BindView(R.id.btn_add_project)
+    protected MaterialButton btnApply;
+    @BindView(R.id.btn_cancel_add_project)
+    protected MaterialButton btnCancel;
 
     protected GenericDAO<ProjectData> projectsDAO;
     protected GenericDAO<UserData> usersDAO;

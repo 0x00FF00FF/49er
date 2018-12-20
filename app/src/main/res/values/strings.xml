@@ -35,6 +35,7 @@
 
     <string name="action_undo">Undo</string>
     <string name="action_ok">OK</string>
+    <string name="action_save">Save</string>
     <string name="action_dismiss">Dismiss</string>
 
     <string name="btn_cancel">Cancel</string>

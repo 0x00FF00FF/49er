@@ -57,6 +57,10 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             throw new IllegalStateException("To edit a project you need an id.");
         }
         populateFields(getArguments().getLong(KEY_PROJECT_ID));
+
+        btnApply.setIcon(getResources().getDrawable(R.drawable.icon_path_done));
+        btnApply.setText(R.string.action_save);
+
         return rootView;
     }
 
