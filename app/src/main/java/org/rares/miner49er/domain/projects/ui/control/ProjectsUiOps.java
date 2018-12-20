@@ -14,7 +14,7 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
-import org.rares.miner49er.domain.projects.repository.ProjectsRepository;
+import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
@@ -24,6 +24,7 @@ import java.util.List;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
 
 /**
@@ -62,9 +63,8 @@ public class ProjectsUiOps
      */
     public void setupRepository() {
         Log.e(TAG, "setupRepository() called");
-        projectsRepository
-                .setup()
-                .registerSubscriber((Consumer<List>) getRv().getAdapter());
+        projectsRepository.setup();
+        projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
     }
 
     @Override
@@ -80,10 +80,19 @@ public class ProjectsUiOps
             toolbarManager.unregisterActionListener(this);
         } else {
             requireActionMode = true;
+            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
             toolbarManager.registerActionListener(this);
         }
 
         return enlarge;
+    }
+
+    @Override
+    public void onListItemChanged(ItemViewProperties ivp) {
+        super.onListItemChanged(ivp);
+        if (ivp.getName() != null) {
+            ((Toolbar) ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c)).setTitle(ivp.getName());    //
+        }
     }
 
     @Override
@@ -106,15 +115,22 @@ public class ProjectsUiOps
         if (selectedHolder != null) {
             config.menuId = R.menu.menu_generic_actions;
             config.additionalMenuId = R.menu.menu_additional_projects;
-            config.additionalResources = new int[1][3];
+            config.additionalResources = new int[1][4];
             config.createGenericMenu = true;
             config.titleRes = 0;
             config.subtitleRes = 0;
 
+            config.overrideGenericMenuResources = new int[1][4];
+            config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
+            config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
+            config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+            config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
+
             config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
             config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
             config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-            Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_add_user: " + R.drawable.icon_path_add_user);
+            config.additionalResources[0][ITEM_NAME] = 0;
+
             config.title = selectedHolder.getLongTitle();
             // refresh infoLabel
             config.subtitle = selectedHolder.getInfoLabelString();

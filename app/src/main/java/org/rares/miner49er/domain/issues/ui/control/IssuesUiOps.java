@@ -20,6 +20,7 @@ import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
 /**
  * @author rares
@@ -86,14 +87,21 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         config.requireActionMode = requiresActionMode;
 
+        config.overrideGenericMenuResources = new int[1][4];
+        config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
+        config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
+        config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_time_entry;
+
         config.createGenericMenu = true;
 
         config.additionalMenuId = R.menu.menu_additional_issues;
-        config.additionalResources = new int[1][3];
+        config.additionalResources = new int[1][4];
 
         config.additionalResources[0][ITEM_ID] = R.id.action_set_auto_add_hours;
         config.additionalResources[0][ICON_ID] = R.drawable.icon_path_auto_add_time_2;
         config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.additionalResources[0][ITEM_NAME] = 0;
     }
 
     @Override
@@ -178,10 +186,9 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setUnbinderHost(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
-        issuesRepository
-                .setup()
-                .setParentProperties(projectViewProperties)
-                .registerSubscriber(issuesAdapter);
+        issuesRepository.setup();
+        issuesRepository.setParentProperties(projectViewProperties);
+        issuesRepository.registerSubscriber(issuesAdapter);
         return issuesAdapter;
     }
 

@@ -9,9 +9,9 @@ import lombok.Data;
 /*@StorIOSQLiteType(table = "time_entries")*/
 public class TimeEntry {
 
-    /*@StorIOSQLiteColumn(name = "_id", key = true)       */        int id;
-    /*@StorIOSQLiteColumn(name = "_issue_id")             */        int issueId;
-    /*@StorIOSQLiteColumn(name = "_user_id")              */        int userId;
+    /*@StorIOSQLiteColumn(name = "_id", key = true)       */        Long id;
+    /*@StorIOSQLiteColumn(name = "_issue_id")             */        Long issueId;
+    /*@StorIOSQLiteColumn(name = "_user_id")              */        Long userId;
     /*@StorIOSQLiteColumn(name = "work_date")             */        long workDate;
     /*@StorIOSQLiteColumn(name = "date_added")            */        long dateAdded;
     /*@StorIOSQLiteColumn(name = "last_updated")          */        long lastUpdated;

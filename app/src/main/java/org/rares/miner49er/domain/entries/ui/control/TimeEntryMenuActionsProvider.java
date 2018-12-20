@@ -5,44 +5,44 @@ import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 
 public class TimeEntryMenuActionsProvider implements GenericMenuActions {
     @Override
-    public boolean add(int id) {
+    public boolean add(long id) {
 
         // show add issue fragment
         return false;
     }
 
     @Override
-    public boolean edit(int id) {
+    public boolean edit(long id) {
         return false;
     }
 
     @Override
-    public boolean remove(int id) {
+    public boolean remove(long id) {
         return false;
     }
 
     @Override
-    public boolean details(int id) {
+    public boolean details(long id) {
         return false;
     }
 
     @Override
-    public boolean favorite(int id) {
+    public boolean favorite(long id) {
         return false;
     }
 
     @Override
-    public boolean search(int id) {
+    public boolean search(long id) {
         return false;
     }
 
     @Override
-    public boolean filter(int id) {
+    public boolean filter(long id) {
         return false;
     }
 
     @Override
-    public boolean menuAction(int menuActionId, int id) {
+    public boolean menuAction(int menuActionId, long id) {
 
         if (menuActionId == R.id.action_add_user) {
             // show add user fragment

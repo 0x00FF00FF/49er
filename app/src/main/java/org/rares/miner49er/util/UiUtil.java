@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * @author rares
@@ -69,5 +71,13 @@ public class UiUtil {
         paint.setColorFilter(new ColorMatrixColorFilter(cm));
         canvas.drawBitmap(mBitmap, 0, 0, paint);
         return mEnhancedBitmap;
+    }
+
+    public static void sendViewToBack(final View child) {
+        final ViewGroup parent = (ViewGroup)child.getParent();
+        if (null != parent) {
+            parent.removeView(child);
+            parent.addView(child, 0);
+        }
     }
 }

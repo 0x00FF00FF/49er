@@ -19,7 +19,8 @@ import org.rares.miner49er.persistence.entities.TimeEntry;
 public abstract class ItemViewProperties {
 
     private int itemBgColor;
-    private int id;
+    private long id;
+    private String name;
 
     public static ItemViewProperties create(Class c) {
         if (c.equals(TimeEntry.class)) {

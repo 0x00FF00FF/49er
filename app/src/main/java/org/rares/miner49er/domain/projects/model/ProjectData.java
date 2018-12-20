@@ -1,11 +1,11 @@
 package org.rares.miner49er.domain.projects.model;
 
-
-//import com.github.javafaker.Faker;
-
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
 import java.util.List;
 
@@ -14,12 +14,14 @@ import java.util.List;
  * @since 23.02.2018
  */
 
-@Data
-public class ProjectData {
+@ToString
+@Getter
+@Setter
+public class ProjectData extends AbstractViewModel {
 
-    private int id;
+//    private long id;
 
-    private String name;// = faker.zelda().character();
+    private String name;
     private String description;
     private String icon;
     private String picture;

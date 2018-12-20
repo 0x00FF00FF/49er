@@ -35,7 +35,7 @@ public class TimeEntryDiff extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return oldTimeEntryData.get(oldItemPosition).getId() == newTimeEntryData.get(newItemPosition).getId();
+        return oldTimeEntryData.get(oldItemPosition).getId().equals(newTimeEntryData.get(newItemPosition).getId());
     }
 
     //only called when the rule set in areItemsTheSame is true
@@ -67,7 +67,7 @@ public class TimeEntryDiff extends DiffUtil.Callback {
         if (!newData.getComments().equals(oldData.getComments())) {
             bundle.putString("Comments", newData.getComments());
         }
-        if (newData.getUserId() != oldData.getUserId()) {
+        if (!newData.getUserId().equals(oldData.getUserId())) {
             bundle.putLong("UserId", newData.getUserId());
         }
         if (newData.getColor() != oldData.getColor()) {

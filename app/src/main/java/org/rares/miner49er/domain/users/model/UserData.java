@@ -1,28 +1,28 @@
 package org.rares.miner49er.domain.users.model;
 
-
-//import com.github.javafaker.Faker;
-
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
 /**
  * @author rares
  * @since 23.02.2018
  */
 
-@Data
-public class UserData {
+@Getter
+@Setter
+public class UserData extends AbstractViewModel {
 
-    private int id;
+//    private long id;
+//    private long lastUpdated;
     private int role;
-    private long lastUpdated;
     private String name;
     private String email;
     private String picture;
     private String apiKey;
 
     public boolean compareContents(UserData otherData) {
-        return (id == otherData.id) &&
+        return (id.equals(otherData.id)) &&
                 (role == otherData.role) &&
                 (email == null ? "" : email).equals(otherData.email == null ? "" : otherData.email) &&
                 (apiKey == null ? "" : apiKey).equals(otherData.apiKey == null ? "" : otherData.apiKey) &&

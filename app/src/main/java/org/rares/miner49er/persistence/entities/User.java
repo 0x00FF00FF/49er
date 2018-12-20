@@ -9,7 +9,7 @@ import lombok.Data;
 /*@StorIOSQLiteType(table = "users")*/
 public class User {
 
-    /*@StorIOSQLiteColumn(name = "_id", key = true)       */        int id;
+    /*@StorIOSQLiteColumn(name = "_id", key = true)       */        Long id;
     /*@StorIOSQLiteColumn(name = "last_updated")          */        long lastUpdated;
     /*@StorIOSQLiteColumn(name = "user_name")             */        String name;
     /*@StorIOSQLiteColumn(name = "password")              */        String pwd;

@@ -104,9 +104,9 @@ public class HomeScrollingActivity
 
         NetworkingService.INSTANCE.start();
 
-//        px2dp = DisplayUtil.dpFromPx(this, 100);
-//        dp2px = DisplayUtil.pxFromDp(this, 100);
-//        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
+        px2dp = UiUtil.dpFromPx(this, 100);
+        dp2px = UiUtil.pxFromDp(this, 100);
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
 
         setContentView(R.layout.activity_home_scrolling);
@@ -199,8 +199,9 @@ public class HomeScrollingActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_home, menu);
-        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0);
-        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0);
+        // fixme
+        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0, R.string.action_add_project);
+        ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0, 0);
         return true;
     }
 
@@ -405,6 +406,13 @@ public class HomeScrollingActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+//        // clear backstack for now. no fragment re-creation.
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        if (fragmentManager.getBackStackEntryCount() > 0) {
+//            int id = fragmentManager.getBackStackEntryAt(0).getId();
+//            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+//        }
 
         NetworkingService.INSTANCE.end();
 

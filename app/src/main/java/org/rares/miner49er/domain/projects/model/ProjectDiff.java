@@ -34,7 +34,7 @@ public class ProjectDiff extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return oldProjectData.get(oldItemPosition).getId() == newProjectData.get(newItemPosition).getId();
+        return oldProjectData.get(oldItemPosition).getId().equals(newProjectData.get(newItemPosition).getId());
     }
 
     //only called when the rule set in areItemsTheSame is true
@@ -66,7 +66,7 @@ public class ProjectDiff extends DiffUtil.Callback {
         if (diffBundle.size() == 0) {
             return null;
         } else {
-            diffBundle.putInt("id", newData.getId());
+            diffBundle.putLong("id", newData.getId());
         }
         return diffBundle;
 

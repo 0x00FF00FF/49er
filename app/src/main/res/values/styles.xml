@@ -108,6 +108,8 @@
         <!--<item name="android:layout_margin">@dimen/sv_margin</item>-->
         <item name="hintTextAppearance">@style/Custom.TextAppearance.MaterialComponents.Hint</item>
         <item name="android:textColorHint">@color/color_selector_hint</item>
+        <item name="android:inputType">textNoSuggestions</item>
+        <item name="android:singleLine">true</item>
     </style>
 
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox.Layout"
@@ -138,7 +140,7 @@
     </style>
 
     <style name="TempCardViewStyle" parent="CardView.Dark">
-        <item name="cardBackgroundColor">@color/pureWhite</item>
+        <item name="cardBackgroundColor">@color/indigo.A100_grayed</item>
         <item name="cardCornerRadius">4dp</item>
     </style>
 
