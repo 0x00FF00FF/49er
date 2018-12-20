@@ -20,10 +20,10 @@ public class ProjectMenuActionsProvider
     private FragmentManager fragmentManager;
     private ActionListenerManager actionManager;
 
-    private ProjectAddFormFragment projectAddFormFragment;
+    private ActionFragment projectAddFormFragment;
     private ProjectAddActionListener projectAddActionListener;
 
-    private ProjectEditFormFragment projectEditFormFragment;
+    private ActionFragment projectEditFormFragment;
     private ProjectEditActionListener projectEditActionListener;
 
     ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager) {

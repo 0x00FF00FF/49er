@@ -38,6 +38,8 @@ public interface BaseInterfaces {
         void clearBindings();
     }
 
+    String UTFEnc = "UTF-8";
+
     interface SelectableItemsManager {
 
         String ANIMATION_WIDTH = "width";

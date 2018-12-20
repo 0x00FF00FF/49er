@@ -2,7 +2,6 @@ package org.rares.miner49er.domain.projects.ui.actions.edit;
 
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +12,21 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
-import org.rares.miner49er.domain.projects.model.ProjectData;
-import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
+import org.rares.miner49er.persistence.dao.GenericDAO;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.List;
 
+import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
 
-public class ProjectEditFormFragment extends ActionFragment {
+public class ProjectEditFormFragment extends ProjectActionFragment {
 
     public static final String TAG = ProjectEditFormFragment.class.getSimpleName();
 
@@ -53,7 +57,7 @@ public class ProjectEditFormFragment extends ActionFragment {
             throw new IllegalStateException("To edit a project you need an id.");
         }
         populateFields(getArguments().getLong(KEY_PROJECT_ID));
-        return  rootView;
+        return rootView;
     }
 
     @Override
@@ -77,7 +81,7 @@ public class ProjectEditFormFragment extends ActionFragment {
         boolean validForm = true;
         int scrollToY = container.getHeight();
         int diff = (int) UiUtil.pxFromDp(getContext(), 15);
-// TODO: 12/19/18 should still validate for existing names (other than self)
+
         if (!validateEmptyText(editTextProjectName, inputLayoutProjectName)) {
             validForm = false;
             scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
@@ -85,6 +89,11 @@ public class ProjectEditFormFragment extends ActionFragment {
             if (!validateCharacters(editTextProjectName, inputLayoutProjectName)) {
                 validForm = false;
                 scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+            } else {
+                if (!validateExistingName(editTextProjectName, inputLayoutProjectName, projectsDAO)) {
+                    validForm = false;
+                    scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
+                }
             }
         }
 
@@ -125,8 +134,14 @@ public class ProjectEditFormFragment extends ActionFragment {
 
         projectData.setName(editTextProjectName.getEditableText().toString());
         projectData.setDescription(editTextProjectDescription.getEditableText().toString());
-        projectData.setIcon(editTextProjectIcon.getEditableText().toString());
-        projectData.setPicture(editTextProjectIcon.getEditableText().toString());
+        String iconUrl = editTextProjectIcon.getEditableText().toString();
+        try {
+            iconUrl = URLEncoder.encode(editTextProjectIcon.getEditableText().toString(), UTFEnc);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        projectData.setIcon(iconUrl);
+        projectData.setPicture(iconUrl);
 
         projectsDAO.update(projectData);
 
@@ -150,7 +165,7 @@ public class ProjectEditFormFragment extends ActionFragment {
         return true;
     }
 
-    public void populateFields(long projectId) {
+    private void populateFields(long projectId) {
         if (projectId <= 0) {
             return;
         }
@@ -164,7 +179,13 @@ public class ProjectEditFormFragment extends ActionFragment {
         inputLayoutProjectDescription.setError("");
         editTextProjectDescription.setText(projectData.getDescription());
         inputLayoutProjectIcon.setError("");
-        editTextProjectIcon.setText(projectData.getIcon());
+        String iconUrl = projectData.getIcon();
+        try {
+            iconUrl = URLDecoder.decode(projectData.getIcon(), UTFEnc);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        editTextProjectIcon.setText(iconUrl);
         inputLayoutProjectOwner.setError("");
         String ownerName = "";
         if (projectData.getOwner() != null) {
@@ -173,39 +194,25 @@ public class ProjectEditFormFragment extends ActionFragment {
         editTextProjectOwner.setText(ownerName);
     }
 
-    private boolean validateEmptyText(TextInputEditText editText, TextInputLayout layout) {
-        if (!"".equals(editText.getText().toString().trim())) {
-            layout.setError("");
-        } else {
-            editText.setText("");
-            layout.setError(errRequired);
-            return false;
-        }
-        return true;
-    }
+    @Override
+    protected boolean validateExistingName(
+            TextInputEditText editText,
+            TextInputLayout layout,
+            GenericDAO<? extends AbstractViewModel> dao) {
 
-    private boolean validateCharacters(TextInputEditText editText, TextInputLayout layout) {
-        if (!editText.getText().toString().contains("#")) {
-            layout.setError("");
-        } else {
-            layout.setError(errCharacters);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateExistingName(TextInputEditText editText, TextInputLayout layout) {
-        // TODO: 12/19/18 should still validate for existing names (other than self)
-        List<ProjectData> projects = projectsDAO.getMatching(editText.getEditableText().toString());
-        Log.d(TAG, "validateExistingName: projects==null? " + (projects == null));
-        if (projects == null || projects.isEmpty()) {
+        List<? extends AbstractViewModel> entities = dao.getMatching(editText.getEditableText().toString());
+        if (entities == null || entities.isEmpty()) {
             layout.setError("");
             return true;
         } else {
-            Log.i(TAG, "validateExistingName: " + projects.size());
+            if (entities.size() == 1) {
+                if (entities.get(0).getId().equals(projectData.getId())) {
+                    layout.setError("");
+                    return true;
+                }
+            }
             layout.setError(errExists);
         }
         return false;
     }
-
 }

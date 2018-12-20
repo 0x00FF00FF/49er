@@ -2,7 +2,6 @@ package org.rares.miner49er.domain.projects.ui.actions.add;
 
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,12 +9,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -27,7 +24,7 @@ import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_ICON;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_NAME;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_OWNER_NAME;
 
-public class ProjectAddFormFragment extends ActionFragment {
+public class ProjectAddFormFragment extends ProjectActionFragment {
 
     public static final String TAG = ProjectAddFormFragment.class.getSimpleName();
 
@@ -79,7 +76,7 @@ public class ProjectAddFormFragment extends ActionFragment {
                 validForm = false;
                 scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
             } else {
-                if (!validateExistingName(editTextProjectName, inputLayoutProjectName)) {
+                if (!validateExistingName(editTextProjectName, inputLayoutProjectName, projectsDAO)) {
                     validForm = false;
                     scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
                 }
@@ -196,40 +193,6 @@ public class ProjectAddFormFragment extends ActionFragment {
 
         inputLayoutProjectOwner.setError("");
         editTextProjectOwner.setText(ownerName);
-    }
-
-    private boolean validateEmptyText(TextInputEditText editText, TextInputLayout layout) {
-        if (!"".equals(editText.getText().toString().trim())) {
-            layout.setError("");
-        } else {
-            editText.setText("");
-            layout.setError(errRequired);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateCharacters(TextInputEditText editText, TextInputLayout layout) {
-        if (!editText.getText().toString().contains("#")) {
-            layout.setError("");
-        } else {
-            layout.setError(errCharacters);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateExistingName(TextInputEditText editText, TextInputLayout layout) {
-        List<ProjectData> projects = projectsDAO.getMatching(editText.getEditableText().toString());
-        Log.d(TAG, "validateExistingName: projects==null? " + (projects == null));
-        if (projects == null || projects.isEmpty()) {
-            layout.setError("");
-            return true;
-        } else {
-            Log.i(TAG, "validateExistingName: " + projects.size());
-            layout.setError(errExists);
-        }
-        return false;
     }
 
 }

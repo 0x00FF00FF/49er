@@ -37,7 +37,7 @@ import java.util.Set;
 
 /* things to improve:
  * - use this repository with a background update service
- * - use other algorithm to update the data
+ * - use other algorithm to update the data (persist)
  * - move unrelated functions in other classes
  * - use the DAO classes to persist entities
  */
