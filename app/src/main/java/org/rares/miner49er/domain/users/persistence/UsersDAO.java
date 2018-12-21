@@ -30,6 +30,11 @@ public class UsersDAO implements GenericDAO<UserData> {
     }
 
     @Override
+    public List<UserData> getAll(long id) {
+        return Collections.emptyList();
+    }
+
+    @Override
     public List<UserData> getMatching(String term) {
         List<User> users = UserStorIOSQLiteGetResolver.getMatchingName(storIOSQLite, term);
         return convertDbModelList(users);
@@ -111,8 +116,6 @@ public class UsersDAO implements GenericDAO<UserData> {
         if (entity == null) {
             return null;
         }
-
-        Log.i(TAG, "convertDbModel: >>>> " + entity.toString());
 
         UserData converted = new UserData();
         converted.setId(entity.getId());

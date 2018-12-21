@@ -42,7 +42,6 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
             List<ContentValues> userProjectList = new ArrayList<>(team.size());
 
             for (User i : team) { // "there is no i in team"
-                Log.i(TAG, "performPut: >> " + i.toString());
                 final ContentValues cv = new ContentValues(2);
                 cv.put(UserProjectTable.USER_ID_COLUMN, i.getId());
                 cv.put(UserProjectTable.PROJECT_ID_COLUMN, projectId);

@@ -93,13 +93,13 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         getItemProperties().setId(data.getId());
 
         List<TimeEntryData> entries = data.getTimeEntries();
-        float entriesNumber = 10.555F;
-        float userHours = 330F;
-        float totalHours = 60000.1234F;
+        int entriesNumber = 0;
+        int userHours = 0;
+        int totalHours = 0;
         if (entries != null) {
             entriesNumber = entries.size();
             for (TimeEntryData entry : entries) {
-                userHours += entry.getUserId() == 1 ? entry.getHours() : 0;
+                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
                 totalHours += entry.getHours();
             }
         }
@@ -491,22 +491,18 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         }
     }
 
-    private void populateInfoLabel(float entriesValue,
-                                   float userHoursValue,
-                                   float totalHoursValue) {
+    private void populateInfoLabel(int entriesValue,
+                                   int userHoursValue,
+                                   int totalHoursValue) {
 
 //        float entriesNumber = 100.44F;
 //        float userHours = 100.24F;
 //        float totalHours = 60000.1234F;
 
-        infoLabelString = String.format(
-                entriesLabel + "%3.2s " +
-                        userHoursLabel + "%3.2s " +
-                        totalHoursLabel + "%3.2s ",
-                entriesValue,
-                userHoursValue,
-                totalHoursValue
-        );
+        infoLabelString =
+                entriesLabel + " " + entriesValue + " " +
+                        userHoursLabel + " " + userHoursValue + " " +
+                        totalHoursLabel + " " + totalHoursValue;
     }
 
     @Override

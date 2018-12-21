@@ -88,7 +88,7 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         ProjectData data = (ProjectData) o;
-        int itemBgColor = data.getColor() == 0 ? Color.parseColor("cbbeb5") : data.getColor();
+        int itemBgColor = data.getColor() == 0 ? Color.parseColor("#AA5C6BC0") : data.getColor();
         projectViewProperties.setItemBgColor(itemBgColor);
         projectViewProperties.setId(data.getId());
 
@@ -103,7 +103,7 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
             LayerDrawable ld = (LayerDrawable) d;
             GradientDrawable gd = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
             if (gd != null) {
-                gd.setColor(data.getColor());
+                gd.setColor(itemBgColor);
             }
         }
 
@@ -425,16 +425,13 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
     }
 
     private void populateInfoLabel(int issuesValue,
-                                   float usersValue,
-                                   float hoursValue) {
-        infoLabelString = String.format(
-                issuesLabel + "%2s " +
-                        usersLabel + "%3.1s " +
-                        hoursLabel + "%3.1s ",
-                issuesValue,
-                usersValue,
-                hoursValue
-        );
+                                   int usersValue,
+                                   int hoursValue) {
+
+        infoLabelString =
+                issuesLabel + " " + issuesValue + " " +
+                usersLabel + " " + usersValue + " " +
+                hoursLabel + " " + hoursValue;
     }
 
     private void toggleInfoContainerVisiblity(boolean visible) {

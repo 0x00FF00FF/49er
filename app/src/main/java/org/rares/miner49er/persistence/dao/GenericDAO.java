@@ -8,6 +8,8 @@ public interface GenericDAO<EntityType extends AbstractViewModel> {
 
     List<EntityType> getAll();
 
+    List<EntityType> getAll(long id);
+
     List<EntityType> getMatching(String term);
 
     EntityType get(long id);

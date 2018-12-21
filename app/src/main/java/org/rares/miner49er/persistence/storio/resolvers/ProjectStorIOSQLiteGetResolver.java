@@ -5,12 +5,8 @@ import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
-import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
-import org.rares.miner49er.persistence.entities.User;
-import org.rares.miner49er.persistence.storio.tables.IssueTable;
 import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
-import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.List;
 
@@ -35,28 +31,9 @@ public class ProjectStorIOSQLiteGetResolver extends DefaultGetResolver<Project> 
         project.setIcon(cursor.getString(cursor.getColumnIndex("icon_path")));
         project.setPicture(cursor.getString(cursor.getColumnIndex("picture_path")));
 
-        project.setOwner(storIOSQLite.get()
-                .object(User.class)
-                .withQuery(Query.builder()
-                        .table(UserTable.NAME)
-                        .where(UserTable.ID_COLUMN + " = ?")
-                        .whereArgs(project.getOwnerId())
-                        .build())
-                .prepare()
-                .executeAsBlocking());
+        project.setOwner(UserStorIOSQLiteGetResolver.getById(storIOSQLite, project.getOwnerId()));
 
-        List<Issue> issues = storIOSQLite.get()
-                .listOfObjects(Issue.class)
-                .withQuery(
-                        Query.builder()
-                                .table(IssueTable.NAME)
-                                .where(IssueTable.PROJECT_ID_COLUMN + " = ?")
-                                .whereArgs(project.getId())
-                                .build())
-                .prepare()
-                .executeAsBlocking();
-
-        project.setIssues(issues);
+        project.setIssues(IssueStorIOSQLiteGetResolver.getAll(storIOSQLite, project.getId()));
 
         return project;
     }

@@ -30,6 +30,8 @@ public class IssueStorIOSQLiteGetResolver extends DefaultGetResolver<Issue> {
         issue.setLastUpdated(cursor.getLong(cursor.getColumnIndex("last_updated")));
         issue.setName(cursor.getString(cursor.getColumnIndex("issue_name")));
 
+        issue.setTimeEntries(TimeEntryStorIOSQLiteGetResolver.getAll(storIOSQLite, issue.getId()));
+
 //        issue.setProject(new ProjectStorIOSQLiteGetResolver().getById(storIOSQLite, issue.getProjectId()));
 //        issue.setOwner(new IssueStorIOSQLiteGetResolver().getById(storIOSQLite, issue.getOwnerId()));
 
@@ -71,6 +73,19 @@ public class IssueStorIOSQLiteGetResolver extends DefaultGetResolver<Issue> {
                 .withQuery(
                         Query.builder()
                                 .table(IssueTable.NAME)
+                                .build())
+                .prepare()
+                .executeAsBlocking();
+    }
+
+    public static List<Issue> getAll(StorIOSQLite storIOSQLite, long projectId) {
+        return storIOSQLite.get()
+                .listOfObjects(Issue.class)
+                .withQuery(
+                        Query.builder()
+                                .table(IssueTable.NAME)
+                                .where(IssueTable.PROJECT_ID_COLUMN + " = ?")
+                                .whereArgs(projectId)
                                 .build())
                 .prepare()
                 .executeAsBlocking();

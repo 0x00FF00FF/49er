@@ -24,8 +24,14 @@ public class TimeEntriesDAO implements GenericDAO<TimeEntryData> {
 
     @Override
     public List<TimeEntryData> getAll() {
-        List<TimeEntry> TimeEntries = TimeEntryStorIOSQLiteGetResolver.getAll(storIOSQLite);
-        return convertDbModelList(TimeEntries);
+        List<TimeEntry> timeEntries = TimeEntryStorIOSQLiteGetResolver.getAll(storIOSQLite);
+        return convertDbModelList(timeEntries);
+    }
+
+    @Override
+    public List<TimeEntryData> getAll(long id) {
+        List<TimeEntry> timeEntries = TimeEntryStorIOSQLiteGetResolver.getAll(storIOSQLite, id);
+        return convertDbModelList(timeEntries);
     }
 
     @Override
@@ -35,8 +41,8 @@ public class TimeEntriesDAO implements GenericDAO<TimeEntryData> {
 
     @Override
     public TimeEntryData get(long id) {
-        TimeEntry TimeEntry = TimeEntryStorIOSQLiteGetResolver.getById(storIOSQLite, id);
-        return convertDbModel(TimeEntry);
+        TimeEntry timeEntry = TimeEntryStorIOSQLiteGetResolver.getById(storIOSQLite, id);
+        return convertDbModel(timeEntry);
     }
 
     @Override

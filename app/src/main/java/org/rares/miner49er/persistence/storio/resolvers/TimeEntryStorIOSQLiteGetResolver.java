@@ -37,19 +37,6 @@ public class TimeEntryStorIOSQLiteGetResolver extends DefaultGetResolver<TimeEnt
 
         timeEntry.setUser(user);
 
-//        Issue issue = storIOSQLite
-//                .get()
-//                .object(Issue.class)
-//                .withQuery(Query.builder()
-//                        .table(IssueTable.NAME)
-//                        .where(IssueTable.ID_COLUMN + " = ?")
-//                        .whereArgs(timeEntry.getIssueId())
-//                        .build())
-//                .prepare()
-//                .executeAsBlocking();
-//
-//        timeEntry.setIssue(issue);
-
         return timeEntry;
     }
 
@@ -89,6 +76,20 @@ public class TimeEntryStorIOSQLiteGetResolver extends DefaultGetResolver<TimeEnt
                 .withQuery(
                         Query.builder()
                                 .table(TimeEntryTable.NAME)
+                                .build())
+                .prepare()
+                .executeAsBlocking();
+    }
+
+    public static List<TimeEntry> getAll(StorIOSQLite storIOSQLite, long issueId) {
+        return storIOSQLite
+                .get()
+                .listOfObjects(TimeEntry.class)
+                .withQuery(
+                        Query.builder()
+                                .table(TimeEntryTable.NAME)
+                                .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
+                                .whereArgs(issueId)
                                 .build())
                 .prepare()
                 .executeAsBlocking();

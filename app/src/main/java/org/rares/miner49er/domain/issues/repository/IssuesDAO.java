@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.issues.repository;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
+import org.rares.miner49er.domain.entries.repository.TimeEntriesDAO;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.GenericDAO;
 import org.rares.miner49er.persistence.entities.Issue;
@@ -24,20 +25,26 @@ public class IssuesDAO implements GenericDAO<IssueData> {
 
     @Override
     public List<IssueData> getAll() {
-        List<Issue> Issues = IssueStorIOSQLiteGetResolver.getAll(storIOSQLite);
-        return convertDbModelList(Issues);
+        List<Issue> issues = IssueStorIOSQLiteGetResolver.getAll(storIOSQLite);
+        return convertDbModelList(issues);
+    }
+
+    @Override
+    public List<IssueData> getAll(long id) {
+        List<Issue> issues = IssueStorIOSQLiteGetResolver.getAll(storIOSQLite, id);
+        return convertDbModelList(issues);
     }
 
     @Override
     public List<IssueData> getMatching(String term) {
-        List<Issue> Issues = IssueStorIOSQLiteGetResolver.getMatchingName(storIOSQLite, term);
-        return convertDbModelList(Issues);
+        List<Issue> issues = IssueStorIOSQLiteGetResolver.getMatchingName(storIOSQLite, term);
+        return convertDbModelList(issues);
     }
 
     @Override
     public IssueData get(long id) {
-        Issue Issue = IssueStorIOSQLiteGetResolver.getById(storIOSQLite, id);
-        return convertDbModel(Issue);
+        Issue issue = IssueStorIOSQLiteGetResolver.getById(storIOSQLite, id);
+        return convertDbModel(issue);
     }
 
     @Override
@@ -97,7 +104,7 @@ public class IssuesDAO implements GenericDAO<IssueData> {
         converted.setLastUpdated(entity.getLastUpdated());
         converted.setDateAdded(entity.getDateAdded());
         converted.setProjectId(entity.getProjectId());
-//        converted.setTimeEntries(TimeEntriesDAO.convertDbModelList(entity.getTimeEntries()));
+        converted.setTimeEntries(TimeEntriesDAO.convertDbModelList(entity.getTimeEntries()));
         return converted;
     }
 

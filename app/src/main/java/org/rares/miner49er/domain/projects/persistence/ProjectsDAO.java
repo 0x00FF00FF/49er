@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.projects.persistence;
 
+import android.graphics.Color;
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import org.rares.miner49er.domain.issues.repository.IssuesDAO;
@@ -19,7 +20,7 @@ public class ProjectsDAO implements GenericDAO<ProjectData> {
     private static final String TAG = ProjectsDAO.class.getSimpleName();
     private StorIOSQLite storio;
 
-    public static GenericDAO<ProjectData> newInstance(){
+    public static GenericDAO<ProjectData> newInstance() {
         return new ProjectsDAO();
     }
 
@@ -31,6 +32,11 @@ public class ProjectsDAO implements GenericDAO<ProjectData> {
     public List<ProjectData> getAll() {
         List<Project> list = ProjectTeamGetResolver.getAll(storio);
         return convertDbModelList(list);
+    }
+
+    @Override
+    public List<ProjectData> getAll(long id) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -88,9 +94,17 @@ public class ProjectsDAO implements GenericDAO<ProjectData> {
         }
 
         ArrayList<ProjectData> viewModels = new ArrayList<>();
-        for (Project p : entities) {
-            viewModels.add(convertDbModel(p));
+//        for (Project p : entities) {
+//            viewModels.add(convertDbModel(p));
+//        }
+
+        for (int i = 0; i < entities.size(); i++) {
+            Project p = entities.get(i);
+            ProjectData pd = convertDbModel(p);
+            pd.setColor(Color.parseColor(localColors[i % 2]));
+            viewModels.add(pd);
         }
+
         return viewModels;
     }
 
@@ -134,4 +148,6 @@ public class ProjectsDAO implements GenericDAO<ProjectData> {
 
         return project;
     }
+
+    private final static String[] localColors = {"#AA7986CB", "#AA5C6BC0"};
 }

@@ -300,6 +300,10 @@ public abstract class ResizeableItemsUiOps
             int solidColor = colorBgSolid;
             if (solidColor == ColorAnimation.ITEM_DATA) {
                 solidColor = holder.getItemProperties().getItemBgColor();
+                if (solidColor == 0) {
+                    solidColor = Color.parseColor("#AA7986CB");
+                    solidColor = UiUtil.getBrighterColor(solidColor, 0.1F);
+                }
             }
             int transparentColor = UiUtil.getTransparentColor(solidColor, 0);
             int startSolidColor;

@@ -12,6 +12,8 @@ import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.GenericDaoFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
@@ -136,9 +138,10 @@ public class IssuesRepository extends Repository<Issue> {
 //                                .map(list -> db2vm(list, false)),
                 userActionsObservable
                         .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
-                        .map(event -> getDbItems(issuesQuery, Issue.class))
-                        .startWith(getDbItems(issuesQuery, Issue.class))
-                        .map(list -> db2vm(list, true))
+                        .map(event -> getDbItems())
+//                        .map(event -> getDbItems(issuesQuery, Issue.class))
+                        .startWith(getDbItems())
+//                        .map(list -> db2vm(list, true))
                         .onBackpressureBuffer(2, () -> Log.i(TAG, "registerSubscriber: BACK PRESSURE BUFFER"))
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
@@ -155,6 +158,11 @@ public class IssuesRepository extends Repository<Issue> {
                 .where(IssueTable.PROJECT_ID_COLUMN + " = ? ")
                 .whereArgs(parentProperties.getId())
                 .build();
+    }
+
+    protected List<IssueData> getDbItems() {
+        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
+        return dao.getAll(parentProperties.getId());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.rares.miner49er.domain.projects.ui.actions;
 
 import android.content.Context;
+import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +67,25 @@ public abstract class ProjectActionFragment extends ActionFragment {
         unbinder = ButterKnife.bind(this, rootView);
         prepareEntry();
         rootView.setSmoothScrollingEnabled(true);
+
+        InputFilter filter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                int type = Character.getType(source.charAt(i));
+                if (type == Character.SURROGATE || type == Character.OTHER_SYMBOL) {
+                    return "";
+                }
+            }
+            return null;
+        };
+
+        InputFilter[] filters = new InputFilter[]{filter};
+
+        editTextProjectOwner.setFilters(filters);
+        editTextProjectName.setFilters(filters);
+        editTextProjectShortName.setFilters(filters);
+        editTextProjectDescription.setFilters(filters);
+        editTextProjectIcon.setFilters(filters);
+
         return rootView;
     }
 
