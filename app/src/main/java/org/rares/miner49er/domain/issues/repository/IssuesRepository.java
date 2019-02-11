@@ -11,9 +11,9 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
+import org.rares.miner49er.cache.InMemoryCacheFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.GenericDAO;
-import org.rares.miner49er.persistence.dao.GenericDaoFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
@@ -161,7 +161,8 @@ public class IssuesRepository extends Repository<Issue> {
     }
 
     protected List<IssueData> getDbItems() {
-        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
+//        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
+        GenericDAO<IssueData> dao = InMemoryCacheFactory.from(new IssueData());
         return dao.getAll(parentProperties.getId());
     }
 

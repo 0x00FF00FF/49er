@@ -11,7 +11,9 @@ import io.reactivex.functions.Consumer;
 import org.joda.time.DateTime;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
+import org.rares.miner49er.cache.InMemoryCacheFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.persistence.dao.GenericDAO;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
@@ -65,9 +67,11 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 
         disposables.add(
                 userActionsObservable
-                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-                        .startWith(getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-                        .map(list -> db2vm(list, true))
+//                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
+//                        .startWith(getDbItems(getTimeEntriesQuery(), TimeEntry.class))
+                        .map(c -> getDbItems())
+                        .startWith(getDbItems())
+//                        .map(list -> db2vm(list, true))
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
@@ -138,6 +142,12 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     public Query getTimeEntriesQuery() {
 //        Log.d(TAG, "getTimeEntriesQuery(): " + parentProperties.getId());
         return timeEntriesQuery;
+    }
+
+    protected List<TimeEntryData> getDbItems() {
+//        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
+        GenericDAO<TimeEntryData> dao = InMemoryCacheFactory.from(new TimeEntryData());
+        return dao.getAll(parentProperties.getId());
     }
 
     private List<TimeEntryData> db2vm(List<TimeEntry> timeEntries, boolean local) {

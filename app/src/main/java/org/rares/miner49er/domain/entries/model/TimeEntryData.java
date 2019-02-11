@@ -17,7 +17,7 @@ import org.rares.miner49er.util.TextUtils;
 @Setter
 public class TimeEntryData extends AbstractViewModel {
 
-//    private long id;
+    //    private long id;
     private Long issueId;
     private long dateAdded;
     private long workDate;
@@ -43,7 +43,7 @@ public class TimeEntryData extends AbstractViewModel {
                 (otherTimeEntry.userName == null ? "" : otherTimeEntry.userName).equals(userName == null ? "" : userName);
     }
 
-    public String toLongString(){
+    public String toLongString() {
         DateTime dateTime = new DateTime(getWorkDate());
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
         String entryDate = dateTime.toString(pattern);
@@ -55,5 +55,16 @@ public class TimeEntryData extends AbstractViewModel {
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
         String entryDate = dateTime.toString(pattern);
         return TextUtils.extractInitials(getUserName()) + " | " + getHours() + " | " + entryDate;
+    }
+
+    public void updateData(TimeEntryData newData) {
+        issueId = newData.issueId;
+        dateAdded = newData.dateAdded;
+        workDate = newData.workDate;
+        comments = newData.comments;
+        userId = newData.userId;
+        userName = newData.userName;
+        userPhoto = newData.userPhoto;
+        color = newData.color;
     }
 }

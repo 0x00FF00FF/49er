@@ -12,11 +12,10 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
-import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.cache.InMemoryCacheFactory;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectsSort;
 import org.rares.miner49er.persistence.dao.GenericDAO;
-import org.rares.miner49er.persistence.dao.GenericDaoFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
@@ -39,6 +38,8 @@ public class ProjectsRepository extends Repository<Project> {
     private Flowable<Changes> projectTableObservable;
 
     private ProjectsSort projectsSort = new ProjectsSort();
+
+
 
     public ProjectsRepository() {
 
@@ -71,7 +72,7 @@ public class ProjectsRepository extends Repository<Project> {
 //        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
-            if (getDbProjects().size() == 0) {
+            if (getData().size() == 0) {
                 demoProcessor.onNext(initializeFakeData());
             }
             return false;
@@ -179,12 +180,12 @@ public class ProjectsRepository extends Repository<Project> {
         disposables.add(
                 Flowable.merge(
                         projectTableObservable
-                                .map(changes -> getDbProjects())
-                                /*.map(data -> db2vm(data, false))*/,
+                                .map(changes -> getData())
+                        /*.map(data -> db2vm(data, false))*/,
                         userActionsObservable
-                                .map(b -> getDbProjects())
-                                .startWith(getDbProjects())
-                                /*.map(data -> db2vm(data, true))*/,
+                                .map(b -> getData())
+                                .startWith(getData())
+                        /*.map(data -> db2vm(data, true))*/,
                         demoProcessor
                                 .subscribeOn(Schedulers.io())
                                 .map(data -> db2vm(data, true))
@@ -244,15 +245,9 @@ public class ProjectsRepository extends Repository<Project> {
     protected void refreshQuery() {
     }
 
-    private List<ProjectData> getDbProjects() {
-//        return getDbItems(ProjectsTable.AllProjectsQuery, Project.class);
-        GenericDAO<ProjectData> dao = GenericDaoFactory.ofType(ProjectData.class);
+    private List<ProjectData> getData() {
+        GenericDAO<ProjectData> dao = InMemoryCacheFactory.from(new ProjectData());
         return dao.getAll();
-    }
-
-    private List<TimeEntryData> getTimeEntries(long issueId){
-        GenericDAO<TimeEntryData> dao = GenericDaoFactory.ofType(TimeEntryData.class);
-        return dao.getAll(issueId);
     }
 
     private final String[] localColors = {"#AA7986CB", "#AA5C6BC0"};

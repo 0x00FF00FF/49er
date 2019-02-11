@@ -41,4 +41,17 @@ public class ProjectData extends AbstractViewModel {
                 (picture == null ? "" : picture).equals(otherData.getPicture() == null ? "" : otherData.getPicture());
     }
 
+    public void updateData(ProjectData projectData) {
+        name = projectData.name;
+        description = projectData.description;
+        icon = projectData.icon;
+        picture = projectData.picture;
+        color = projectData.color;
+        dateAdded = projectData.dateAdded;
+
+        owner = projectData.owner;
+        team = projectData.team;
+        issues = projectData.issues;
+    }
+
 }

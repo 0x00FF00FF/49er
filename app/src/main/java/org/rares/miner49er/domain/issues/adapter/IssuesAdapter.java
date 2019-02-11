@@ -77,7 +77,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         if (position < 0 || position >= data.size()) {
             return null;
         }
-        String issueName = this.data.get(position).toString();
+        String issueName = this.data.get(position).getName();
         return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(issueName) : issueName;
     }
 

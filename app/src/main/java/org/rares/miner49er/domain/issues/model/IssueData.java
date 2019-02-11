@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.issues.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
@@ -14,9 +15,10 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class IssueData extends AbstractViewModel {
 
-//    private long id;
+    //    private long id;
     private Long projectId;
     private String name;
     //    private User owner;
@@ -25,11 +27,11 @@ public class IssueData extends AbstractViewModel {
     private List<TimeEntryData> timeEntries;
     private int color;
 //    List<User> assignedUsers;
-
+/*
     public String toString() {
         return name;// + " [" + id +"]";
     }
-
+*/
     public boolean compareContents(IssueData other) {
         return
                 projectId.equals(other.getProjectId()) &&
@@ -38,5 +40,15 @@ public class IssueData extends AbstractViewModel {
                         dateAdded == other.dateAdded &&
 //                owner.equals(other.getOwner()) &&
                         dateDue == other.dateDue;
+    }
+
+    public void updateData(IssueData newData) {
+        id = newData.id;
+        projectId = newData.projectId;
+        name = newData.name;
+        dateAdded = newData.dateAdded;
+        dateDue = newData.dateDue;
+        timeEntries = newData.timeEntries;
+        color = newData.color;
     }
 }

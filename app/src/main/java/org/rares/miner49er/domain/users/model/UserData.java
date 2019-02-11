@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.users.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
 /**
@@ -11,6 +12,7 @@ import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
 @Getter
 @Setter
+@ToString
 public class UserData extends AbstractViewModel {
 
 //    private long id;
