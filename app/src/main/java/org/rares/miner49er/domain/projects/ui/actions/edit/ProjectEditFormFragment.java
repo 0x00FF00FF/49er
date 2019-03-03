@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.projects.ui.actions.edit;
 
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
-import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -174,7 +175,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             return;
         }
 
-        projectData = projectsDAO.get(projectId);
+        projectData = projectsDAO.get(projectId, false).blockingGet().get();        ////
 
         inputLayoutProjectName.setError("");
         editTextProjectName.setText(projectData.getName());
@@ -194,6 +195,8 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         String ownerName = "";
         if (projectData.getOwner() != null) {
             ownerName = projectData.getOwner().getName();
+        } else {
+            Log.i(TAG, "populateFields: OWNER NULL");
         }
         editTextProjectOwner.setText(ownerName);
     }
@@ -202,9 +205,11 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     protected boolean validateExistingName(
             TextInputEditText editText,
             TextInputLayout layout,
-            GenericDAO<? extends AbstractViewModel> dao) {
+            AsyncGenericDao<? extends AbstractViewModel> dao) {
 
-        List<? extends AbstractViewModel> entities = dao.getMatching(editText.getEditableText().toString());
+        List<? extends AbstractViewModel> entities =
+                dao.getMatching(editText.getEditableText().toString(), true).blockingGet();
+
         if (entities == null || entities.isEmpty()) {
             layout.setError("");
             return true;

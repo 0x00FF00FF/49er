@@ -14,10 +14,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.persistence.dao.GenericDAO;
-import org.rares.miner49er.persistence.dao.GenericDaoFactory;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 
 import java.util.ArrayList;
@@ -54,8 +54,8 @@ public abstract class ProjectActionFragment extends ActionFragment {
     @BindView(R.id.btn_cancel_add_project)
     protected MaterialButton btnCancel;
 
-    protected GenericDAO<ProjectData> projectsDAO;
-    protected GenericDAO<UserData> usersDAO;
+    protected AsyncGenericDao<ProjectData> projectsDAO;
+    protected AsyncGenericDao<UserData> usersDAO;
 
     protected ProjectData projectData = null;
 
@@ -92,8 +92,8 @@ public abstract class ProjectActionFragment extends ActionFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        projectsDAO = GenericDaoFactory.ofType(ProjectData.class);
-        usersDAO = GenericDaoFactory.ofType(UserData.class);
+        projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
+        usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
     }
 
     @Override

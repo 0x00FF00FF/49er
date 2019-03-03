@@ -9,7 +9,7 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
-import org.rares.miner49er.domain.entries.repository.TimeEntriesRepository;
+import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
 
 /**
  * @author rares

@@ -72,7 +72,16 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 
     @Override
     public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
-//        Log.d(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
+        if (holder instanceof ItemViewAnimator) {
+
+//            getExtraInfo(holder.viewModel.id);
+
+            ((ItemViewAnimator) holder).validateItem(
+                    getLastSelectedPosition() != -1,
+                    holder.getAdapterPosition() == getLastSelectedPosition());
+            Log.i(TAG, "onViewAttachedToWindow: validate");
+        }
+//        Log.i(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
     }
 
     public abstract void clearData();

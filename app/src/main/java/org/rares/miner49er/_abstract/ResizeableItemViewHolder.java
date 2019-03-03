@@ -9,6 +9,7 @@ import butterknife.Unbinder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.ratv.rotationaware.animation.RotationAnimatorHost;
 import org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener;
 
@@ -44,6 +45,8 @@ public abstract class ResizeableItemViewHolder
     @Getter
     @Setter
     private boolean toBeRebound = true;
+
+    protected AbstractViewModel viewModel;
 
     private Unbinder unbinder;
 

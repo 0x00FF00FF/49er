@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.entries.repository;
+package org.rares.miner49er.domain.entries.persistence;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
@@ -11,14 +11,14 @@ import io.reactivex.functions.Consumer;
 import org.joda.time.DateTime;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
-import org.rares.miner49er.cache.InMemoryCacheFactory;
+import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
-import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
-import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +27,8 @@ import java.util.List;
 public class TimeEntriesRepository extends Repository<TimeEntry> {
 
     private static final String TAG = TimeEntriesRepository.class.getSimpleName();
+
+    private AsyncGenericDao<TimeEntryData> asyncDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
     private Flowable<Changes> timeEntriesTableObservable;
 
@@ -42,6 +44,9 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 //                storio
 //                        .observeChangesInTable(TimeEntryTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
+        if (asyncDao instanceof EventBroadcaster) {
+            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+        }
 
     }
 
@@ -69,9 +74,13 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
                 userActionsObservable
 //                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
 //                        .startWith(getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-                        .map(c -> getDbItems())
+                        .map(c -> {
+                            Log.i(TAG, "registerSubscriber: MAP");
+                            return getDbItems();
+                        })
                         .startWith(getDbItems())
 //                        .map(list -> db2vm(list, true))
+                        .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
@@ -136,6 +145,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 
     @Override
     public void refreshData(boolean onlyLocal) {
+        Log.d(TAG, "refreshData() called with: onlyLocal = [" + onlyLocal + "]");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 
@@ -145,39 +155,10 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     }
 
     protected List<TimeEntryData> getDbItems() {
-//        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
-        GenericDAO<TimeEntryData> dao = InMemoryCacheFactory.from(new TimeEntryData());
-        return dao.getAll(parentProperties.getId());
+        return asyncDao.getAll(parentProperties.getId(), true).blockingGet();           ////
     }
 
-    private List<TimeEntryData> db2vm(List<TimeEntry> timeEntries, boolean local) {
-
-        List<TimeEntryData> timeEntryDataList = new ArrayList<>();
-        int count = 0;
-        for (TimeEntry entry : timeEntries) {
-            TimeEntryData converted = new TimeEntryData();
-
-            converted.setDateAdded(entry.getDateAdded());
-            converted.setUserName((local ? "" : "*") + entry.getUser().getName());
-            converted.setId(entry.getId());
-            converted.setWorkDate(entry.getWorkDate());
-            converted.setComments(entry.getComments());
-            converted.setHours(entry.getHours());
-            converted.setUserId(entry.getUserId());
-            converted.setUserPhoto(entry.getUser().getPhoto());
-            converted.setIssueId(entry.getIssueId());
-            converted.setColor(
-                    UiUtil.getBrighterColor(
-                            parentProperties.getItemBgColor(),
-                            (count++ % 2 == 0 ? 1 : 4) * 0.0100F));
-
-            timeEntryDataList.add(converted);
-        }
-
-        return timeEntryDataList;
-    }
-
-    @Override
+        @Override
     protected final List<TimeEntry> initializeFakeData() {
 
         int entries = NumberUtils.getRandomInt(4, 30);

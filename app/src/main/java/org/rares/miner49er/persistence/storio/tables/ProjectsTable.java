@@ -24,6 +24,25 @@ public class ProjectsTable {
     public static final String T_COLUMN_ICON_PATH =                   TABLE_NAME + "." + COLUMN_ICON_PATH;
     public static final String T_COLUMN_PICTURE_PATH =                TABLE_NAME + "." + COLUMN_PICTURE_PATH;
 
+    public static final String A_COLUMN_ID =                          TABLE_NAME + "_" + COLUMN_ID;
+    public static final String A_COLUMN_USER_ID =                     TABLE_NAME + "_" + COLUMN_USER_ID;
+    public static final String A_COLUMN_DATE_ADDED =                  TABLE_NAME + "_" + COLUMN_DATE_ADDED;
+    public static final String A_COLUMN_DATE_LAST_UPDATED =           TABLE_NAME + "_" + COLUMN_DATE_LAST_UPDATED;
+    public static final String A_COLUMN_PROJECT_NAME =                TABLE_NAME + "_" + COLUMN_PROJECT_NAME;
+    public static final String A_COLUMN_PROJECT_DESCRIPTION =         TABLE_NAME + "_" + COLUMN_PROJECT_DESCRIPTION;
+    public static final String A_COLUMN_ICON_PATH =                   TABLE_NAME + "_" + COLUMN_ICON_PATH;
+    public static final String A_COLUMN_PICTURE_PATH =                TABLE_NAME + "_" + COLUMN_PICTURE_PATH;
+
+    public static final String COL_ALIAS = String.format("%s, %s, %s, %s, %s, %s, %s, %s",
+            T_COLUMN_ID                     + " as " + A_COLUMN_ID,
+            T_COLUMN_USER_ID                + " as " + A_COLUMN_USER_ID,
+            T_COLUMN_DATE_ADDED             + " as " + A_COLUMN_DATE_ADDED,
+            T_COLUMN_DATE_LAST_UPDATED      + " as " + A_COLUMN_DATE_LAST_UPDATED,
+            T_COLUMN_PROJECT_NAME           + " as " + A_COLUMN_PROJECT_NAME,
+            T_COLUMN_PROJECT_DESCRIPTION    + " as " + A_COLUMN_PROJECT_DESCRIPTION,
+            T_COLUMN_ICON_PATH              + " as " + A_COLUMN_ICON_PATH,
+            T_COLUMN_PICTURE_PATH           + " as " + A_COLUMN_PICTURE_PATH);
+
     public static void createTable(SQLiteDatabase db) {
         db.execSQL(
                 "CREATE TABLE " +

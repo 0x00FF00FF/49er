@@ -6,6 +6,7 @@ import lombok.ToString;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,14 +20,15 @@ import java.util.List;
 public class IssueData extends AbstractViewModel {
 
     //    private long id;
-    private Long projectId;
+//    private Long projectId;
     private String name;
     //    private User owner;
     private long dateAdded;
     private long dateDue;
     private List<TimeEntryData> timeEntries;
     private int color;
-//    List<User> assignedUsers;
+
+    //    List<User> assignedUsers;
 /*
     public String toString() {
         return name;// + " [" + id +"]";
@@ -34,8 +36,9 @@ public class IssueData extends AbstractViewModel {
 */
     public boolean compareContents(IssueData other) {
         return
-                projectId.equals(other.getProjectId()) &&
+                parentId.equals(other.getParentId()) &&
                         (name == null ? "" : name).equals((other.getName() == null ? "" : other.name)) &&
+                        (timeEntries == null ? Collections.emptyList() : timeEntries).equals(other.timeEntries == null ? Collections.emptyList() : other.timeEntries) &&
                         color == other.color &&
                         dateAdded == other.dateAdded &&
 //                owner.equals(other.getOwner()) &&
@@ -44,7 +47,7 @@ public class IssueData extends AbstractViewModel {
 
     public void updateData(IssueData newData) {
         id = newData.id;
-        projectId = newData.projectId;
+        parentId = newData.parentId;
         name = newData.name;
         dateAdded = newData.dateAdded;
         dateDue = newData.dateDue;

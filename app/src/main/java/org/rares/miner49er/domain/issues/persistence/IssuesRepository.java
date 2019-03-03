@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.issues.repository;
+package org.rares.miner49er.domain.issues.persistence;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
@@ -11,15 +11,15 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
-import org.rares.miner49er.cache.InMemoryCacheFactory;
+import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
-import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
-import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +30,10 @@ public class IssuesRepository extends Repository<Issue> {
     private static final String TAG = IssuesRepository.class.getSimpleName();
 
     private Flowable<Changes> issueTableObservable;
+
     private Query issuesQuery;
+
+    private AsyncGenericDao<IssueData> asyncDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
 
     public IssuesRepository() {
 //        ns.registerIssuesConsumer(this);
@@ -38,6 +41,9 @@ public class IssuesRepository extends Repository<Issue> {
 //                storio
 //                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
+        if (asyncDao instanceof EventBroadcaster) {
+            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+        }
     }
 
     @Override
@@ -129,26 +135,27 @@ public class IssuesRepository extends Repository<Issue> {
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
-
         disposables.add(
 //                Flowable.merge(
 //                        issueTableObservable
 //                                .doOnNext((a) -> Log.d(TAG, "NET-- ON NEXT"))
 //                                .map(changes -> getDbItems(issuesQuery, Issue.class))
 //                                .map(list -> db2vm(list, false)),
-                userActionsObservable
-                        .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
-                        .map(event -> getDbItems())
+                        userActionsObservable
+                                .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
+                                .map(event -> {
+                                    Log.w(TAG, "registerSubscriber: MAP");
+                                    return getDbItems(true, 0);
+                                })
 //                        .map(event -> getDbItems(issuesQuery, Issue.class))
-                        .startWith(getDbItems())
+                                .startWith(getDbItems(true, 1))
 //                        .map(list -> db2vm(list, true))
-                        .onBackpressureBuffer(2, () -> Log.i(TAG, "registerSubscriber: BACK PRESSURE BUFFER"))
+                        .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer)
         );
-
     }
 
     @Override
@@ -160,14 +167,14 @@ public class IssuesRepository extends Repository<Issue> {
                 .build();
     }
 
-    protected List<IssueData> getDbItems() {
-//        GenericDAO<IssueData> dao = GenericDaoFactory.ofType(IssueData.class);
-        GenericDAO<IssueData> dao = InMemoryCacheFactory.from(new IssueData());
-        return dao.getAll(parentProperties.getId());
+    private List<IssueData> getDbItems(boolean lazy, int i) {
+        Log.i(TAG, "getDbItems: " + i);
+        return asyncDao.getAll(parentProperties.getId(), lazy).blockingGet();
     }
 
     @Override
     public void refreshData(boolean onlyLocal) {
+        Log.i(TAG, "refreshData: >>>>");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 
@@ -181,29 +188,6 @@ public class IssuesRepository extends Repository<Issue> {
         return DeleteQuery.builder()
                 .table(IssueTable.NAME)
                 .where(IssueTable.PROJECT_ID_COLUMN + " = ? ");
-    }
-
-    private List<IssueData> db2vm(List<Issue> issues, boolean local) {
-
-//        Log.d(TAG, "db2vm() called with: p = [" + issues + "]");
-        List<IssueData> projectDataList = new ArrayList<>();
-        int count = 0;
-        for (Issue i : issues) {
-            IssueData converted = new IssueData();
-
-            converted.setDateAdded(i.getDateAdded());
-            converted.setDateDue(i.getDateDue());
-            converted.setId(i.getId());
-            converted.setName((local ? "" : "*") + i.getName());
-            converted.setProjectId(i.getProjectId());
-            converted.setColor(
-                    UiUtil.getBrighterColor(
-                            parentProperties.getItemBgColor(),
-                            (count++ % 2 == 0 ? 2 : 4) * 0.0200F));
-            projectDataList.add(converted);
-        }
-
-        return projectDataList;
     }
 
     @Override

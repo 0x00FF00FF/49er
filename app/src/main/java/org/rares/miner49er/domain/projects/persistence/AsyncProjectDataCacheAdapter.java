@@ -1,0 +1,114 @@
+package org.rares.miner49er.domain.projects.persistence;
+
+import android.util.Log;
+import com.pushtorefresh.storio3.Optional;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
+import org.rares.miner49er.cache.AbstractAsyncCacheAdapter;
+import org.rares.miner49er.cache.Cache;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.persistence.dao.AsyncGenericDaoFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class AsyncProjectDataCacheAdapter
+        extends AbstractAsyncCacheAdapter
+        implements AsyncGenericDao<ProjectData> {
+
+    private final AsyncGenericDao<ProjectData> dao = AsyncGenericDaoFactory.ofType(ProjectData.class);
+    private final Cache<ProjectData> projectDataCache = cache.getCache(ProjectData.class);
+
+    public static final String TAG = AsyncProjectDataCacheAdapter.class.getSimpleName();
+
+    @Override
+    public Single<List<ProjectData>> getAll(boolean lazy) {
+        List<ProjectData> cached = projectDataCache.getData(Optional.of(null));
+        final List<ProjectData> dbProjects = new ArrayList<>();
+        if (cached != null && cached.size() > 0) {
+            Log.e(TAG, String.format("[ ] [ ] getAll: PROJECTS CACHE HIT. [lazy: %b] [#: %s] [%s]" , lazy, cached.size(), Thread.currentThread().getName()));
+            return Single.just(cached);
+        } else {
+            Single<List<ProjectData>> daoDataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
+
+            getDisposables().add(daoDataSingle
+                    .observeOn(Schedulers.computation())
+                    .subscribe(list -> {
+                        Log.w(TAG, String.format(">> >> [db] getAllProjects: [#: %s], [%s]", list.size(), Thread.currentThread().getName()));
+                        projectDataCache.putData(list, false);
+                    }));
+
+            return Single.just(dbProjects);
+        }
+    }
+
+    @Override
+    public Single<List<ProjectData>> getAll(long parentId, boolean lazy) {
+        List<ProjectData> cached = new ArrayList<>(cache.getProjectsCache().snapshot().values());
+        final List<ProjectData> dbProjects = new ArrayList<>();
+        if (cached.size() > 0) {
+            List<ProjectData> userProjects = new ArrayList<>();
+            for (ProjectData pd : cached) {
+                if (pd.getOwner() != null && pd.getOwner().id == parentId) {
+                    userProjects.add(pd);
+                }
+            }
+            return Single.just(userProjects);
+        } else {
+            Single<List<ProjectData>> daoDataSingle = dao.getAll(parentId, lazy).subscribeOn(Schedulers.io());
+            getDisposables().add(daoDataSingle
+                    .observeOn(Schedulers.computation())
+                    .subscribe(list -> {
+                        dbProjects.addAll(list);
+                        projectDataCache.putData(list, false);
+                    }));
+            return Single.just(dbProjects);
+        }
+    }
+
+    @Override
+    public Single<List<ProjectData>> getMatching(String term, boolean lazy) {
+        return dao.getMatching(term, lazy);
+    }
+
+    @Override
+    public Single<Optional<ProjectData>> get(long id, boolean lazy) {
+        ProjectData data = projectDataCache.getData(id);
+        ProjectData dbData = new ProjectData();
+        if (data != null) {
+            return Single.just(Optional.of(data));
+        } else {
+            Single<Optional<ProjectData>> daoData = dao.get(id, lazy).subscribeOn(Schedulers.io());
+
+            getDisposables().add(daoData
+                    .observeOn(Schedulers.computation())
+                    .subscribe(opt -> {
+                        if (opt.isPresent()) {
+                            dbData.updateData(opt.get());
+                            projectDataCache.putData(opt.get(), false);
+                        }
+                    }));
+
+            return Single.just(Optional.of(dbData.id == 0 ? null : dbData));
+        }
+    }
+
+    @Override
+    public Single<Long> insert(ProjectData toInsert) {
+        projectDataCache.putData(toInsert, false);
+        return dao.insert(toInsert).subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public Single<Boolean> update(ProjectData toUpdate) {
+        projectDataCache.putData(toUpdate, false);
+        return dao.update(toUpdate).subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public Single<Boolean> delete(ProjectData toDelete) {
+        projectDataCache.removeData(toDelete);
+        return dao.delete(toDelete).subscribeOn(Schedulers.io());
+    }
+}

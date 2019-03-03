@@ -2,12 +2,19 @@ package org.rares.miner49er.persistence.storio.resolvers;
 
 import android.database.Cursor;
 import androidx.annotation.NonNull;
+import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
+import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects;
+import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
+import com.pushtorefresh.storio3.sqlite.queries.RawQuery;
+import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.User;
+import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
 import org.rares.miner49er.persistence.storio.tables.UserTable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +41,51 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
         return user;
     }
 
-    public static User getById(StorIOSQLite storIOSQLite, long id) {
+    public User getById(StorIOSQLite storIOSQLite, long id) {
+        return _getById(storIOSQLite, id).executeAsBlocking();
+    }
+
+    public List<User> getMatchingName(StorIOSQLite storIOSQLite, String term) {
+        return _getMatchingName(storIOSQLite, term).executeAsBlocking();
+    }
+
+    public List<User> getMatchingRole(StorIOSQLite storIOSQLite, int role) {
+        return _getMatchingRole(storIOSQLite, role).executeAsBlocking();
+    }
+
+    public List<User> getAll(StorIOSQLite storIOSQLite) {
+        return _getAll(storIOSQLite).executeAsBlocking();
+    }
+
+    public List<User> getAll(StorIOSQLite storIOSQLite, long projectId) {
+        return _getAll(storIOSQLite, projectId).executeAsBlocking();
+    }
+
+    ////
+
+    public Single<Optional<User>> getByIdAsync(StorIOSQLite storIOSQLite, long id) {
+        return _getById(storIOSQLite, id).asRxSingle();
+    }
+
+    public Single<List<User>> getMatchingNameAsync(StorIOSQLite storIOSQLite, String term) {
+        return _getMatchingName(storIOSQLite, term).asRxSingle();
+    }
+
+    public Single<List<User>> getMatchingRoleAsync(StorIOSQLite storIOSQLite, int role) {
+        return _getMatchingRole(storIOSQLite, role).asRxSingle();
+    }
+
+    public Single<List<User>> getAllAsync(StorIOSQLite storIOSQLite) {
+        return _getAll(storIOSQLite).asRxSingle();
+    }
+
+
+    public Single<List<User>> getAllAsync(StorIOSQLite storIOSQLite, long projectId) {
+        return _getAll(storIOSQLite, projectId).asRxSingle();
+    }
+
+
+    private PreparedGetObject<User> _getById(StorIOSQLite storIOSQLite, long id) {
         return storIOSQLite
                 .get()
                 .object(User.class)
@@ -44,11 +95,10 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
                                 .where(UserTable.ID_COLUMN + " = ?")
                                 .whereArgs(id)
                                 .build())
-                .prepare()
-                .executeAsBlocking();
+                .prepare();
     }
 
-    public static List<User> getMatchingName(StorIOSQLite storIOSQLite, String term) {
+    private PreparedGetListOfObjects<User> _getMatchingName(StorIOSQLite storIOSQLite, String term) {
         return storIOSQLite
                 .get()
                 .listOfObjects(User.class)
@@ -58,11 +108,10 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
                                 .where(UserTable.NAME_COLUMN + " = ? ")
                                 .whereArgs(term)
                                 .build())
-                .prepare()
-                .executeAsBlocking();
+                .prepare();
     }
 
-    public static List<User> getMatchingRole(StorIOSQLite storIOSQLite, int role) {
+    private PreparedGetListOfObjects<User> _getMatchingRole(StorIOSQLite storIOSQLite, int role) {
         return storIOSQLite
                 .get()
                 .listOfObjects(User.class)
@@ -72,18 +121,48 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
                                 .where(UserTable.ROLE_COLUMN + " = ? ")
                                 .whereArgs(role)
                                 .build())
-                .prepare()
-                .executeAsBlocking();
+                .prepare();
     }
 
-    public static List<User> getAll(StorIOSQLite storIOSQLite) {
+    private PreparedGetListOfObjects<User> _getAll(StorIOSQLite storIOSQLite) {
         return storIOSQLite
                 .get()
                 .listOfObjects(User.class)
                 .withQuery(Query.builder()
                         .table(UserTable.NAME)
                         .build())
-                .prepare()
-                .executeAsBlocking();
+                .prepare();
+    }
+
+    private PreparedGetListOfObjects<User> _getAll(StorIOSQLite storIOSQLite, long projectId) {
+        return storIOSQLite
+                .get()
+                .listOfObjects(User.class)
+                .withQuery(RawQuery.builder()
+                        .query("SELECT " + UserTable.NAME + ".* FROM " + UserTable.NAME +
+                                " JOIN " + UserProjectTable.NAME +
+                                " ON " + UserTable.NAME + "." + UserTable.ID_COLUMN + " = " + UserProjectTable.USER_ID_COLUMN +
+                                " AND " + UserProjectTable.PROJECT_ID_COLUMN + " = ?")
+                        .args(projectId)
+                        .build())
+                .prepare();
+    }
+
+    private List<Long> _getAllIds(StorIOSQLite storIOSQLite, long projectId) {
+        List<Long> teamIds = new ArrayList<>();
+        Query query = Query
+                .builder()
+                .table(UserProjectTable.NAME)
+                .where(String.format("%s = ?", UserProjectTable.PROJECT_ID_COLUMN))
+                .whereArgs(projectId)
+                .build();
+
+
+        try (Cursor c = storIOSQLite.lowLevel().query(query)) {
+            while (c.moveToNext()) {
+                teamIds.add(c.getLong(c.getColumnIndex(UserProjectTable.PROJECT_ID_COLUMN)));
+            }
+        }
+        return teamIds;
     }
 }

@@ -61,10 +61,24 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
 //        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
         super.onBindViewHolder(holder, position);
+        IssueData issueData = data.get(position);
+//        List<TimeEntryData> tedata = issueData.getTimeEntries();
+//        int hourCount = 0;
+//        for (TimeEntryData ted : tedata) {
+//            if (ted != null) {
+//                hourCount += ted.getHours();
+//            }
+//        }
         holder.bindData(
-                data.get(position),
+                issueData,
                 getLastSelectedPosition() != -1,
                 position == getLastSelectedPosition());
+//        Log.i(TAG, "onBindViewHolder: position: ["
+//                + position + "] data: ["
+//                + issueData.getName() + "]["
+//                + tedata.size() + "]" + " hours: "
+//                + hourCount
+//        );
     }
 
     @Override

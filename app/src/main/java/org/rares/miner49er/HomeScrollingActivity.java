@@ -25,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
+import org.rares.miner49er.cache.SimpleCache;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -401,6 +402,11 @@ public class HomeScrollingActivity
         super.onStop();
 
         projectsUiOps.shutdown(); // why is this here and the others on destroy?
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        SimpleCache.getInstance().clear();
     }
 
     @Override

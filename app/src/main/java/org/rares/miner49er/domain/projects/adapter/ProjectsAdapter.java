@@ -38,7 +38,7 @@ public class ProjectsAdapter
     // It's way more effective to use DiffUtil.
     // By using DiffUtil, RV can properly recycle
     // items when swapping data. When using SortedList,
-    // RV was always creating new ViewHolders. While using
+    // RV was always creating new ViewHolders. Using
     // SortedList and setting  hasStableIds(true) helps
     // in keeping memory usage low, but trades off CPU cycles.
     // Still (DiffUtil) vs (SortedList + hasStableIds(true)),
@@ -137,8 +137,8 @@ public class ProjectsAdapter
 //    }
 
     private void updateList(List<ProjectData> newData) {
-
-
+        Log.i(TAG, "updateList: ------------------------------------------------------------");
+        ProjectListUpdateListener updateListener = new ProjectListUpdateListener();
         /*-
         TODO
         when data is refreshed
@@ -147,52 +147,18 @@ public class ProjectsAdapter
         in short format.
         -*/
 
-
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ProjectDiff(data, newData));
 
         data = newData;
-        diffResult.dispatchUpdatesTo(this);
 
-        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
-            @Override
-            public void onInserted(int position, int count) {
-//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
-            }
+        diffResult.dispatchUpdatesTo(updateListener);
 
-            @Override
-            public void onRemoved(int position, int count) {
-//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
-            }
-
-            @Override
-            public void onMoved(int fromPosition, int toPosition) {
-//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-            }
-
-            @Override
-            public void onChanged(int position, int count, Object payload) {
-                int sp = getLastSelectedPosition();
-                ItemViewProperties vp = new ProjectViewProperties();
-                if (position == sp) {
-                    if (payload instanceof Bundle) {
-                        Bundle p = (Bundle) payload;
-                        long id = p.getLong("id");
-                        int color = p.getInt("color", 0);
-                        String name = p.getString("name");
-                        if (color != 0) {
-                            vp.setItemBgColor(color);
-                        }
-                        if (id != 0) {
-                            vp.setId(id);
-                        }
-                        if (name != null) {
-                            vp.setName(name);
-                        }
-                        eventListener.onListItemChanged(vp);
-                    }
-                }
-            }
-        });
+        if (!updateListener.changed) {
+            Log.e(TAG, "should updateList ::::::");
+//            notifyDataSetChanged();
+        } else {
+            diffResult.dispatchUpdatesTo(this);
+        }
     }
 
     @Override
@@ -200,5 +166,54 @@ public class ProjectsAdapter
         updateList(list);
     }
 
+    private class ProjectListUpdateListener implements ListUpdateCallback {
+
+        boolean changed;
+
+        @Override
+        public void onInserted(int position, int count) {
+            changed = true;
+//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+        }
+
+        @Override
+        public void onRemoved(int position, int count) {
+            changed = true;
+//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) {
+            changed = true;
+//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+        }
+
+        @Override
+        public void onChanged(int position, int count, Object payload) {
+            changed = true;
+            int sp = getLastSelectedPosition();
+            ItemViewProperties vp = new ProjectViewProperties();
+            if (position == sp) {
+                if (payload instanceof Bundle) {
+                    Bundle p = (Bundle) payload;
+                    long id = p.getLong("id");
+                    int color = p.getInt("color", 0);
+                    String name = p.getString("name");
+                    String iss = p.getString("issues");
+                    Log.w(TAG, "onChanged: " + iss);
+                    if (color != 0) {
+                        vp.setItemBgColor(color);
+                    }
+                    if (id != 0) {
+                        vp.setId(id);
+                    }
+                    if (name != null) {
+                        vp.setName(name);
+                    }
+                    eventListener.onListItemChanged(vp);        //
+                }
+            }
+        }
+    }
 
 }

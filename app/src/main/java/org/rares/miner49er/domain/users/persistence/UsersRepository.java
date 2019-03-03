@@ -11,7 +11,10 @@ import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
+import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.UserTable;
 import org.rares.miner49er.util.NumberUtils;
@@ -23,6 +26,8 @@ import java.util.List;
 public class UsersRepository extends Repository<User> {
 
     private static final String TAG = UsersRepository.class.getSimpleName();
+
+    private AsyncGenericDao<UserData> asyncDao = InMemoryCacheAdapterFactory.ofType(UserData.class);
 
     private Flowable<Changes> userTableObservable;
     private Query usersQuery;
@@ -36,6 +41,9 @@ public class UsersRepository extends Repository<User> {
 //                storio
 //                        .observeChangesInTable(UserTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
+        if (asyncDao instanceof EventBroadcaster) {
+            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+        }
     }
 
     @Override
@@ -78,16 +86,22 @@ public class UsersRepository extends Repository<User> {
         disposables.add(
                 userActionsObservable
                         .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
-                        .map(event -> getDbItems(usersQuery, User.class))
-                        .startWith(getDbItems(usersQuery, User.class))
-                        .map(list -> db2vm(list, true))
-                        .onBackpressureBuffer(2, () -> Log.i(TAG, "registerSubscriber: BACK PRESSURE BUFFER"))
+//                        .map(event -> getDbItems(usersQuery, User.class))
+//                        .startWith(getDbItems(usersQuery, User.class))
+//                        .map(list -> db2vm(list, true))
+                        .map(o-> getData())
+                        .startWith(getData())
+                        .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer)
         );
 
+    }
+
+    private List<UserData> getData(){
+        return asyncDao.getAll(true).blockingGet();
     }
 
     @Override

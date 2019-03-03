@@ -8,4 +8,5 @@ import lombok.Setter;
 public abstract class AbstractViewModel {
     public Long id;
     public long lastUpdated;
+    public Long parentId;
 }

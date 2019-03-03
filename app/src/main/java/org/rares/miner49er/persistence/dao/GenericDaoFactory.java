@@ -1,14 +1,15 @@
 package org.rares.miner49er.persistence.dao;
 
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
-import org.rares.miner49er.domain.entries.repository.TimeEntriesDAO;
+import org.rares.miner49er.domain.entries.persistence.TimeEntriesDAO;
 import org.rares.miner49er.domain.issues.model.IssueData;
-import org.rares.miner49er.domain.issues.repository.IssuesDAO;
+import org.rares.miner49er.domain.issues.persistence.IssuesDAO;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.persistence.ProjectsDAO;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.persistence.UsersDAO;
 
+@Deprecated
 public class GenericDaoFactory {
     private static GenericDAO<ProjectData> projectsDAO = null;
     private static GenericDAO<UserData> usersDAO = null;
@@ -49,7 +50,8 @@ public class GenericDaoFactory {
             }
             return (GenericDAO<T>) timeEntriesDAO;
         }
-        return null;
+
+        throw new UnsupportedOperationException("No existing DAO was found for " + c.getSimpleName() + ".");
     }
 
     private GenericDaoFactory() {

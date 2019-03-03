@@ -61,6 +61,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private int infoLabelId = -1;
 
+    private IssueData holderData = null;
+
     public IssuesViewHolder(View itemView) {
         super(itemView);
         setItemProperties(new IssuesViewProperties());
@@ -76,9 +78,9 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
-        IssueData data = (IssueData) o;
-        shortTitle = TextUtils.extractInitials(data.getName());
-        longTitle = TextUtils.capitalize(data.getName());
+        holderData = (IssueData) o;
+        shortTitle = TextUtils.extractInitials(holderData.getName());
+        longTitle = TextUtils.capitalize(holderData.getName());
 
 /*        Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
@@ -86,31 +88,19 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             LayerDrawable ld = (LayerDrawable) d;
             GradientDrawable opaqueBackground = (GradientDrawable) ld.findDrawableByLayerId(R.id.opaque_background);
             if (opaqueBackground != null) {
-                opaqueBackground.setColor(data.getColor());
+                opaqueBackground.setColor(holderData.getColor());
             }
         }*/
-        getItemProperties().setItemBgColor(data.getColor());
-        getItemProperties().setId(data.getId());
+        getItemProperties().setItemBgColor(holderData.getColor());
+        getItemProperties().setId(holderData.getId());
 
-        List<TimeEntryData> entries = data.getTimeEntries();
-        int entriesNumber = 0;
-        int userHours = 0;
-        int totalHours = 0;
-        if (entries != null) {
-            entriesNumber = entries.size();
-            for (TimeEntryData entry : entries) {
-                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
-                totalHours += entry.getHours();
-            }
-        }
-
-        populateInfoLabel(entriesNumber, userHours, totalHours);
+//        prepareIssueInfo();
         if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
             toggleInfoContainerVisiblity(false);
             infoLabel.setAlpha(0);
         }
 
-        validateItem(shortVersion, selected);
+//        validateItem(shortVersion, selected);
     }
 
     @Override
@@ -183,16 +173,22 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             issueName.setEllipsize(!collapsed);
         }
 
+        prepareIssueInfo();
+
         if (infoLabel != null) {
+
+            infoLabel.setText(infoLabelString);
             float currentAlpha = infoLabel.getAlpha();
 
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
                 infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+//                startInfoContainerFade(currentAlpha);
             }
         } else {
             itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+//            addInfoLabelToContainer(itemView.getContext().getResources(), collapsed);
         }
     }
 
@@ -491,18 +487,32 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         }
     }
 
-    private void populateInfoLabel(int entriesValue,
-                                   int userHoursValue,
-                                   int totalHoursValue) {
+    private void prepareIssueInfo() {
 
 //        float entriesNumber = 100.44F;
 //        float userHours = 100.24F;
 //        float totalHours = 60000.1234F;
 
+        List<TimeEntryData> entries = holderData.getTimeEntries();
+        int entriesNumber = 0;
+        int userHours = 0;
+        int totalHours = 0;
+        if (entries != null) {
+            entriesNumber = entries.size();
+            for (TimeEntryData entry : entries) {
+                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
+                totalHours += entry.getHours();
+            }
+        }
+
+//        Log.i(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
+
         infoLabelString =
-                entriesLabel + " " + entriesValue + " " +
-                        userHoursLabel + " " + userHoursValue + " " +
-                        totalHoursLabel + " " + totalHoursValue;
+                entriesLabel + " " + entriesNumber + " " +
+                        userHoursLabel + " " + userHours + " " +
+                        totalHoursLabel + " " + totalHours;
+
+        Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
     }
 
     @Override
