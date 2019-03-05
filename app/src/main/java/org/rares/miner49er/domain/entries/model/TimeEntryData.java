@@ -66,5 +66,7 @@ public class TimeEntryData extends AbstractViewModel {
         userName = newData.userName;
         userPhoto = newData.userPhoto;
         color = newData.color;
+        hours = newData.hours;
+
     }
 }

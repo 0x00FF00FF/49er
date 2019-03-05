@@ -155,10 +155,21 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
     }
 
     protected List<TimeEntryData> getDbItems() {
-        return asyncDao.getAll(parentProperties.getId(), true).blockingGet();           ////
+        List<TimeEntryData> timeEntryDataList = asyncDao.getAll(parentProperties.getId(), true).blockingGet();
+        List<TimeEntryData> clones = new ArrayList<>();
+        for (TimeEntryData teData : timeEntryDataList) {
+            TimeEntryData clone = new TimeEntryData();
+            clone.updateData(teData);
+            clone.id = teData.id;
+            clone.parentId = teData.parentId;
+            clone.lastUpdated = teData.lastUpdated;
+            clones.add(clone);
+        }
+
+        return clones;
     }
 
-        @Override
+    @Override
     protected final List<TimeEntry> initializeFakeData() {
 
         int entries = NumberUtils.getRandomInt(4, 30);

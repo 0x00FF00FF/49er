@@ -14,6 +14,7 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class CacheFeeder {
     public Disposable enqueueCacheFill() {
         final CompositeDisposable disposables = new CompositeDisposable();
 
-        if (cache.getCache(ProjectData.class).getData(Optional.of(null)).size() != 0) {     // TODO: 3/4/19
+        if (projectDataCache.getSize() != 0) {
             return null;
         }
 
@@ -35,7 +36,7 @@ public class CacheFeeder {
         final AsyncGenericDao<IssueData> iDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
         final AsyncGenericDao<TimeEntryData> tDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
-        List<AsyncGenericDao> daoList = new ArrayList<>();
+        List<AsyncGenericDao<? extends AbstractViewModel>> daoList = new ArrayList<>();
         daoList.add(uDao);
         daoList.add(pDao);
         daoList.add(iDao);
@@ -56,7 +57,8 @@ public class CacheFeeder {
         disposables.add(progressProcessor
                 .limit(daoList.size())
                 .count()
-                .subscribe(x -> linkData())
+                .subscribe(x ->
+                        disposables.add(linkData()))
         );
 
         return disposables;

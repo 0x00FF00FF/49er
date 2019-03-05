@@ -224,7 +224,16 @@ public class ProjectsRepository
         } else {
             toReturn = asyncDao.getAll(lazy).blockingGet();
         }
-        return toReturn;
+        List<ProjectData> clones = new ArrayList<>();
+        for (ProjectData prd : toReturn) {
+            ProjectData clone = new ProjectData();
+            clone.updateData(prd);
+            clone.id = prd.id;
+            clone.parentId = prd.parentId;
+            clone.lastUpdated = prd.lastUpdated;
+            clones.add(clone);
+        }
+        return clones;
     }
 
     private final CacheFeeder cacheFeeder = new CacheFeeder();

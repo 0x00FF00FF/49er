@@ -140,14 +140,14 @@ public class IssuesRepository extends Repository<Issue> {
 //                                .doOnNext((a) -> Log.d(TAG, "NET-- ON NEXT"))
 //                                .map(changes -> getDbItems(issuesQuery, Issue.class))
 //                                .map(list -> db2vm(list, false)),
-                        userActionsObservable
-                                .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
-                                .map(event -> {
-                                    Log.w(TAG, "registerSubscriber: MAP");
-                                    return getDbItems(true, 0);
-                                })
+                userActionsObservable
+                        .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
+                        .map(event -> {
+                            Log.w(TAG, "registerSubscriber: MAP");
+                            return getDbItems(true, 0);
+                        })
 //                        .map(event -> getDbItems(issuesQuery, Issue.class))
-                                .startWith(getDbItems(true, 1))
+                        .startWith(getDbItems(true, 1))
 //                        .map(list -> db2vm(list, true))
                         .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
@@ -167,8 +167,18 @@ public class IssuesRepository extends Repository<Issue> {
     }
 
     private List<IssueData> getDbItems(boolean lazy, int i) {
-        Log.i(TAG, "getDbItems: " + i);
-        return asyncDao.getAll(parentProperties.getId(), lazy).blockingGet();
+        List<IssueData> issueDataList = asyncDao.getAll(parentProperties.getId(), lazy).blockingGet();
+        List<IssueData> clones = new ArrayList<>();
+        for (IssueData issueData : issueDataList) {
+            IssueData clone = new IssueData();
+            clone.updateData(issueData);
+            clone.id = issueData.id;
+            clone.parentId = issueData.parentId;
+            clone.lastUpdated = issueData.lastUpdated;
+            clones.add(clone);
+        }
+
+        return clones;
     }
 
     @Override

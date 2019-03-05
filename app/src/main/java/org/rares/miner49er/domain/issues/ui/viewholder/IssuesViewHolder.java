@@ -100,7 +100,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             infoLabel.setAlpha(0);
         }
 
-//        validateItem(shortVersion, selected);
+        validateItem(shortVersion, selected);
     }
 
     @Override
@@ -392,7 +392,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      */
     private void addInfoLabelToContainer(Resources res, boolean collapsed) {
         if (res == null || issueName == null || topContainer == null || infoLabelId != -1) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequesites not met.");
+            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
             return;
         }
         int textColor = 0xAA999999;
@@ -511,6 +511,10 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 entriesLabel + " " + entriesNumber + " " +
                         userHoursLabel + " " + userHours + " " +
                         totalHoursLabel + " " + totalHours;
+
+        if (infoLabel != null) {
+            infoLabel.setText(infoLabelString);
+        }
 
         Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
     }
