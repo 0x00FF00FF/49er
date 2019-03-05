@@ -123,6 +123,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         newProject.setIcon(editTextProjectIcon.getEditableText().toString());
 
         newProject.setOwner(usersDAO.get(1, true).blockingGet().get()); //
+        newProject.parentId = newProject.getOwner().id;
 
         newProject.setDateAdded(System.currentTimeMillis());
         newProject.setPicture(editTextProjectIcon.getEditableText().toString());

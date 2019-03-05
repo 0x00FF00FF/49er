@@ -78,6 +78,7 @@ public class AsyncUserDataCacheAdapter
         Optional<UserData> cachedUserDataOptional = Optional.of(userDataCache.getData(id));
         final UserData userData = new UserData();
         if (cachedUserDataOptional.isPresent()) {
+            Log.i(TAG, "get: return cached user "  + cachedUserDataOptional.get());
             return Single.just(cachedUserDataOptional);
         } else {
             Single<Optional<UserData>> dataSingle = dao.get(id, lazy).subscribeOn(Schedulers.io());
@@ -98,31 +99,38 @@ public class AsyncUserDataCacheAdapter
 
     @Override
     public Single<Long> insert(UserData toInsert) {
-        userDataCache.putData(toInsert, true);
         SingleSubject<Long> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.insert(toInsert).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess));
+                        .subscribe(id -> {
+                            toInsert.id = id;
+                            userDataCache.putData(toInsert, true);
+                            singleSubject.onSuccess(id);
+                        }));
         return singleSubject;
     }
 
     @Override
     public Single<Boolean> update(UserData toUpdate) {
-        userDataCache.putData(toUpdate, false);
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess)
+                        .subscribe(updated -> {
+                            userDataCache.putData(toUpdate, false);
+                            singleSubject.onSuccess(updated);
+                        })
         );
         return singleSubject;
     }
 
     @Override
     public Single<Boolean> delete(UserData toDelete) {
-        userDataCache.removeData(toDelete);
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
-                .subscribe(singleSubject::onSuccess));
+                .subscribe(deleted -> {
+                    userDataCache.removeData(toDelete);
+                    singleSubject.onSuccess(deleted);
+                }));
         return singleSubject;
     }
 }

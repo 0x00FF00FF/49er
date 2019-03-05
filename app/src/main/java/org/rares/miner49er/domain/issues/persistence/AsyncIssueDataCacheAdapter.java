@@ -98,20 +98,25 @@ public class AsyncIssueDataCacheAdapter
     @Override
     public Single<Long> insert(IssueData toInsert) {
         SingleSubject<Long> singleSubject = SingleSubject.create();
-        issueDataCache.putData(toInsert, true);
         getDisposables().add(
                 dao.insert(toInsert).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess));
+                        .subscribe(id -> {
+                            toInsert.id = id;
+                            issueDataCache.putData(toInsert, true);
+                            singleSubject.onSuccess(id);
+                        }));
         return singleSubject;
     }
 
     @Override
     public Single<Boolean> update(IssueData toUpdate) {
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
-        issueDataCache.putData(toUpdate, true);
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess)
+                        .subscribe(updated->{
+                            issueDataCache.putData(toUpdate, true);
+                            singleSubject.onSuccess(updated);
+                        })
         );
         return singleSubject;
     }
@@ -119,9 +124,11 @@ public class AsyncIssueDataCacheAdapter
     @Override
     public Single<Boolean> delete(IssueData toDelete) {
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
-        issueDataCache.removeData(toDelete);
         getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
-                .subscribe(singleSubject::onSuccess));
+                .subscribe(deleted->{
+                    issueDataCache.removeData(toDelete);
+                    singleSubject.onSuccess(deleted);
+                }));
         return singleSubject;
     }
 

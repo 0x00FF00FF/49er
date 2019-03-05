@@ -60,5 +60,8 @@ public class ProjectData extends AbstractViewModel {
         owner = projectData.owner;
         team = projectData.team;
         issues = projectData.issues;
+        parentId = projectData.parentId;
+        id = projectData.id;
+        lastUpdated = projectData.lastUpdated;
     }
 }

@@ -110,31 +110,38 @@ public class AsyncTimeEntryDataCacheAdapter
 
     @Override
     public Single<Long> insert(TimeEntryData toInsert) {
-        timeEntryDataCache.putData(toInsert, true);
         SingleSubject<Long> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.insert(toInsert).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess));
+                        .subscribe(id -> {
+                            toInsert.id = id;
+                            timeEntryDataCache.putData(toInsert, true);
+                            singleSubject.onSuccess(id);
+                        }));
         return singleSubject;
     }
 
     @Override
     public Single<Boolean> update(TimeEntryData toUpdate) {
-        timeEntryDataCache.putData(toUpdate, false);
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess)
+                        .subscribe(updated -> {
+                            timeEntryDataCache.putData(toUpdate, false);
+                            singleSubject.onSuccess(updated);
+                        })
         );
         return singleSubject;
     }
 
     @Override
     public Single<Boolean> delete(TimeEntryData toDelete) {
-        timeEntryDataCache.removeData(toDelete);
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
-                .subscribe(singleSubject::onSuccess));
+                .subscribe(deleted -> {
+                    timeEntryDataCache.removeData(toDelete);
+                    singleSubject.onSuccess(deleted);
+                }));
         return singleSubject;
     }
 

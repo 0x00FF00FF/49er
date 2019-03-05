@@ -107,7 +107,7 @@ public class HomeScrollingActivity
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
-        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px + " max mem: " + Runtime.getRuntime().maxMemory());
 
 
         setContentView(R.layout.activity_home_scrolling);

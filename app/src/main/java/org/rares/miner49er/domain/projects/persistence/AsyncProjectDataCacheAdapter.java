@@ -100,32 +100,41 @@ public class AsyncProjectDataCacheAdapter
     }
 
     @Override
-    public Single<Long> insert(ProjectData toInsert) {
-        projectDataCache.putData(toInsert, false);
+    public Single<Long> insert(final ProjectData toInsert) {
+
         SingleSubject<Long> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.insert(toInsert).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess));
+                        .subscribe(id -> {
+                            toInsert.id = id;
+                            projectDataCache.putData(toInsert, true);
+                            singleSubject.onSuccess(id);
+                        }));
         return singleSubject;
     }
 
     @Override
-    public Single<Boolean> update(ProjectData toUpdate) {
-        projectDataCache.putData(toUpdate, false);
+    public Single<Boolean> update(final ProjectData toUpdate) {
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
-                        .subscribe(singleSubject::onSuccess)
+                        .subscribe(updated ->
+                        {
+                            projectDataCache.putData(toUpdate, false);
+                            singleSubject.onSuccess(updated);
+                        })
         );
         return singleSubject;
     }
 
     @Override
-    public Single<Boolean> delete(ProjectData toDelete) {
-        projectDataCache.removeData(toDelete);
+    public Single<Boolean> delete(final ProjectData toDelete) {
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
-                .subscribe(singleSubject::onSuccess));
+                .subscribe(deleted -> {
+                    projectDataCache.removeData(toDelete);
+                    singleSubject.onSuccess(deleted);
+                }));
         return singleSubject;
     }
 }
