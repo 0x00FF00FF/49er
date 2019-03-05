@@ -61,5 +61,4 @@ public class ProjectData extends AbstractViewModel {
         team = projectData.team;
         issues = projectData.issues;
     }
-
 }

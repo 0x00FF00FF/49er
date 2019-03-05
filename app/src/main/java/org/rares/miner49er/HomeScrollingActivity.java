@@ -25,7 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
-import org.rares.miner49er.cache.SimpleCache;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -406,7 +406,7 @@ public class HomeScrollingActivity
 
     @Override
     public void onTrimMemory(int level) {
-        SimpleCache.getInstance().clear();
+        ViewModelCache.getInstance().clear();
     }
 
     @Override

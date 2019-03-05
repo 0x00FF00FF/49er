@@ -1,13 +1,13 @@
 package org.rares.miner49er.domain.entries.persistence;
 
 import android.util.Log;
-import android.util.LruCache;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import org.rares.miner49er.cache.AbstractAsyncCacheAdapter;
+import io.reactivex.subjects.SingleSubject;
 import org.rares.miner49er.cache.Cache;
+import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.users.model.UserData;
@@ -15,7 +15,6 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.AsyncGenericDaoFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class AsyncTimeEntryDataCacheAdapter
@@ -24,35 +23,38 @@ public class AsyncTimeEntryDataCacheAdapter
 
     private AsyncGenericDao<TimeEntryData> dao = AsyncGenericDaoFactory.ofType(TimeEntryData.class);
     private final Cache<TimeEntryData> timeEntryDataCache = cache.getCache(TimeEntryData.class);
-    private final LruCache<Long, IssueData> issueDataCache = cache.getIssuesCache();
-    private final LruCache<Long, UserData> userDataCache = cache.getUsersCache();
+    private final Cache<IssueData> issueDataCache = cache.getCache(IssueData.class);
+    private final Cache<UserData> userDataCache = cache.getCache(UserData.class);
 
     public static final String TAG = AsyncTimeEntryDataCacheAdapter.class.getSimpleName();
 
     @Override
     public Single<List<TimeEntryData>> getAll(boolean lazy) {
-        List<TimeEntryData> cachedTimeEntries = new ArrayList<>(cache.getTimeEntriesCache().snapshot().values());
-        final List<TimeEntryData> timeEntryDataList = Collections.emptyList();
+
+        SingleSubject<List<TimeEntryData>> singleSubject = SingleSubject.create();
+        List<TimeEntryData> cachedTimeEntries = new ArrayList<>(timeEntryDataCache.getData(Optional.of(null)));
         Single<List<TimeEntryData>> dataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
 
         getDisposables().add(
                 dataSingle
+                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
                         .observeOn(Schedulers.computation())
                         .subscribe(list -> {
                             Log.e(TAG, ">> >> getAllTimeEntries: cache: " + cachedTimeEntries.size() + ", db: " + list.size());
                             timeEntryDataCache.putData(list, false);
                             Log.e(TAG, "getAll: done linking time entries");
+                            singleSubject.onSuccess(list);
                         })
         );
 
-        return Single.just(timeEntryDataList);
+        return singleSubject;
     }
 
     @Override
     public Single<List<TimeEntryData>> getAll(final long parentId, final boolean lazy) {
-        final IssueData parentIssue = issueDataCache.get(parentId);
+        SingleSubject<List<TimeEntryData>> singleSubject = SingleSubject.create();
+        final IssueData parentIssue = issueDataCache.getData(parentId);
         final List<TimeEntryData> cachedTimeEntries = parentIssue.getTimeEntries();// timeEntryDataCache.getData(parentIssue);
-        final List<TimeEntryData> timeEntryDataList = new ArrayList<>();
         if (cachedTimeEntries != null) {
             return Single.just(cachedTimeEntries);
         } else {
@@ -64,6 +66,7 @@ public class AsyncTimeEntryDataCacheAdapter
                             .flatMapObservable(
                                     list -> {
                                         Log.e(TAG, ">> >> getAllTimeEntries: cache: " + 0 + ", db: " + list.size());
+                                        singleSubject.onSuccess(list);
                                         return Observable.fromIterable(list);
                                     }
                             )
@@ -72,7 +75,7 @@ public class AsyncTimeEntryDataCacheAdapter
                                 timeEntryDataCache.putData(timeEntryData, true);
                             }));
 
-            return Single.just(timeEntryDataList);
+            return dataSingle;
         }
     }
 
@@ -83,8 +86,8 @@ public class AsyncTimeEntryDataCacheAdapter
 
     @Override
     public Single<Optional<TimeEntryData>> get(long id, boolean lazy) {
-        Optional<TimeEntryData> cachedTimeEntryDataOptional = Optional.of(cache.getTimeEntriesCache().get(id));
-        final TimeEntryData timeEntryData = new TimeEntryData();
+        SingleSubject<Optional<TimeEntryData>> singleSubject = SingleSubject.create();
+        Optional<TimeEntryData> cachedTimeEntryDataOptional = Optional.of(timeEntryDataCache.getData(id));
         if (cachedTimeEntryDataOptional.isPresent()) {
             return Single.just(cachedTimeEntryDataOptional);
         } else {
@@ -98,33 +101,46 @@ public class AsyncTimeEntryDataCacheAdapter
                             setUserData(newTimeEntryData);
                             timeEntryDataCache.putData(newTimeEntryData, true);
                         }
+                        singleSubject.onSuccess(timeEntryDataOptional);
                     }));
 
-            return Single.just(Optional.of(timeEntryData));
+            return dataSingle;
         }
     }
 
     @Override
     public Single<Long> insert(TimeEntryData toInsert) {
         timeEntryDataCache.putData(toInsert, true);
-        return dao.insert(toInsert).subscribeOn(Schedulers.io());
+        SingleSubject<Long> singleSubject = SingleSubject.create();
+        getDisposables().add(
+                dao.insert(toInsert).subscribeOn(Schedulers.io())
+                        .subscribe(singleSubject::onSuccess));
+        return singleSubject;
     }
 
     @Override
     public Single<Boolean> update(TimeEntryData toUpdate) {
         timeEntryDataCache.putData(toUpdate, false);
-        return dao.update(toUpdate).subscribeOn(Schedulers.io());
+        SingleSubject<Boolean> singleSubject = SingleSubject.create();
+        getDisposables().add(
+                dao.update(toUpdate).subscribeOn(Schedulers.io())
+                        .subscribe(singleSubject::onSuccess)
+        );
+        return singleSubject;
     }
 
     @Override
     public Single<Boolean> delete(TimeEntryData toDelete) {
         timeEntryDataCache.removeData(toDelete);
-        return dao.delete(toDelete).subscribeOn(Schedulers.io());
+        SingleSubject<Boolean> singleSubject = SingleSubject.create();
+        getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
+                .subscribe(singleSubject::onSuccess));
+        return singleSubject;
     }
 
     private void setUserData(TimeEntryData timeEntryData) {
         if (timeEntryData.getUserName() == null || timeEntryData.getUserPhoto() == null) {
-            UserData user = userDataCache.get(timeEntryData.getUserId());
+            UserData user = userDataCache.getData(timeEntryData.getUserId());
             if (user != null) {
                 timeEntryData.setUserName(user.getName());
                 timeEntryData.setUserPhoto(user.getPicture());

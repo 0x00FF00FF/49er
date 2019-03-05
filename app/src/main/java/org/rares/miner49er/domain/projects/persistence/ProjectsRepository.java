@@ -10,9 +10,9 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
-import org.rares.miner49er.cache.AbstractAsyncCacheAdapter;
-import org.rares.miner49er.cache.CacheFeeder;
-import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.CacheFeeder;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectsSort;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
@@ -199,8 +199,8 @@ public class ProjectsRepository
                                 .subscribeOn(Schedulers.computation())
                                 .map(projectsList -> DaoConverterFactory.of(Project.class, ProjectData.class).dmToVm(projectsList))
                 )
-                        // FIXME: 3/1/19 | comment next line out, do not use throttle in SimpleCache events and fix the LayoutManager!
                         .onBackpressureDrop()
+                        // FIXME: 3/1/19 | comment next line out, do not use throttle in ViewModelCache events and fix the LayoutManager!
                         .throttleLatest(1, TimeUnit.SECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))

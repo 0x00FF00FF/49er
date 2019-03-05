@@ -1,15 +1,16 @@
-package org.rares.miner49er.cache;
+package org.rares.miner49er.cache.cacheadapter;
 
 import android.util.Log;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
 public abstract class AbstractAsyncCacheAdapter implements EventBroadcaster {
 
     private static final String TAG = AbstractAsyncCacheAdapter.class.getSimpleName();
-    protected SimpleCache cache = SimpleCache.getInstance();
+    protected ViewModelCache cache = ViewModelCache.getInstance();
 
     private CompositeDisposable disposables = null;
 

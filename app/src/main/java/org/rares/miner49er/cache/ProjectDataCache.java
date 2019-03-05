@@ -1,10 +1,8 @@
-package org.rares.miner49er.domain.projects.persistence;
+package org.rares.miner49er.cache;
 
 import android.util.LruCache;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.functions.Predicate;
-import org.rares.miner49er.cache.Cache;
-import org.rares.miner49er.cache.SimpleCache;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 
 import java.util.ArrayList;
@@ -13,11 +11,11 @@ import java.util.List;
 
 public class ProjectDataCache implements Cache<ProjectData> {
 
-    private final SimpleCache cache = SimpleCache.getInstance();
-    private LruCache<Long, ProjectData> projectsCache = cache.getProjectsCache();
+    private final ViewModelCache cache = ViewModelCache.getInstance();
+    private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
 
     @Override
-    public void putData(List<ProjectData> list, Predicate<ProjectData> ptCondition, boolean link) {
+    public synchronized void putData(List<ProjectData> list, Predicate<ProjectData> ptCondition, boolean link) {
 
     }
 
@@ -55,5 +53,10 @@ public class ProjectDataCache implements Cache<ProjectData> {
         List<ProjectData> projectDataList = new ArrayList<>(projectsCache.snapshot().values());
         Collections.sort(projectDataList, (pd1, pd2) -> pd1.id.compareTo(pd2.id));
         return projectDataList;
+    }
+
+    @Override
+    public int getSize() {
+        return projectsCache.size();
     }
 }

@@ -11,14 +11,13 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
-import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
-import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.util.NumberUtils;
 
 import java.util.ArrayList;
@@ -176,12 +175,6 @@ public class IssuesRepository extends Repository<Issue> {
     public void refreshData(boolean onlyLocal) {
         Log.i(TAG, "refreshData: >>>>");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
-    }
-
-    private DeleteQuery.CompleteBuilder newTimeEntriesQuery() {
-        return DeleteQuery.builder()
-                .table(TimeEntryTable.NAME)
-                .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ");
     }
 
     private DeleteQuery.CompleteBuilder newIssuesQuery() {

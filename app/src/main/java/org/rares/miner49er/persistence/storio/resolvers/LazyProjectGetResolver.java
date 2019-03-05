@@ -42,9 +42,6 @@ public class LazyProjectGetResolver extends DefaultGetResolver<Project> {
         project.setIcon(cursor.getString(cursor.getColumnIndex("icon_path")));
         project.setPicture(cursor.getString(cursor.getColumnIndex("picture_path")));
 
-        // ugly
-//        project.setTeam(StorioFactory.INSTANCE.getProjectTeamGetResolver().getProjectTeam(storIOSQLite, project.getId()));
-
         return project;
     }
 

@@ -20,7 +20,7 @@ public class ProjectConverter implements DaoConverter<Project, ProjectData> {
 
     private final static String[] localColors = {"#AA7986CB", "#AA5C6BC0"};
 
-    private static final String TAG = ProjectConverter.class.getSimpleName();
+    private final String TAG = ProjectConverter.class.getSimpleName();
 
     @Override
     public Project vmToDm(ProjectData viewModel) {
@@ -37,7 +37,7 @@ public class ProjectConverter implements DaoConverter<Project, ProjectData> {
         project.setPicture(viewModel.getPicture());
         project.setIcon(viewModel.getIcon());
         project.setLastUpdated(viewModel.getLastUpdated());
-        project.setOwnerId(viewModel.getOwner().getId());
+        project.setOwnerId(viewModel.parentId);
         project.setTeam(userConverter.vmToDm(viewModel.getTeam()));
 
         return project;
@@ -58,6 +58,7 @@ public class ProjectConverter implements DaoConverter<Project, ProjectData> {
         converted.setPicture(databaseModel.getPicture());
         converted.setIcon(databaseModel.getIcon());
         converted.setLastUpdated(databaseModel.getLastUpdated());
+        converted.parentId = databaseModel.getOwnerId();
         if (databaseModel.getOwner() != null) {
             converted.setOwner(userConverter.dmToVm(databaseModel.getOwner()));
         }

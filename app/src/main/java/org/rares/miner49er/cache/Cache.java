@@ -16,4 +16,6 @@ public interface Cache<Type extends AbstractViewModel> {
 
     Type getData(Long id);
     List<Type> getData(Optional<Long> parentId);
+
+    int getSize();
 }

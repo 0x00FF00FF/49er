@@ -11,7 +11,7 @@ import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
-import org.rares.miner49er.cache.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;

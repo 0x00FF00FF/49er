@@ -1,19 +1,17 @@
 package org.rares.miner49er.domain.users.persistence;
 
 import android.util.Log;
-import android.util.LruCache;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import org.rares.miner49er.cache.AbstractAsyncCacheAdapter;
+import io.reactivex.subjects.SingleSubject;
 import org.rares.miner49er.cache.Cache;
+import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.AsyncGenericDaoFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class AsyncUserDataCacheAdapter
@@ -22,29 +20,34 @@ public class AsyncUserDataCacheAdapter
 
     private AsyncGenericDao<UserData> dao = AsyncGenericDaoFactory.ofType(UserData.class);
     private final Cache<UserData> userDataCache = cache.getCache(UserData.class);
-    private final LruCache<Long, ProjectData> projectDataCache = cache.getProjectsCache();
+    private final Cache<ProjectData> projectDataCache = cache.getCache(ProjectData.class);
 
     public static final String TAG = AsyncUserDataCacheAdapter.class.getSimpleName();
 
     @Override
     public Single<List<UserData>> getAll(boolean lazy) {
-        List<UserData> cachedUsers = new ArrayList<>(cache.getUsersCache().snapshot().values());
-        final List<UserData> dbUsers = Collections.emptyList();
+        SingleSubject<List<UserData>> singleSubject = SingleSubject.create();
+        List<UserData> cachedUsers = userDataCache.getData(Optional.of(null));
 
         Single<List<UserData>> dataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
         getDisposables().add(
-                dataSingle.observeOn(Schedulers.computation()).subscribe(
-                        list -> {
-                            Log.e(TAG, ">> >> getAllUsers: cache: " + cachedUsers.size() + ", db: " + list.size());
-                            userDataCache.putData(list, false);
-                        }
-                ));
-        return Single.just(dbUsers);
+                dataSingle
+                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
+                        .observeOn(Schedulers.computation())
+                        .subscribe(
+                                list -> {
+                                    Log.e(TAG, ">> >> getAllUsers: cache: " + cachedUsers.size() + ", db: " + list.size());
+                                    userDataCache.putData(list, false);
+                                    singleSubject.onSuccess(list);
+                                }
+                        ));
+        return singleSubject;
     }
 
     @Override
     public Single<List<UserData>> getAll(long parentId, boolean lazy) {
-        ProjectData projectData = projectDataCache.get(parentId);
+        SingleSubject<List<UserData>> singleSubject = SingleSubject.create();
+        ProjectData projectData = projectDataCache.getData(parentId);
         List<UserData> cachedUsers = projectData.getTeam();
         if (cachedUsers != null) {
             return Single.just(cachedUsers);
@@ -57,11 +60,11 @@ public class AsyncUserDataCacheAdapter
                         list -> {
                             Log.e(TAG, ">> >> getAllUsers: project: " + parentId + ", size: " + list.size());
                             projectData.setTeam(list);
-//                            userDataCache.putData(Optional.of(projectData), list);
+                            singleSubject.onSuccess(list);
                         }
                 )
         );
-        return null;
+        return singleSubject;
     }
 
     @Override
@@ -71,7 +74,8 @@ public class AsyncUserDataCacheAdapter
 
     @Override
     public Single<Optional<UserData>> get(long id, boolean lazy) {
-        Optional<UserData> cachedUserDataOptional = Optional.of(cache.getUsersCache().get(id));
+        SingleSubject<Optional<UserData>> singleSubject = SingleSubject.create();
+        Optional<UserData> cachedUserDataOptional = Optional.of(userDataCache.getData(id));
         final UserData userData = new UserData();
         if (cachedUserDataOptional.isPresent()) {
             return Single.just(cachedUserDataOptional);
@@ -80,32 +84,45 @@ public class AsyncUserDataCacheAdapter
 
             getDisposables().add(dataSingle
                     .observeOn(Schedulers.computation())
-                    .subscribe(timeEntryDataOptional -> {
-                        if (timeEntryDataOptional.isPresent()) {
-                            userData.updateData(timeEntryDataOptional.get());
+                    .subscribe(op -> {
+                        if (op.isPresent()) {
+                            userData.updateData(op.get());
                             userDataCache.putData(userData, false);
                         }
+                        singleSubject.onSuccess(op);
                     }));
 
-            return Single.just(Optional.of(userData));
+            return singleSubject;
         }
     }
 
     @Override
     public Single<Long> insert(UserData toInsert) {
         userDataCache.putData(toInsert, true);
-        return dao.insert(toInsert).subscribeOn(Schedulers.io());
+        SingleSubject<Long> singleSubject = SingleSubject.create();
+        getDisposables().add(
+                dao.insert(toInsert).subscribeOn(Schedulers.io())
+                        .subscribe(singleSubject::onSuccess));
+        return singleSubject;
     }
 
     @Override
     public Single<Boolean> update(UserData toUpdate) {
         userDataCache.putData(toUpdate, false);
-        return dao.update(toUpdate).subscribeOn(Schedulers.io());
+        SingleSubject<Boolean> singleSubject = SingleSubject.create();
+        getDisposables().add(
+                dao.update(toUpdate).subscribeOn(Schedulers.io())
+                        .subscribe(singleSubject::onSuccess)
+        );
+        return singleSubject;
     }
 
     @Override
     public Single<Boolean> delete(UserData toDelete) {
         userDataCache.removeData(toDelete);
-        return dao.delete(toDelete).subscribeOn(Schedulers.io());
+        SingleSubject<Boolean> singleSubject = SingleSubject.create();
+        getDisposables().add(dao.delete(toDelete).subscribeOn(Schedulers.io())
+                .subscribe(singleSubject::onSuccess));
+        return singleSubject;
     }
 }

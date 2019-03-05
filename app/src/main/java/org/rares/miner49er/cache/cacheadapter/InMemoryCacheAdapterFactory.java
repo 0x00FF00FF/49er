@@ -1,4 +1,4 @@
-package org.rares.miner49er.cache;
+package org.rares.miner49er.cache.cacheadapter;
 
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.AsyncTimeEntryDataCacheAdapter;
