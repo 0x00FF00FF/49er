@@ -49,6 +49,7 @@ public class UsersRepository extends Repository<User> {
         if (asyncDao instanceof EventBroadcaster) {
             disposables.add(
                     ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .onBackpressureLatest()
                             .filter(e -> e.equals(CACHE_EVENT_UPDATE_USER) ||
                                     e.equals(CACHE_EVENT_UPDATE_USERS) ||
                                     e.equals(CACHE_EVENT_REMOVE_USER))

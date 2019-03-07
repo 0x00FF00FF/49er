@@ -50,6 +50,7 @@ public class IssuesRepository extends Repository<Issue> {
         if (asyncDao instanceof EventBroadcaster) {
             disposables.add(
                     ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .onBackpressureLatest()
                             .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
                                     CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
                                     CACHE_EVENT_REMOVE_ISSUE.equals(e) ||

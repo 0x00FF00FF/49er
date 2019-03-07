@@ -51,6 +51,7 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
         if (asyncDao instanceof EventBroadcaster) {
             disposables.add(
                     ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .onBackpressureLatest()
                             .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
                                     CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
                                     CACHE_EVENT_REMOVE_ENTRY.equals(b) ||

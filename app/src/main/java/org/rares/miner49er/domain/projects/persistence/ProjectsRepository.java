@@ -52,6 +52,7 @@ public class ProjectsRepository
         if (asyncDao instanceof EventBroadcaster) {
             disposables.add(
                     ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .onBackpressureLatest()
                             .throttleLatest(500, TimeUnit.MILLISECONDS)
                             .subscribe(o -> refreshData(true)));
         }
