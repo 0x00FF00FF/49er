@@ -1,5 +1,6 @@
 package org.rares.miner49er;
 
+import android.app.ActivityManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -21,10 +22,14 @@ import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.pushtorefresh.storio3.Optional;
+import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
+import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
@@ -32,16 +37,24 @@ import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
 import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
+import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.ui.custom.glide.GlideApp;
+import org.rares.miner49er.ui.custom.glide.ProjectDataModelProvider;
+import org.rares.miner49er.ui.custom.glide.ProjectListPreloader;
+import org.rares.miner49er.ui.custom.glide.RecyclerToListViewScrollListener;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
 
 public class HomeScrollingActivity
         extends
@@ -99,6 +112,12 @@ public class HomeScrollingActivity
 
     Unbinder unbinder;
 
+    private CompositeDisposable startDisposable = new CompositeDisposable();
+    final Cache<ProjectData> projectDataCache = ViewModelCache.getInstance().getCache(ProjectData.class);
+    final ProjectDataModelProvider glidePreloadModelProvider = new ProjectDataModelProvider(this, Collections.emptyList());         ////
+    ProjectListPreloader projectListPreloader;
+    RecyclerToListViewScrollListener scrollListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +126,12 @@ public class HomeScrollingActivity
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
-        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px + " max mem: " + Runtime.getRuntime().maxMemory());
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
+        ActivityManager.MemoryInfo memInfo = getAvailableMemory();
+
+        Log.v(TAG, String.format("onCreate: Memory info: available: %s threshold: %s max: %s",
+                memInfo.availMem, memInfo.threshold, Runtime.getRuntime().maxMemory()/*memInfo.totalMem*/));
 
         setContentView(R.layout.activity_home_scrolling);
 
@@ -315,6 +338,9 @@ public class HomeScrollingActivity
 //        issuesRV.setRecycledViewPool(sharedPool);
 //        projectsRV.setRecycledViewPool(sharedPool);
 
+        projectListPreloader = new ProjectListPreloader(GlideApp.with(this), glidePreloadModelProvider, new ViewPreloadSizeProvider<>(), 10);
+        scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
+
         // supportsPredictiveItemAnimations
         Log.e(TAG, "setupRV: DONE");
     }
@@ -394,6 +420,17 @@ public class HomeScrollingActivity
         super.onStart();
 
         projectsUiOps.setupRepository();
+
+        getDisposable(startDisposable).add(
+                ViewModelCache.getInstance().getBroadcaster().subscribe(event -> {
+                    if (CACHE_EVENT_UPDATE_PROJECTS.equals(event)) {
+                        Log.i(TAG, "onStart: >>> set new project data");
+                        glidePreloadModelProvider.setProjectDataList(projectDataCache.getData(Optional.of(null)));
+
+                        projectsRV.removeOnScrollListener(scrollListener);
+                        projectsRV.addOnScrollListener(scrollListener);
+                    }
+                }));
     }
 
     @Override
@@ -401,12 +438,13 @@ public class HomeScrollingActivity
         Log.e(TAG, "onStop() called");
         super.onStop();
 
+        getDisposable(startDisposable).dispose();
         projectsUiOps.shutdown(); // why is this here and the others on destroy?
     }
 
     @Override
     public void onTrimMemory(int level) {
-        ViewModelCache.getInstance().clear();
+        ViewModelCache.getInstance().clear();   // TODO: 3/7/19 enqueue another cache fill when needed
     }
 
     @Override
@@ -435,5 +473,26 @@ public class HomeScrollingActivity
         projectsUiOps.shutdown();
         projectsUiOps = null;
         projectsRV = null;
+
+        startDisposable.dispose();
     }
+
+
+    // Get a MemoryInfo object for the device's current memory status.
+    private ActivityManager.MemoryInfo getAvailableMemory() {
+        ActivityManager activityManager = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        if (activityManager != null) {
+            activityManager.getMemoryInfo(memoryInfo);
+        }
+        return memoryInfo;
+    }
+
+    private CompositeDisposable getDisposable(CompositeDisposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            return disposable;
+        }
+        return new CompositeDisposable();
+    }
+
 }
