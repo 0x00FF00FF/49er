@@ -2,17 +2,18 @@ package org.rares.miner49er.persistence.dao;
 
 import java.util.List;
 
+@Deprecated
 public interface GenericDAO<EntityType extends AbstractViewModel> {
 
-    String TAG = GenericDAO.class.getSimpleName();
+    List<EntityType> getAll(boolean lazy);
 
-    List<EntityType> getAll();
+//    List<EntityType> getAll(boolean lazy, int from, int to);
 
-    List<EntityType> getAll(long id);
+    List<EntityType> getAll(long parentId, boolean lazy);
 
-    List<EntityType> getMatching(String term);
+    List<EntityType> getMatching(String term, boolean lazy);
 
-    EntityType get(long id);
+    EntityType get(long id, boolean lazy);
 
     long insert(EntityType toInsert);
 

@@ -121,11 +121,14 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         newProject.setName(editTextProjectName.getEditableText().toString());
         newProject.setDescription(editTextProjectDescription.getEditableText().toString());
         newProject.setIcon(editTextProjectIcon.getEditableText().toString());
-        newProject.setOwner(usersDAO.get(1)); //
+
+        newProject.setOwner(usersDAO.get(1, true).blockingGet().get()); //
+        newProject.parentId = newProject.getOwner().id;
+
         newProject.setDateAdded(System.currentTimeMillis());
         newProject.setPicture(editTextProjectIcon.getEditableText().toString());
 
-        List<UserData> users = usersDAO.getAll();
+        List<UserData> users = usersDAO.getAll(true).blockingGet();         //
         List<UserData> team = new ArrayList<>();
         for (UserData u : users) {
             if (u.getRole() != 12) {
@@ -137,7 +140,8 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         }
         newProject.setTeam(team);
 
-        final long newProjectId = projectsDAO.insert(newProject);
+        final long newProjectId = projectsDAO.insert(newProject).blockingGet(); //
+
         newProject.setId(newProjectId);
 
         final String snackbarText = String.format(successfulAdd, editTextProjectName.getEditableText().toString());

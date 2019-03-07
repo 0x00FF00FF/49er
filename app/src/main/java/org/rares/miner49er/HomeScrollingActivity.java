@@ -25,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -106,7 +107,7 @@ public class HomeScrollingActivity
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
-        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px + " max mem: " + Runtime.getRuntime().maxMemory());
 
 
         setContentView(R.layout.activity_home_scrolling);
@@ -401,6 +402,11 @@ public class HomeScrollingActivity
         super.onStop();
 
         projectsUiOps.shutdown(); // why is this here and the others on destroy?
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        ViewModelCache.getInstance().clear();
     }
 
     @Override

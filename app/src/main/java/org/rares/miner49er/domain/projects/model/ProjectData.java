@@ -7,6 +7,7 @@ import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,6 +19,8 @@ import java.util.List;
 @Getter
 @Setter
 public class ProjectData extends AbstractViewModel {
+
+    public final String TAG = ProjectData.class.getSimpleName();
 
 //    private long id;
 
@@ -33,11 +36,16 @@ public class ProjectData extends AbstractViewModel {
     List<IssueData> issues;
 
     public boolean compareContents(ProjectData otherData) {
-        return (color == otherData.color) &&
-                (dateAdded == otherData.dateAdded) && 
+//        Log.i(TAG, "compareContents: " + this.toString() + " | " + otherData.toString());
+
+        return (lastUpdated == otherData.lastUpdated) &&
+                (color == otherData.color) &&
+                (dateAdded == otherData.dateAdded) &&
                 (description == null ? "" : description).equals(otherData.getDescription() == null ? "" : otherData.getDescription()) &&
                 (icon == null ? "" : icon).equals(otherData.getIcon() == null ? "" : otherData.getIcon()) &&
                 (name == null ? "" : name).equals(otherData.getName() == null ? "" : otherData.getName()) &&
+                (issues == null ? Collections.emptyList() : issues).equals(otherData.issues == null ? Collections.emptyList() : otherData.issues) &&
+                (team == null ? Collections.emptyList() : team).equals(otherData.team == null ? Collections.emptyList() : otherData.team) &&
                 (picture == null ? "" : picture).equals(otherData.getPicture() == null ? "" : otherData.getPicture());
     }
 
@@ -52,6 +60,8 @@ public class ProjectData extends AbstractViewModel {
         owner = projectData.owner;
         team = projectData.team;
         issues = projectData.issues;
+        parentId = projectData.parentId;
+        id = projectData.id;
+        lastUpdated = projectData.lastUpdated;
     }
-
 }

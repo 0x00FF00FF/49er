@@ -12,7 +12,7 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
-import org.rares.miner49er.domain.issues.repository.IssuesRepository;
+import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;

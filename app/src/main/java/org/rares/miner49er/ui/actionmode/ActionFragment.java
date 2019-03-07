@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
-import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.transitions.ActionFragmentTransition;
 import org.rares.miner49er.ui.actionmode.transitions.TranslationTransition;
 
@@ -86,9 +86,10 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
     protected boolean validateExistingName(
             TextInputEditText editText,
             TextInputLayout layout,
-            GenericDAO<? extends AbstractViewModel> dao) {
+            AsyncGenericDao<? extends AbstractViewModel> dao) {
 
-        List<?> entities = dao.getMatching(editText.getEditableText().toString());
+        List<?> entities = dao.getMatching(editText.getEditableText().toString(), true).blockingGet();      //
+
         if (entities == null || entities.isEmpty()) {
             layout.setError("");
             return true;

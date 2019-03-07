@@ -18,7 +18,7 @@ import org.rares.miner49er.util.TextUtils;
 public class TimeEntryData extends AbstractViewModel {
 
     //    private long id;
-    private Long issueId;
+//    private Long issueId;
     private long dateAdded;
     private long workDate;
     private String comments;
@@ -33,7 +33,7 @@ public class TimeEntryData extends AbstractViewModel {
 
     public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {
         return id.equals(otherTimeEntry.id) &&
-                issueId.equals(otherTimeEntry.issueId) &&
+                parentId.equals(otherTimeEntry.parentId) &&
                 hours == otherTimeEntry.hours &&
                 workDate == otherTimeEntry.workDate &&
                 dateAdded == otherTimeEntry.dateAdded &&
@@ -58,7 +58,7 @@ public class TimeEntryData extends AbstractViewModel {
     }
 
     public void updateData(TimeEntryData newData) {
-        issueId = newData.issueId;
+        parentId = newData.parentId;
         dateAdded = newData.dateAdded;
         workDate = newData.workDate;
         comments = newData.comments;
@@ -66,5 +66,7 @@ public class TimeEntryData extends AbstractViewModel {
         userName = newData.userName;
         userPhoto = newData.userPhoto;
         color = newData.color;
+        hours = newData.hours;
+
     }
 }

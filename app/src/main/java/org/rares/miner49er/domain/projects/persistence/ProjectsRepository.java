@@ -1,58 +1,65 @@
 package org.rares.miner49er.domain.projects.persistence;
 
-import android.graphics.Color;
 import android.util.Log;
-import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.queries.DeleteQuery;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
-import org.rares.miner49er.cache.InMemoryCacheFactory;
+import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.CacheFeeder;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectsSort;
-import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.persistence.dao.EventBroadcaster;
+import org.rares.miner49er.persistence.dao.converters.DaoConverterFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
 import org.rares.miner49er.persistence.storio.tables.ProjectTable;
-import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-// TODO: 8/7/18 add abstraction layer so we could easily switch to using any other persistence layer library
-
-public class ProjectsRepository extends Repository<Project> {
+public class ProjectsRepository
+        extends Repository<Project> {
     private static final String TAG = ProjectsRepository.class.getSimpleName();
 
-    private Flowable<Changes> projectTableObservable;
+//    private Flowable<Changes> projectTableObservable;
 
     private ProjectsSort projectsSort = new ProjectsSort();
-
-
+    private AsyncGenericDao<ProjectData> asyncDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
 
     public ProjectsRepository() {
 
         ns.registerProjectsConsumer(this);
-        projectTableObservable =
-                storio
-                        .observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST)
-                        .subscribeOn(Schedulers.io());
+//        projectTableObservable =
+//                storio
+//                        .observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST)
+//                        .subscribeOn(Schedulers.io());
+
+        if (asyncDao instanceof EventBroadcaster) {
+            disposables.add(
+                    ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .onBackpressureLatest()
+                            .throttleLatest(500, TimeUnit.MILLISECONDS)
+                            .subscribe(o -> refreshData(true)));
+        }
     }
 
     @Override
     public void setup() {
-
         if (disposables.isDisposed()) {
             disposables = new CompositeDisposable();
         }
@@ -62,6 +69,9 @@ public class ProjectsRepository extends Repository<Project> {
     public void shutdown() {
 //        Log.w(TAG, "shutdown() called.");
         disposables.dispose();
+        if (asyncDao instanceof AbstractAsyncCacheAdapter) {
+            ((AbstractAsyncCacheAdapter) asyncDao).shutdown();
+        }
     }
 
     @Override
@@ -72,7 +82,7 @@ public class ProjectsRepository extends Repository<Project> {
 //        Log.d(TAG, "persistProjects() called with: projects = [ ] + " + storio.hashCode());
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
-            if (getData().size() == 0) {
+            if (getData(true, false).size() == 0) {
                 demoProcessor.onNext(initializeFakeData());
             }
             return false;
@@ -179,77 +189,52 @@ public class ProjectsRepository extends Repository<Project> {
         // it can/should contain projects-specific implementations
         disposables.add(
                 Flowable.merge(
-                        projectTableObservable
-                                .map(changes -> getData())
-                        /*.map(data -> db2vm(data, false))*/,
+/*                        projectTableObservable
+                                .map(changes -> getData(false)),*/
+                        // changes to the db are processed in the
+                        // background and added to the cache first
                         userActionsObservable
-                                .map(b -> getData())
-                                .startWith(getData())
-                        /*.map(data -> db2vm(data, true))*/,
+                                .map(action -> getData(true, false))   // TODO: 2/23/19 first load the user projects
+                                .startWith(getData(true, true)),
                         demoProcessor
-                                .subscribeOn(Schedulers.io())
-                                .map(data -> db2vm(data, true))
+                                .subscribeOn(Schedulers.computation())
+                                .map(projectsList -> DaoConverterFactory.of(Project.class, ProjectData.class).dmToVm(projectsList))
                 )
+                        .onBackpressureDrop()
+                        // FIXME: 3/1/19 | comment next line out, do not use throttle in ViewModelCache events and fix the LayoutManager!
+                        .throttleLatest(1, TimeUnit.SECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer));
     }
 
-/*    @Override
-    public void accept(List<Project> projects) throws Exception {
-        // TODO: compare projects with the in-memory version
-
-        Single<List<Project>> projectsPersistSingle = Single.just(projects).subscribeOn(Schedulers.io());
-        Disposable persistDisposable = projectsPersistSingle.subscribe(this::prepareEntities);
-
-        disposables.add(persistDisposable);
-
-    }*/
-
-    private int counter = 0;
-
-    private List<ProjectData> db2vm(List<Project> pl, boolean local) {
-        List<ProjectData> projectDataList = new ArrayList<>();
-
-
-        counter++;
-        int i = 0;
-
-        for (Project p : pl) {
-//            Log.i(TAG, "db2vm: project issues: " + (p.getIssues() != null ? p.getIssues().size() : "null"));
-//            Log.v(TAG, "db2vm: project team: " + (p.getTeam() != null ? p.getTeam().size() : "null"));
-            ++i;
-            ProjectData converted = new ProjectData();
-            converted.setName(p.getName() + (local ? "" : " *"));
-            converted.setIcon(p.getIcon());
-            converted.setId(p.getId());
-            converted.setDescription(p.getDescription());
-            converted.setDateAdded(p.getDateAdded());
-            converted.setPicture(p.getPicture());
-            converted.setIcon(p.getIcon());
-            // color will be deducted from icon (RenderScript?)
-            converted.setColor(Color.parseColor(localColors[i % 2]));
-            projectDataList.add(converted);
-        }
-
-        if (counter > 100) {
-            counter = 0;
-        }
-
-
-        return projectDataList;// projectsSort.sort(projectDataList);
-    }
-
     @Override
     protected void refreshQuery() {
     }
 
-    private List<ProjectData> getData() {
-        GenericDAO<ProjectData> dao = InMemoryCacheFactory.from(new ProjectData());
-        return dao.getAll();
+    private List<ProjectData> getData(boolean lazy, boolean initialLoad) {
+        List<ProjectData> toReturn = new ArrayList<>();
+        if (initialLoad) {
+            Disposable cacheFillDisposable = cacheFeeder.enqueueCacheFill();
+            if (cacheFillDisposable == null) {
+                toReturn = asyncDao.getAll(lazy).blockingGet();
+            } else {
+                disposables.add(cacheFillDisposable);
+            }
+        } else {
+            toReturn = asyncDao.getAll(lazy).blockingGet();
+        }
+        List<ProjectData> clones = new ArrayList<>();
+        for (ProjectData prd : toReturn) {
+            ProjectData clone = new ProjectData();
+            clone.updateData(prd);
+            clones.add(clone);
+        }
+        return clones;
     }
 
+    private final CacheFeeder cacheFeeder = new CacheFeeder();
     private final String[] localColors = {"#AA7986CB", "#AA5C6BC0"};
     private final String[] remoteColors = {"#9575CD", "#7E57C2"};
 

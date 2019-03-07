@@ -19,7 +19,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
 
     private UserProjectPutResolver userProjectPutResolver;
 
-    ProjectTeamPutResolver(UserProjectPutResolver userProjectPutResolver) {
+    public ProjectTeamPutResolver(UserProjectPutResolver userProjectPutResolver) {
         this.userProjectPutResolver = userProjectPutResolver;
     }
 

@@ -53,11 +53,8 @@ public abstract class Repository<T>
     protected NetworkingService ns = NetworkingService.INSTANCE;
     protected CompositeDisposable disposables = new CompositeDisposable();
     protected PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
-    protected Flowable<Byte>
-            userActionsObservable =
-            userActionProcessor
-                    .subscribeOn(Schedulers.io())
-            /*.doOnSubscribe((action) -> refreshData(false))*/;
+    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
+            /*.doOnSubscribe((action) -> refreshData(false));*/
 
     protected PublishProcessor<List<T>> demoProcessor = PublishProcessor.create();
 

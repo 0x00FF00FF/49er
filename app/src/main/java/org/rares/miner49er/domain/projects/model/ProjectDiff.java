@@ -3,6 +3,7 @@ package org.rares.miner49er.domain.projects.model;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
+import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public class ProjectDiff extends DiffUtil.Callback {
     private List<ProjectData> oldProjectData;
     private List<ProjectData> newProjectData;
 
-    private static final String TAG = ProjectDiff.class.getSimpleName();
+    private final String TAG = ProjectDiff.class.getSimpleName();
 
     ProjectDiff() {
     }
@@ -62,6 +63,23 @@ public class ProjectDiff extends DiffUtil.Callback {
         }
         if (!newData.getPicture().equals(oldData.getPicture())) {
             diffBundle.putString(ProjectsInterfaces.KEY_PICTURE, newData.getPicture());
+        }
+        List<IssueData> oldIssueList = oldData.getIssues();
+        List<IssueData> newIssueList = newData.getIssues();
+        if (oldIssueList == null && newIssueList != null) {
+//            Log.i(TAG, "getChangePayload: null, !null");
+            diffBundle.putString(ProjectsInterfaces.KEY_ISSUES, "issues");
+        }
+        if (oldIssueList != null && newIssueList == null) {
+//            Log.i(TAG, "getChangePayload: !null, null");
+            diffBundle.putString(ProjectsInterfaces.KEY_ISSUES, "issues");
+        }
+        if (oldIssueList != null && newIssueList != null) {
+//            Log.i(TAG, "getChangePayload: " + oldIssueList.size() + " " + newIssueList.size());
+            if (oldIssueList.size() != newIssueList.size()) {
+//                Log.i(TAG, "getChangePayload: !null, !null " + oldIssueList.size() + " " + newIssueList.size());
+                diffBundle.putString(ProjectsInterfaces.KEY_ISSUES, "issues");
+            }
         }
         if (diffBundle.size() == 0) {
             return null;

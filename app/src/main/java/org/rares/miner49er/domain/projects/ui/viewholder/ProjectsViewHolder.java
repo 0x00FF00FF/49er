@@ -42,7 +42,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 
-public class ProjectsViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator {
+public class ProjectsViewHolder
+        extends ResizeableItemViewHolder
+        implements ItemViewAnimator/*,
+        ExtraInfoListener<ProjectData, IssueData> */ {
 
     private static final String TAG = ProjectsViewHolder.class.getSimpleName();
 
@@ -73,6 +76,8 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
     private int infoLabelId = -1;
 
+    private ProjectData itemData;
+
     @Setter
     private boolean __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED = false;
     @Setter
@@ -87,15 +92,15 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
-        ProjectData data = (ProjectData) o;
-        int itemBgColor = data.getColor() == 0 ? Color.parseColor("#AA5C6BC0") : data.getColor();
+        itemData = (ProjectData) o;
+        int itemBgColor = itemData.getColor() == 0 ? Color.parseColor("#AA5C6BC0") : itemData.getColor();
         projectViewProperties.setItemBgColor(itemBgColor);
-        projectViewProperties.setId(data.getId());
+        projectViewProperties.setId(itemData.getId());
 
-        shortTitle = __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED ? TextUtils.extractVowels(data.getName()) : "";
-        shortTitle = __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED && selected ? TextUtils.extractVowels(data.getName()) : shortTitle;
+        shortTitle = __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED ? TextUtils.extractVowels(itemData.getName()) : "";
+        shortTitle = __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED && selected ? TextUtils.extractVowels(itemData.getName()) : shortTitle;
 
-        longTitle = data.getName();
+        longTitle = itemData.getName();
 
         Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
@@ -109,10 +114,10 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
         projectLogoView.setVisibility(View.VISIBLE);
 
-        String pictureUrl = data.getPicture();
+        String pictureUrl = itemData.getPicture();
 
         try {
-            pictureUrl = URLDecoder.decode(data.getPicture(), "UTF-8");
+            pictureUrl = URLDecoder.decode(itemData.getPicture(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -132,30 +137,6 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
                 .placeholder(R.drawable.skull)
 //                .transform(new PositionedCrop(0.5F, 0.5F))
                 .into(projectImage);
-
-        int issuesNumber = 0;
-        int usersNumber = 0;
-        int hoursNumber = 0;
-
-        List<IssueData> issues = data.getIssues();
-        // todo => get these from cache
-        if (issues != null) {
-            issuesNumber = issues.size();
-            for (IssueData issueData : issues) {
-                List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
-                if (timeEntryData != null) {
-                    for (TimeEntryData ted : timeEntryData) {
-                        hoursNumber += ted.getHours();
-                    }
-                }
-            }
-        }
-        List<UserData> users = data.getTeam();
-        if (users != null) {
-            usersNumber = users.size();
-        }
-
-        populateInfoLabel(issuesNumber, usersNumber, hoursNumber);
 
         if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
             toggleInfoContainerVisiblity(false);
@@ -232,9 +213,12 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
 
         projectLogoView.setAlpha(!collapsed ? .8F : selected ? 1 : 0.3F);
 
+        populateInfoLabel();
+
         if (infoLabel != null) {
             float currentAlpha = infoLabel.getAlpha();
 
+            infoLabel.setText(infoLabelString);
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
@@ -424,14 +408,60 @@ public class ProjectsViewHolder extends ResizeableItemViewHolder implements Item
         projectNameTextView.setText(shortVersion ? shortTitle : longTitle);
     }
 
-    private void populateInfoLabel(int issuesValue,
-                                   int usersValue,
-                                   int hoursValue) {
+//    @Override
+//    public void registerListener(ExtraDataSupplier<ProjectData, IssueData> dataSupplier) {
+//        dataSupplier.register(this, itemData);
+//    }
+//
+//    @Override
+//    public void extraDataReceived(List<IssueData> extraData) {
+//        if (extraData != null && extraData.size() > 0 && itemData != null) {
+//            if (extraData.get(0).getProjectId().equals(itemData.getId())) {
+//                itemData.setIssues(extraData);  //
+//                populateInfoLabel();
+//                float currentAlpha = infoLabel.getAlpha();
+//                if ((currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
+//                    startInfoContainerFade(currentAlpha);
+//                }
+//            }
+//        }
+//    }
+
+    private void populateInfoLabel() {
+        int issuesNumber = 0;
+        int usersNumber = 0;
+        int hoursNumber = 0;
+
+        List<IssueData> issues = itemData.getIssues();
+        if (issues != null) {
+            issuesNumber = issues.size();
+            for (IssueData issueData : issues) {
+                List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
+                if (timeEntryData != null) {
+                    for (TimeEntryData ted : timeEntryData) {
+                        hoursNumber += ted.getHours();
+                    }
+                }
+            }
+        }
+        List<UserData> users = itemData.getTeam();
+        if (users != null) {
+            usersNumber = users.size();
+        }
 
         infoLabelString =
-                issuesLabel + " " + issuesValue + " " +
-                usersLabel + " " + usersValue + " " +
-                hoursLabel + " " + hoursValue;
+                issuesLabel + " " + issuesNumber + " " +
+                        usersLabel + " " + usersNumber + " " +
+                        hoursLabel + " " + hoursNumber;
+
+
+        if (itemData.getIssues() == null && itemData.getTeam() == null) {
+            infoLabelString = "Computing...";
+        }
+
+        if (infoLabel != null) {
+            infoLabel.setText(infoLabelString);
+        }
     }
 
     private void toggleInfoContainerVisiblity(boolean visible) {

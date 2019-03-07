@@ -4,16 +4,20 @@ import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.GenericDAO;
+import org.rares.miner49er.persistence.dao.converters.DaoConverter;
+import org.rares.miner49er.persistence.dao.converters.DaoConverterFactory;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.StorioFactory;
-import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLiteGetResolver;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class UsersDAO implements GenericDAO<UserData> {
     private StorIOSQLite storIOSQLite;
+
+    public static final String TAG = UsersDAO.class.getSimpleName();
+    private DaoConverter<User, UserData> daoConverter = DaoConverterFactory.of(User.class, UserData.class);
 
     public static UsersDAO newInstance() {
         return new UsersDAO();
@@ -24,34 +28,34 @@ public class UsersDAO implements GenericDAO<UserData> {
     }
 
     @Override
-    public List<UserData> getAll() {
-        List<User> users = UserStorIOSQLiteGetResolver.getAll(storIOSQLite);
-        return convertDbModelList(users);
+    public List<UserData> getAll(boolean lazy) {
+        List<User> users = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver().getAll(storIOSQLite);
+        return daoConverter.dmToVm(users);
     }
 
     @Override
-    public List<UserData> getAll(long id) {
+    public List<UserData> getAll(long parentId, boolean lazy) {
         return Collections.emptyList();
     }
 
     @Override
-    public List<UserData> getMatching(String term) {
-        List<User> users = UserStorIOSQLiteGetResolver.getMatchingName(storIOSQLite, term);
-        return convertDbModelList(users);
+    public List<UserData> getMatching(String term, boolean lazy) {
+        List<User> users = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver().getMatchingName(storIOSQLite, term);
+        return daoConverter.dmToVm(users);
     }
 
     public List<UserData> getByRole(int role) {
         if (role < 10 || role > 12) {
             return Collections.emptyList();
         }
-        List<User> users = UserStorIOSQLiteGetResolver.getMatchingRole(storIOSQLite, role);
-        return convertDbModelList(users);
+        List<User> users = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver().getMatchingRole(storIOSQLite, role);
+        return daoConverter.dmToVm(users);
     }
 
     @Override
-    public UserData get(long id) {
-        User user = UserStorIOSQLiteGetResolver.getById(storIOSQLite, id);
-        return convertDbModel(user);
+    public UserData get(long id, boolean lazy) {
+        User user = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver().getById(storIOSQLite, id);
+        return daoConverter.dmToVm(user);
     }
 
     @Override
@@ -69,7 +73,7 @@ public class UsersDAO implements GenericDAO<UserData> {
     public void update(UserData toUpdate) {
         assertUpdateReady(toUpdate);
         boolean updateSuccess = storIOSQLite.put()
-                .object(convertViewModel(toUpdate))
+                .object(daoConverter.vmToDm(toUpdate))
                 .prepare()
                 .executeAsBlocking()
                 .wasUpdated();
@@ -81,67 +85,11 @@ public class UsersDAO implements GenericDAO<UserData> {
         assertDeleteReady(toDelete);
 
         int deletedRows = storIOSQLite.delete()
-                .object(convertViewModel(toDelete))
+                .object(daoConverter.vmToDm(toDelete))
                 .prepare()
                 .executeAsBlocking()
                 .numberOfRowsDeleted();
         Log.d(TAG, "delete: deleted rows: " + deletedRows);
     }
 
-    public static List<UserData> convertDbModelList(List<User> entities) {
-        if (entities == null) {
-            return null;
-        }
-
-        ArrayList<UserData> viewModels = new ArrayList<>();
-        for (User p : entities) {
-            viewModels.add(convertDbModel(p));
-        }
-        return viewModels;
-    }
-
-    public static List<User> convertViewModelList(List<UserData> viewModels) {
-        if (viewModels == null) {
-            return null;
-        }
-
-        ArrayList<User> entities = new ArrayList<>();
-        for (UserData data : viewModels) {
-            entities.add(convertViewModel(data));
-        }
-        return entities;
-    }
-
-    public static UserData convertDbModel(User entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        UserData converted = new UserData();
-        converted.setId(entity.getId());
-        converted.setName(entity.getName());
-        converted.setEmail(entity.getEmail());
-        converted.setApiKey(entity.getApiKey());
-        converted.setPicture(entity.getPhoto());
-        converted.setRole(entity.getRole());
-        converted.setLastUpdated(entity.getLastUpdated());
-
-        return converted;
-    }
-
-    public static User convertViewModel(UserData viewData) {
-        if (viewData == null) {
-            return null;
-        }
-
-        User user = new User();
-        user.setName(viewData.getName());
-        user.setId(viewData.getId());
-        user.setEmail(viewData.getEmail());
-        user.setApiKey(viewData.getApiKey());
-        user.setPhoto(viewData.getPicture());
-        user.setRole(viewData.getRole());
-        user.setLastUpdated(viewData.getLastUpdated());
-        return user;
-    }
 }

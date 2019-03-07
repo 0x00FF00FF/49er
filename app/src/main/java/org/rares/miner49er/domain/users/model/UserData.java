@@ -15,7 +15,7 @@ import org.rares.miner49er.persistence.dao.AbstractViewModel;
 @ToString
 public class UserData extends AbstractViewModel {
 
-//    private long id;
+    //    private long id;
 //    private long lastUpdated;
     private int role;
     private String name;
@@ -32,4 +32,13 @@ public class UserData extends AbstractViewModel {
                 (picture == null ? "" : picture).equals(otherData.picture == null ? "" : otherData.picture);
     }
 
+    public void updateData(UserData newUserData) {
+        id = newUserData.id;
+        lastUpdated = newUserData.lastUpdated;
+        role = newUserData.role;
+        name = newUserData.name;
+        email = newUserData.email;
+        picture = newUserData.picture;
+        apiKey = newUserData.apiKey;
+    }
 }
