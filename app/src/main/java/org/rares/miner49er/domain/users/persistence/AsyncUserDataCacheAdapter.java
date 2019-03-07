@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.users.persistence;
 
-import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -32,11 +31,11 @@ public class AsyncUserDataCacheAdapter
         Single<List<UserData>> dataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
         getDisposables().add(
                 dataSingle
-                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
+//                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
                         .observeOn(Schedulers.computation())
                         .subscribe(
                                 list -> {
-                                    Log.e(TAG, ">> >> getAllUsers: cache: " + cachedUsers.size() + ", db: " + list.size());
+//                                    Log.e(TAG, ">> >> getAllUsers: cache: " + cachedUsers.size() + ", db: " + list.size());
                                     userDataCache.putData(list, false);
                                     singleSubject.onSuccess(list);
                                 }
@@ -58,7 +57,7 @@ public class AsyncUserDataCacheAdapter
         getDisposables().add(
                 dataSingle.observeOn(Schedulers.computation()).subscribe(
                         list -> {
-                            Log.e(TAG, ">> >> getAllUsers: project: " + parentId + ", size: " + list.size());
+//                            Log.e(TAG, ">> >> getAllUsers: project: " + parentId + ", size: " + list.size());
                             projectData.setTeam(list);
                             singleSubject.onSuccess(list);
                         }
@@ -78,7 +77,7 @@ public class AsyncUserDataCacheAdapter
         Optional<UserData> cachedUserDataOptional = Optional.of(userDataCache.getData(id));
         final UserData userData = new UserData();
         if (cachedUserDataOptional.isPresent()) {
-            Log.i(TAG, "get: return cached user "  + cachedUserDataOptional.get());
+//            Log.i(TAG, "get: return cached user "  + cachedUserDataOptional.get());
             return Single.just(cachedUserDataOptional);
         } else {
             Single<Optional<UserData>> dataSingle = dao.get(id, lazy).subscribeOn(Schedulers.io());

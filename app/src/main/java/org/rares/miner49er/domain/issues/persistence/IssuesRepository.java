@@ -23,6 +23,13 @@ import org.rares.miner49er.util.NumberUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUES;
 
 public class IssuesRepository extends Repository<Issue> {
 
@@ -41,7 +48,16 @@ public class IssuesRepository extends Repository<Issue> {
 //                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
         if (asyncDao instanceof EventBroadcaster) {
-            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+            disposables.add(
+                    ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
+                                    CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
+                                    CACHE_EVENT_REMOVE_ISSUE.equals(e) ||
+                                    CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
+                                    CACHE_EVENT_UPDATE_ENTRY.equals(e)
+                            )
+                            .throttleLatest(1, TimeUnit.SECONDS)
+                            .subscribe(o -> refreshData(true)));
         }
     }
 

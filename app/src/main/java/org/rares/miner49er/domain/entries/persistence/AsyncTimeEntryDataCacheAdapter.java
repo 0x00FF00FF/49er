@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.entries.persistence;
 
-import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -37,12 +36,12 @@ public class AsyncTimeEntryDataCacheAdapter
 
         getDisposables().add(
                 dataSingle
-                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
+//                        .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
                         .observeOn(Schedulers.computation())
                         .subscribe(list -> {
-                            Log.e(TAG, ">> >> getAllTimeEntries: cache: " + cachedTimeEntries.size() + ", db: " + list.size());
+//                            Log.e(TAG, ">> >> getAllTimeEntries: cache: " + cachedTimeEntries.size() + ", db: " + list.size());
                             timeEntryDataCache.putData(list, false);
-                            Log.e(TAG, "getAll: done linking time entries");
+//                            Log.e(TAG, "getAll: done linking time entries");
                             singleSubject.onSuccess(list);
                         })
         );
@@ -65,7 +64,7 @@ public class AsyncTimeEntryDataCacheAdapter
                             .observeOn(Schedulers.computation())
                             .flatMapObservable(
                                     list -> {
-                                        Log.e(TAG, ">> >> getAllTimeEntries: cache: " + 0 + ", db: " + list.size());
+//                                        Log.e(TAG, ">> >> getAllTimeEntries: cache: " + 0 + ", db: " + list.size());
                                         singleSubject.onSuccess(list);
                                         return Observable.fromIterable(list);
                                     }

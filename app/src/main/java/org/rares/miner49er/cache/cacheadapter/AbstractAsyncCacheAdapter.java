@@ -1,9 +1,9 @@
 package org.rares.miner49er.cache.cacheadapter;
 
 import android.util.Log;
+import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
@@ -14,13 +14,19 @@ public abstract class AbstractAsyncCacheAdapter implements EventBroadcaster {
 
     private CompositeDisposable disposables = null;
 
+//    @Override
+//    public void registerEventListener(Consumer<Byte> listener) {
+//        cache.registerEventListener(listener);
+//    }
+
+
     @Override
-    public void registerEventListener(Consumer<Object> listener) {
-        cache.registerEventListener(listener);
+    public Flowable<Byte> getBroadcaster() {
+        return cache.getBroadcaster();
     }
 
     @Override
-    public void sendEvent() {
+    public void sendEvent(Byte event) {
         // only proxy for event listener register - no events
     }
 

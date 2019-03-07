@@ -1,23 +1,19 @@
 package org.rares.miner49er.cache;
 
-import android.util.Log;
 import android.util.LruCache;
 import androidx.annotation.CallSuper;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
 import java.io.Closeable;
-import java.util.concurrent.TimeUnit;
 
 public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
@@ -43,7 +39,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends AbstractViewModel> Cache<T> getCache(Class<T> t) {
+    public <T> Cache<T> getCache(Class<T> t) {
         if (ProjectData.class.equals(t)) {
             return (Cache<T>) getProjectDataCache();
         }
@@ -60,21 +56,27 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         throw new UnsupportedOperationException("No existing cache was found for " + t.getSimpleName() + ".");
     }
 
+//    @Override
+//    public void registerEventListener(Consumer<Byte> listener) {
+//        checkDisposable().add(
+//                cacheUpdateObservable
+//                        .subscribeOn(Schedulers.computation())
+////                        .throttleLatest(1, TimeUnit.SECONDS)
+//                        .throttleLast(1, TimeUnit.SECONDS)
+//                        .doOnNext((x) -> Log.i(TAG, "sendEvent"))
+//                        .subscribe(listener));
+//    }
+
+
     @Override
-    public void registerEventListener(Consumer<Object> listener) {
-        checkDisposable().add(
-                cacheUpdateObservable
-                        .subscribeOn(Schedulers.computation())
-//                        .throttleLatest(1, TimeUnit.SECONDS)
-                        .throttleLast(1, TimeUnit.SECONDS)
-                        .doOnNext((x) -> Log.i(TAG, "sendEvent"))
-                        .subscribe(listener));
+    public Flowable<Byte> getBroadcaster() {
+        return cacheUpdateFlowable;
     }
 
     @Override
-    public void sendEvent() {
+    public void sendEvent(Byte event) {
         if (cacheUpdatedProcessor.hasSubscribers()) {
-            cacheUpdatedProcessor.onNext(updateEvent);
+            cacheUpdatedProcessor.onNext(event);
         }
     }
 
@@ -168,11 +170,10 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         return projectUserDataCache;
     }
 
-    private PublishProcessor<Object> cacheUpdatedProcessor = PublishProcessor.create();
-    private Flowable<Object> cacheUpdateObservable = cacheUpdatedProcessor
+    private PublishProcessor<Byte> cacheUpdatedProcessor = PublishProcessor.create();
+    private Flowable<Byte> cacheUpdateFlowable = cacheUpdatedProcessor
             .subscribeOn(Schedulers.computation())
             .onBackpressureDrop()
             .share();
     private CompositeDisposable disposables = new CompositeDisposable();
-    private final Object updateEvent = new Object();
 }

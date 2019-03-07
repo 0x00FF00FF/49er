@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.issues.persistence;
 
-import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -32,10 +31,10 @@ public class AsyncIssueDataCacheAdapter
         List<IssueData> cachedIssues = issueDataCache.getData(Optional.of(null));
         Single<List<IssueData>> dataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
         getDisposables().add(dataSingle
-                .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
+//                .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
                 .observeOn(Schedulers.computation())
                 .subscribe(list -> {
-                    Log.e(TAG, String.format(">> >> getAllIssues: cached issues: %s vs db issues %s.", cachedIssues.size(), list.size()));
+//                    Log.e(TAG, String.format(">> >> getAllIssues: cached issues: %s vs db issues %s.", cachedIssues.size(), list.size()));
                     issueDataCache.putData(list, false);
                     singleSubject.onSuccess(list);
                 })
@@ -52,14 +51,14 @@ public class AsyncIssueDataCacheAdapter
         if (cachedIssues != null) {
             return Single.just(cachedIssues);
         } else {
-            Log.d(TAG, " >> >> getAll() called with: parentId = [" + parentId + "], lazy = [" + lazy + "] " + Thread.currentThread().getName());
+//            Log.d(TAG, " >> >> getAll() called with: parentId = [" + parentId + "], lazy = [" + lazy + "] " + Thread.currentThread().getName());
 
             Single<List<IssueData>> dataSingle = dao.getAll(parentId, lazy).subscribeOn(Schedulers.io());
             getDisposables().add(
                     dataSingle
                             .observeOn(Schedulers.computation())
                             .subscribe(list -> {
-                                Log.w(TAG, String.format("getAll: %s %s", list.size(), Thread.currentThread().getName()));
+//                                Log.w(TAG, String.format("getAll: %s %s", list.size(), Thread.currentThread().getName()));
                                 issueDataCache.putData(list, true);
                                 singleSubject.onSuccess(list);
                             }));

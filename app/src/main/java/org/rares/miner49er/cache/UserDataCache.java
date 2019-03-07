@@ -36,7 +36,7 @@ public class UserDataCache implements Cache<UserData> {
     @Override
     public void putData(UserData userData, boolean link) {
         usersCache.put(userData.id, userData);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_UPDATE_USER);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class UserDataCache implements Cache<UserData> {
                     return projectData;
                 }).sequential()
                 .subscribe();
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_REMOVE_USER);
     }
 
     @Override

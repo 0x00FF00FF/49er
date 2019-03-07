@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.projects.persistence;
 
-import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -28,16 +27,16 @@ public class AsyncProjectDataCacheAdapter
         SingleSubject<List<ProjectData>> singleSubject = SingleSubject.create();
         List<ProjectData> cached = projectDataCache.getData(Optional.of(null));
         if (cached != null && cached.size() > 0) {
-            Log.e(TAG, String.format("[ ] [ ] getAll: PROJECTS CACHE HIT. [lazy: %b] [#: %s] [%s]", lazy, cached.size(), Thread.currentThread().getName()));
+//            Log.e(TAG, String.format("[ ] [ ] getAll: PROJECTS CACHE HIT. [lazy: %b] [#: %s] [%s]", lazy, cached.size(), Thread.currentThread().getName()));
             return Single.just(cached);
         } else {
             Single<List<ProjectData>> daoDataSingle = dao.getAll(lazy).subscribeOn(Schedulers.io());
 
             getDisposables().add(daoDataSingle
-                    .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
+//                    .doOnSuccess((x) -> Log.v(TAG, "getAll: [][] onSuccess"))
                     .observeOn(Schedulers.computation())
                     .subscribe(list -> {
-                        Log.w(TAG, String.format(">> >> [db] getAllProjects: [#: %s], [%s]", list.size(), Thread.currentThread().getName()));
+//                        Log.w(TAG, String.format(">> >> [db] getAllProjects: [#: %s], [%s]", list.size(), Thread.currentThread().getName()));
                         projectDataCache.putData(list, false);
                         singleSubject.onSuccess(list);
                     }));

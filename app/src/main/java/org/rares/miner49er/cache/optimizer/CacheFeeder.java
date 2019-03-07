@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
+
 public class CacheFeeder {
 
     public Disposable enqueueCacheFill() {
@@ -57,8 +59,11 @@ public class CacheFeeder {
         disposables.add(progressProcessor
                 .limit(daoList.size())
                 .count()
-                .subscribe(x ->
-                        disposables.add(linkData()))
+                .subscribe(x -> {
+                    cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
+                    disposables.add(linkData());
+                })
+
         );
 
         return disposables;
@@ -177,7 +182,7 @@ public class CacheFeeder {
                                                 .sequential()
                                                 .doOnComplete(() -> {
                                                     Log.w(TAG, "linkData: ------------------------ end adding team " + disposables.size());
-                                                    cache.sendEvent();
+                                                    cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
                                                 })
                                                 .subscribe();
                                     })

@@ -22,6 +22,11 @@ import org.rares.miner49er.util.NumberUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_USER;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_USER;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_USERS;
 
 public class UsersRepository extends Repository<User> {
 
@@ -42,7 +47,13 @@ public class UsersRepository extends Repository<User> {
 //                        .observeChangesInTable(UserTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
         if (asyncDao instanceof EventBroadcaster) {
-            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+            disposables.add(
+                    ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .filter(e -> e.equals(CACHE_EVENT_UPDATE_USER) ||
+                                    e.equals(CACHE_EVENT_UPDATE_USERS) ||
+                                    e.equals(CACHE_EVENT_REMOVE_USER))
+                            .throttleLatest(1, TimeUnit.SECONDS)
+                            .subscribe(o -> refreshData(true)));
         }
     }
 
@@ -89,7 +100,7 @@ public class UsersRepository extends Repository<User> {
 //                        .map(event -> getDbItems(usersQuery, User.class))
 //                        .startWith(getDbItems(usersQuery, User.class))
 //                        .map(list -> db2vm(list, true))
-                        .map(o-> getData())
+                        .map(o -> getData())
                         .startWith(getData())
                         .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
@@ -100,7 +111,7 @@ public class UsersRepository extends Repository<User> {
 
     }
 
-    private List<UserData> getData(){
+    private List<UserData> getData() {
         return asyncDao.getAll(true).blockingGet();
     }
 

@@ -56,7 +56,7 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
             }
         }
         timeEntriesCache.put(ted.id, ted);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_UPDATE_ENTRY);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
         }
 
         timeEntriesCache.remove(ted.id);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_REMOVE_ENTRY);
     }
 
     @Override

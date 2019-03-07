@@ -67,7 +67,11 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 
     @Override
     public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
+//        if (holder instanceof ProjectsViewHolder) {
+//            ProjectsViewHolder projectsViewHolder = (ProjectsViewHolder) holder;
+//            projectsViewHolder.clearImages();
+//        }
+        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
     }
 
     @Override

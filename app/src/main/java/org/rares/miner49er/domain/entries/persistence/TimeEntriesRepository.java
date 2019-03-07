@@ -1,7 +1,6 @@
 package org.rares.miner49er.domain.entries.persistence;
 
 import android.util.Log;
-import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
 import io.reactivex.Flowable;
@@ -23,14 +22,19 @@ import org.rares.miner49er.util.NumberUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ENTRY;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRIES;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
 
 public class TimeEntriesRepository extends Repository<TimeEntry> {
 
     private static final String TAG = TimeEntriesRepository.class.getSimpleName();
 
     private AsyncGenericDao<TimeEntryData> asyncDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
-
-    private Flowable<Changes> timeEntriesTableObservable;
 
     private Query timeEntriesQuery = Query.builder()
             .table(TimeEntryTable.NAME)
@@ -45,7 +49,16 @@ public class TimeEntriesRepository extends Repository<TimeEntry> {
 //                        .observeChangesInTable(TimeEntryTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
         if (asyncDao instanceof EventBroadcaster) {
-            ((EventBroadcaster) asyncDao).registerEventListener(o -> refreshData(true));
+            disposables.add(
+                    ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
+                                    CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
+                                    CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
+                                    CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
+                                    CACHE_EVENT_REMOVE_PROJECT.equals(b)
+                            )
+                            .throttleLatest(1, TimeUnit.SECONDS)
+                            .subscribe(o -> refreshData(true)));
         }
 
     }

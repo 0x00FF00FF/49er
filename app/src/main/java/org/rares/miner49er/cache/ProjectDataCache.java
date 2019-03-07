@@ -34,13 +34,13 @@ public class ProjectDataCache implements Cache<ProjectData> {
     @Override
     public void putData(ProjectData projectData, boolean link) {
         projectsCache.put(projectData.id, projectData);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_UPDATE_PROJECT);
     }
 
     @Override
     public void removeData(ProjectData projectData) {
         projectsCache.remove(projectData.id);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_REMOVE_PROJECT);
     }
 
     @Override

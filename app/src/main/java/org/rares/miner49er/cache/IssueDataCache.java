@@ -40,7 +40,6 @@ public class IssueDataCache implements Cache<IssueData> {
                         boolean found = false;
                         for (IssueData issueData : issues) {
                             if (issueData.id.equals(issue.id)) {
-//                      perhaps_not_needed: updating the same object?
                                 issueData.updateData(issue);
                                 found = true;
                                 break;
@@ -58,7 +57,7 @@ public class IssueDataCache implements Cache<IssueData> {
             }
         }
         issuesCache.put(issue.id, issue);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_UPDATE_ISSUE);
     }
 
     @Override
@@ -79,7 +78,7 @@ public class IssueDataCache implements Cache<IssueData> {
             }
         }
         issuesCache.remove(issue.id);
-        cache.sendEvent();
+        cache.sendEvent(CACHE_EVENT_REMOVE_ISSUE);
     }
 
     @Override

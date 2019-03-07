@@ -1360,4 +1360,12 @@ public class StickyLinearLayoutManager
             scrolling = true;
         }
     }
+
+    public int firstVisiblePosition(){
+        return firstVisiblePosition;
+    }
+
+    public int lastVisiblePosition(){
+        return lastVisiblePosition;
+    }
 }

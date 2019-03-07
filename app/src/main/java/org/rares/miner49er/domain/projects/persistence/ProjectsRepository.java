@@ -50,10 +50,10 @@ public class ProjectsRepository
 //                        .subscribeOn(Schedulers.io());
 
         if (asyncDao instanceof EventBroadcaster) {
-            ((EventBroadcaster) asyncDao).registerEventListener((o) -> {
-                Log.d(TAG, "ProjectsRepository: cache event//");
-                refreshData(true);
-            });
+            disposables.add(
+                    ((EventBroadcaster) asyncDao).getBroadcaster()
+                            .throttleLatest(500, TimeUnit.MILLISECONDS)
+                            .subscribe(o -> refreshData(true)));
         }
     }
 
