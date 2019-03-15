@@ -36,7 +36,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
             final boolean projectWasInserted = putResult.wasInserted();
             final long projectId = projectWasInserted ? putResult.insertedId() : project.getId();
 
-            Log.i(TAG, "performPut: inserted? " + projectWasInserted);
+//            Log.i(TAG, "performPut: inserted? " + projectWasInserted);
 
             List<User> team = project.getTeam();
             List<ContentValues> userProjectList = new ArrayList<>(team.size());
@@ -57,7 +57,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
                                 .whereArgs(projectId).build())
                         .prepare()
                         .executeAsBlocking();
-                Log.i(TAG, "performPut: removed all previous u-t-p (" + deleteResult.numberOfRowsDeleted() + ")");
+//                Log.i(TAG, "performPut: removed all previous u-t-p (" + deleteResult.numberOfRowsDeleted() + ")");
             }
 
             if (userProjectList.size() > 0) {
@@ -67,7 +67,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
                         .withPutResolver(userProjectPutResolver)
                         .prepare()
                         .executeAsBlocking();
-                Log.i(TAG, "performPut: added new u-t-p (" + upResult.numberOfInserts() + "/" + upResult.numberOfUpdates() + ")");
+//                Log.i(TAG, "performPut: added new u-t-p (" + upResult.numberOfInserts() + "/" + upResult.numberOfUpdates() + ")");
             }else {
                 Log.i(TAG, "performPut users size: " + userProjectList.size());
             }

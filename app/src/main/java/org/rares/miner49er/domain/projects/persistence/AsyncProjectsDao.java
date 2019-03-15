@@ -2,10 +2,14 @@ package org.rares.miner49er.domain.projects.persistence;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import lombok.Getter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.converters.DaoConverter;
@@ -14,18 +18,12 @@ import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.LazyProjectGetResolver;
 import org.rares.miner49er.persistence.storio.resolvers.ProjectTeamGetResolver;
+import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
 
 import java.util.List;
 
 public class AsyncProjectsDao implements AsyncGenericDao<ProjectData> {
 
-    private static final String TAG = AsyncProjectsDao.class.getSimpleName();
-    private static final AsyncProjectsDao INSTANCE = new AsyncProjectsDao();
-    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
-
-    private LazyProjectGetResolver lazyGetResolver = StorioFactory.INSTANCE.getLazyProjectGetResolver();
-    private ProjectTeamGetResolver eagerResolver = StorioFactory.INSTANCE.getProjectTeamGetResolver();
-    private DaoConverter<Project, ProjectData> projectConverter = DaoConverterFactory.of(Project.class, ProjectData.class);
 
     public static AsyncGenericDao<ProjectData> getInstance() {
         return INSTANCE;
@@ -107,7 +105,17 @@ public class AsyncProjectsDao implements AsyncGenericDao<ProjectData> {
                 .map(dr -> dr.numberOfRowsDeleted() == 0);
     }
 
-
     private AsyncProjectsDao() {
     }
+
+    private static final String TAG = AsyncProjectsDao.class.getSimpleName();
+    private static final AsyncProjectsDao INSTANCE = new AsyncProjectsDao();
+
+    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
+    private LazyProjectGetResolver lazyGetResolver = StorioFactory.INSTANCE.getLazyProjectGetResolver();
+    private ProjectTeamGetResolver eagerResolver = StorioFactory.INSTANCE.getProjectTeamGetResolver();
+
+    private DaoConverter<Project, ProjectData> projectConverter = DaoConverterFactory.of(Project.class, ProjectData.class);
+    @Getter
+    private final Flowable<Changes> dbChangesFlowable = storio.observeChangesInTable(ProjectsTable.TABLE_NAME, BackpressureStrategy.LATEST);
 }

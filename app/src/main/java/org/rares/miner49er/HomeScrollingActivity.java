@@ -22,14 +22,11 @@ import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.pushtorefresh.storio3.Optional;
 import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
-import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
@@ -37,24 +34,16 @@ import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
 import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
-import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
-import org.rares.miner49er.ui.custom.glide.GlideApp;
-import org.rares.miner49er.ui.custom.glide.ProjectDataModelProvider;
-import org.rares.miner49er.ui.custom.glide.ProjectListPreloader;
-import org.rares.miner49er.ui.custom.glide.RecyclerToListViewScrollListener;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
 
 public class HomeScrollingActivity
         extends
@@ -113,10 +102,6 @@ public class HomeScrollingActivity
     Unbinder unbinder;
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
-    final Cache<ProjectData> projectDataCache = ViewModelCache.getInstance().getCache(ProjectData.class);
-    final ProjectDataModelProvider glidePreloadModelProvider = new ProjectDataModelProvider(this, Collections.emptyList());         ////
-    ProjectListPreloader projectListPreloader;
-    RecyclerToListViewScrollListener scrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,10 +124,8 @@ public class HomeScrollingActivity
             toolbar = findViewById(R.id.toolbar_c);
         }
 
-
 //        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
 //        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
-
 
         toolbar.inflateMenu(R.menu.menu_home);
         setSupportActionBar(toolbar);
@@ -301,6 +284,9 @@ public class HomeScrollingActivity
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
 
+        RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
+        projectsRV.setLayoutManager(projectsLayoutManager);
+
         projectsUiOps = new ProjectsUiOps(projectsRV);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
@@ -311,7 +297,6 @@ public class HomeScrollingActivity
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
-        RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
 //        SimpleLinearLayoutManager projectsLayoutManager = new SimpleLinearLayoutManager(this);
 //        LinearLayoutManager projectsLayoutManager = new LinearLayoutManager(this);
 
@@ -319,7 +304,6 @@ public class HomeScrollingActivity
         // our custom managers with the default LLM implementation
 
         setupResizeableManager(projectsLayoutManager, projectsAdapter.getMaxElevation());
-        projectsRV.setLayoutManager(projectsLayoutManager);
         ResizePostProcessor.PostProcessor pp = new SelfAnimatedItemRotator(projectsRV);
 //        ResizePostProcessor.PostProcessor pp = new AnimatedItemRotator();
 //        ResizePostProcessor.PostProcessor pp = new SimpleItemRotator();
@@ -338,8 +322,8 @@ public class HomeScrollingActivity
 //        issuesRV.setRecycledViewPool(sharedPool);
 //        projectsRV.setRecycledViewPool(sharedPool);
 
-        projectListPreloader = new ProjectListPreloader(GlideApp.with(this), glidePreloadModelProvider, new ViewPreloadSizeProvider<>(), 10);
-        scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
+
+
 
         // supportsPredictiveItemAnimations
         Log.e(TAG, "setupRV: DONE");
@@ -421,16 +405,6 @@ public class HomeScrollingActivity
 
         projectsUiOps.setupRepository();
 
-        getDisposable(startDisposable).add(
-                ViewModelCache.getInstance().getBroadcaster().subscribe(event -> {
-                    if (CACHE_EVENT_UPDATE_PROJECTS.equals(event)) {
-                        Log.i(TAG, "onStart: >>> set new project data");
-                        glidePreloadModelProvider.setProjectDataList(projectDataCache.getData(Optional.of(null)));
-
-                        projectsRV.removeOnScrollListener(scrollListener);
-                        projectsRV.addOnScrollListener(scrollListener);
-                    }
-                }));
     }
 
     @Override

@@ -71,14 +71,14 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 //            ProjectsViewHolder projectsViewHolder = (ProjectsViewHolder) holder;
 //            projectsViewHolder.clearImages();
 //        }
-        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
+//        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
     }
 
     @Override
     public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
         if (holder instanceof ItemViewAnimator) {
 
-//            getExtraInfo(holder.viewModel.id);
+//            Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemText());
 
             ((ItemViewAnimator) holder).validateItem(
                     getLastSelectedPosition() != -1,

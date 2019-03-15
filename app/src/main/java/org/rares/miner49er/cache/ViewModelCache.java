@@ -17,17 +17,7 @@ import java.io.Closeable;
 
 public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
-    private LruCache<Long, ProjectData> projectsCache = null;
-    private LruCache<Long, IssueData> issuesCache = null;
-    private LruCache<Long, TimeEntryData> timeEntriesCache = null;
-    private LruCache<Long, UserData> usersCache = null;
-
-    private Cache<ProjectData> projectDataCache = null;
-    private Cache<IssueData> projectIssueDataCache = null;
-    private Cache<TimeEntryData> issueTimeEntryDataCache = null;
-    private Cache<UserData> projectUserDataCache = null;
-
-    private static final String TAG = ViewModelCache.class.getSimpleName();
+    public long lastUpdateTime = -1;
 
     private ViewModelCache() {
     }
@@ -169,6 +159,19 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         }
         return projectUserDataCache;
     }
+
+
+    private LruCache<Long, ProjectData> projectsCache = null;
+    private LruCache<Long, IssueData> issuesCache = null;
+    private LruCache<Long, TimeEntryData> timeEntriesCache = null;
+    private LruCache<Long, UserData> usersCache = null;
+
+    private Cache<ProjectData> projectDataCache = null;
+    private Cache<IssueData> projectIssueDataCache = null;
+    private Cache<TimeEntryData> issueTimeEntryDataCache = null;
+    private Cache<UserData> projectUserDataCache = null;
+
+    private static final String TAG = ViewModelCache.class.getSimpleName();
 
     private PublishProcessor<Byte> cacheUpdatedProcessor = PublishProcessor.create();
     private Flowable<Byte> cacheUpdateFlowable = cacheUpdatedProcessor
