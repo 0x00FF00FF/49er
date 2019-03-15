@@ -4,7 +4,6 @@ import android.util.Log;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
@@ -192,6 +191,7 @@ public enum NetworkingService {
 //    private Single<List<TimeEntry>> timeEntriesObs = getTimeEntries(111);
 
     private void cleanDisposables() {
+        Log.i(TAG, "cleanDisposables: " + disposables.size());
         disposables.dispose();
     }
 
@@ -206,17 +206,14 @@ public enum NetworkingService {
     }
 
     public void registerProjectsConsumer(Consumer<List<Project>> consumer) {
+        // subscribe a [get projects] event to each timer tick.
+        Log.i(TAG, "registerProjectsConsumer: >>>> " + consumer);
         disposables.add(
                 timerFlowable.subscribe(
                         timer -> disposables.add(projectsObs.subscribe(consumer)))
-        );
-    }
-
-    public void registerProjectsConsumer(SingleObserver<List<Project>> consumer) {
-//        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
-        disposables.add(
-                timerFlowable.subscribe(
-                        timer -> projectsObs.subscribe(consumer))
+                // this is designed to function with only one consumer.
+                // if we register multiple consumers, the project service
+                // will fetch data for each subscribe(consumer) call.
         );
     }
 
@@ -236,13 +233,15 @@ public enum NetworkingService {
 //        );
 //    }
 
-
     public void setTimerInterval(long seconds) {
         Log.w(TAG, "setTimerInterval: " + seconds + " seconds.");
-        timerFlowable = Flowable.merge(onDemandFlowable, Flowable.interval(seconds, TimeUnit.SECONDS)).share().doOnNext(x -> Log.i(TAG, ">TICK!<"));
+        timerFlowable = Flowable.merge(onDemandFlowable, Flowable.interval(seconds, TimeUnit.SECONDS)).share()
+                .subscribeOn(Schedulers.io())
+                .doOnNext(x -> Log.i(TAG, ">TICK!<"));
     }
 
     public void refreshData() {
+        Log.i(TAG, "refreshData: ---- " + onDemandPublisher.hasSubscribers());
         onDemandPublisher.onNext(System.currentTimeMillis());
     }
 

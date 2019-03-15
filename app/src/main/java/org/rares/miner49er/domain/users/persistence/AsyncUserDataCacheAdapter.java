@@ -1,6 +1,8 @@
 package org.rares.miner49er.domain.users.persistence;
 
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.SingleSubject;
@@ -131,5 +133,10 @@ public class AsyncUserDataCacheAdapter
                     singleSubject.onSuccess(deleted);
                 }));
         return singleSubject;
+    }
+
+    @Override
+    public Flowable<Changes> getDbChangesFlowable() {
+        return dao.getDbChangesFlowable();
     }
 }

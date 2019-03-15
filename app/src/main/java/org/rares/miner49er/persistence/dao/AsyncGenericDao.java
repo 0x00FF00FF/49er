@@ -1,6 +1,8 @@
 package org.rares.miner49er.persistence.dao;
 
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 
 import java.util.List;
@@ -20,6 +22,8 @@ public interface AsyncGenericDao<EntityType extends AbstractViewModel> {
     Single<Boolean> update(EntityType toUpdate);
 
     Single<Boolean> delete(EntityType toDelete);
+
+    Flowable<Changes> getDbChangesFlowable();
 
     default void assertInsertReady(EntityType toInsert) {
         if (toInsert.getId() != null) {

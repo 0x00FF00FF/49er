@@ -48,4 +48,12 @@ public class SimpleLinearLayoutManager
     public List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent) {
         return Collections.emptyList();
     }
+
+    @Override
+    public void addMeasureCompleteListener(PreloadSizeConsumer listener) {
+    }
+
+    @Override
+    public void removeMeasureCompleteListener(PreloadSizeConsumer listener) {
+    }
 }

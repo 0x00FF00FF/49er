@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import lombok.Setter;
 import org.rares.miner49er.R;
@@ -13,12 +14,22 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.cache.Cache;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
+import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
+import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
+import org.rares.miner49er.ui.custom.glide.GlideApp;
+import org.rares.miner49er.ui.custom.glide.preload.MultipleFixedSizeProvider;
+import org.rares.miner49er.ui.custom.glide.preload.MultipleListPreloader;
+import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
+import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
@@ -34,7 +45,9 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 
 public class ProjectsUiOps
         extends ResizeableItemsUiOps
-        implements ToolbarActionManager.MenuActionListener {
+        implements
+        ToolbarActionManager.MenuActionListener,
+        ResizeableLayoutManager.PreloadSizeConsumer {
 
     @Setter
     private ProjectsInterfaces.ProjectsResizeListener projectsListResizeListener;
@@ -56,6 +69,22 @@ public class ProjectsUiOps
         repository = projectsRepository;
 
         selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
+
+        if (rv.getLayoutManager() instanceof ResizeableLayoutManager) {
+            ((ResizeableLayoutManager) rv.getLayoutManager()).addMeasureCompleteListener(this);
+        }
+
+        glidePreloadModelProvider = new ProjectDataModelProvider(getRv().getContext());
+
+        MultipleListPreloader<String> projectListPreloader = new MultipleListPreloader<>(
+                GlideApp.with(getRv()),
+                glidePreloadModelProvider,
+                sizeProvider,
+                10);
+        RecyclerToListViewScrollListener scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
+        getRv().addOnScrollListener(scrollListener);
+
+        startDisposable = new CompositeDisposable();
     }
 
     /**
@@ -171,6 +200,7 @@ public class ProjectsUiOps
      */
     public void shutdown() {
         projectsRepository.shutdown();
+        startDisposable.dispose();
     }
 
     @Override
@@ -178,4 +208,26 @@ public class ProjectsUiOps
         return null;
     }
 
+    @Override
+    public void onMeasureComplete(int[] dimensions) {
+        Log.d(TAG, "onMeasureComplete() called with: dimensions = [" + Arrays.toString(dimensions) + "]");
+        if (dimensions.length < 2) {
+            return;
+        }
+        for (int i = 0; i < dimensions.length; i += 2) {
+            sizeProvider.addSizes(dimensions[i], dimensions[i + 1]);
+        }
+    }
+
+    private CompositeDisposable getDisposable(CompositeDisposable d) {
+        if (d == null || d.isDisposed()) {
+            d = new CompositeDisposable();
+        }
+        return d;
+    }
+
+    private final Cache<ProjectData> projectDataCache = ViewModelCache.getInstance().getCache(ProjectData.class);
+    private ProjectDataModelProvider glidePreloadModelProvider;
+    private MultipleFixedSizeProvider<String> sizeProvider = new MultipleFixedSizeProvider<>();
+    private CompositeDisposable startDisposable;
 }

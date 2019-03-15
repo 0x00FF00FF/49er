@@ -162,7 +162,7 @@ public class ProjectsAdapter
     }
 
     @Override
-    public void accept(List list) throws Exception {
+    public void accept(List list) {
         updateList(list);
     }
 

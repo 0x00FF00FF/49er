@@ -17,9 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
@@ -125,18 +128,23 @@ public class ProjectsViewHolder
         GlideApp
                 .with(itemView)
                 .load(pictureUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.skull)
                 .fallback(R.drawable.skull)
                 .error(R.drawable.skull)
-                .into(projectLogoView);
+                .into(new ImageViewTarget<Drawable>(projectImage) {
+                    @Override
+                    protected void setResource(@Nullable Drawable resource) {
+                        projectImage.setImageDrawable(resource);
+                        projectLogoView.setImageDrawable(resource);
+                    }
 
-        GlideApp
-                .with(itemView)
-                .load(pictureUrl)
-//                .onlyRetrieveFromCache(true)
-                .placeholder(R.drawable.skull)
-//                .transform(new PositionedCrop(0.5F, 0.5F))
-                .into(projectImage);
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
+                        projectLogoView.setImageDrawable(errorDrawable);
+                    }
+                });
 
         if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
             toggleInfoContainerVisiblity(false);

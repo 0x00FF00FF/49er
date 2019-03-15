@@ -1,10 +1,14 @@
 package org.rares.miner49er.domain.entries.persistence;
 
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import lombok.Getter;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.converters.DaoConverter;
@@ -13,16 +17,11 @@ import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.LazyTimeEntryGetResolver;
 import org.rares.miner49er.persistence.storio.resolvers.TimeEntryStorIOSQLiteGetResolver;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 
 import java.util.List;
 
 public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
-
-    private final static AsyncTimeEntriesDao INSTANCE = new AsyncTimeEntriesDao();
-    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
-    private LazyTimeEntryGetResolver lazyResolver = StorioFactory.INSTANCE.getLazyTimeEntryGetResolver();
-    private TimeEntryStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getTimeEntryStorIOSQLiteGetResolver();
-    private DaoConverter<TimeEntry, TimeEntryData> daoConverter = DaoConverterFactory.of(TimeEntry.class, TimeEntryData.class);
 
     public static AsyncGenericDao<TimeEntryData> getInstance() {
         return INSTANCE;
@@ -96,9 +95,17 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io())
-                .map(dr -> dr.numberOfRowsDeleted() == 0);
+                .map(dr -> dr.numberOfRowsDeleted() != 0);
     }
 
     private AsyncTimeEntriesDao() {
     }
+
+    private final static AsyncTimeEntriesDao INSTANCE = new AsyncTimeEntriesDao();
+    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
+    private LazyTimeEntryGetResolver lazyResolver = StorioFactory.INSTANCE.getLazyTimeEntryGetResolver();
+    private TimeEntryStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getTimeEntryStorIOSQLiteGetResolver();
+    private DaoConverter<TimeEntry, TimeEntryData> daoConverter = DaoConverterFactory.of(TimeEntry.class, TimeEntryData.class);
+    @Getter
+    private final Flowable<Changes> dbChangesFlowable = storio.observeChangesInTable(TimeEntryTable.NAME, BackpressureStrategy.LATEST);
 }

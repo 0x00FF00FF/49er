@@ -2,10 +2,14 @@ package org.rares.miner49er.domain.issues.persistence;
 
 import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import lombok.Getter;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.converters.DaoConverter;
@@ -14,26 +18,17 @@ import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.IssueStorIOSQLiteGetResolver;
 import org.rares.miner49er.persistence.storio.resolvers.LazyIssueGetResolver;
+import org.rares.miner49er.persistence.storio.tables.IssueTable;
 
 import java.util.List;
 
 
 public class AsyncIssuesDao implements AsyncGenericDao<IssueData> {
 
-    private static final String TAG = AsyncIssuesDao.class.getSimpleName();
-    private static final AsyncIssuesDao INSTANCE = new AsyncIssuesDao();
-    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
-
-    private LazyIssueGetResolver lazyResolver = StorioFactory.INSTANCE.getLazyIssueGetResolver();
-    private IssueStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getIssueStorIOSQLiteGetResolver();
-    private DaoConverter<Issue, IssueData> daoConverter = DaoConverterFactory.of(Issue.class, IssueData.class);
-
     public static AsyncGenericDao<IssueData> getInstance() {
         return INSTANCE;
     }
 
-    private AsyncIssuesDao() {
-    }
 
     @Override
     public Single<List<IssueData>> getAll(boolean lazy) {
@@ -114,4 +109,17 @@ public class AsyncIssuesDao implements AsyncGenericDao<IssueData> {
                 .subscribeOn(Schedulers.io())
                 .map(dr -> dr.numberOfRowsDeleted() == 0);
     }
+
+    private AsyncIssuesDao() {
+    }
+
+    private static final String TAG = AsyncIssuesDao.class.getSimpleName();
+    private static final AsyncIssuesDao INSTANCE = new AsyncIssuesDao();
+    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
+
+    private LazyIssueGetResolver lazyResolver = StorioFactory.INSTANCE.getLazyIssueGetResolver();
+    private IssueStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getIssueStorIOSQLiteGetResolver();
+    private DaoConverter<Issue, IssueData> daoConverter = DaoConverterFactory.of(Issue.class, IssueData.class);
+    @Getter
+    private final Flowable<Changes> dbChangesFlowable = storio.observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST);
 }

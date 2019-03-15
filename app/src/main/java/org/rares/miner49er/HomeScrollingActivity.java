@@ -1,5 +1,6 @@
 package org.rares.miner49er;
 
+import android.app.ActivityManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -23,6 +24,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
@@ -99,6 +101,8 @@ public class HomeScrollingActivity
 
     Unbinder unbinder;
 
+    private CompositeDisposable startDisposable = new CompositeDisposable();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +111,12 @@ public class HomeScrollingActivity
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
-        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px + " max mem: " + Runtime.getRuntime().maxMemory());
+        Log.i(TAG, "onCreate: px/dp " + px2dp + "|" + dp2px);
 
+        ActivityManager.MemoryInfo memInfo = getAvailableMemory();
+
+        Log.v(TAG, String.format("onCreate: Memory info: available: %s threshold: %s max: %s",
+                memInfo.availMem, memInfo.threshold, Runtime.getRuntime().maxMemory()/*memInfo.totalMem*/));
 
         setContentView(R.layout.activity_home_scrolling);
 
@@ -116,10 +124,8 @@ public class HomeScrollingActivity
             toolbar = findViewById(R.id.toolbar_c);
         }
 
-
 //        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
 //        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
-
 
         toolbar.inflateMenu(R.menu.menu_home);
         setSupportActionBar(toolbar);
@@ -278,6 +284,9 @@ public class HomeScrollingActivity
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
 
+        RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
+        projectsRV.setLayoutManager(projectsLayoutManager);
+
         projectsUiOps = new ProjectsUiOps(projectsRV);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
@@ -288,7 +297,6 @@ public class HomeScrollingActivity
         projectsUiOps.setDomainLink(issuesUiOps);
 
         projectsRV.setAdapter(projectsAdapter);
-        RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
 //        SimpleLinearLayoutManager projectsLayoutManager = new SimpleLinearLayoutManager(this);
 //        LinearLayoutManager projectsLayoutManager = new LinearLayoutManager(this);
 
@@ -296,7 +304,6 @@ public class HomeScrollingActivity
         // our custom managers with the default LLM implementation
 
         setupResizeableManager(projectsLayoutManager, projectsAdapter.getMaxElevation());
-        projectsRV.setLayoutManager(projectsLayoutManager);
         ResizePostProcessor.PostProcessor pp = new SelfAnimatedItemRotator(projectsRV);
 //        ResizePostProcessor.PostProcessor pp = new AnimatedItemRotator();
 //        ResizePostProcessor.PostProcessor pp = new SimpleItemRotator();
@@ -314,6 +321,9 @@ public class HomeScrollingActivity
 //        timeEntriesRv.setRecycledViewPool(sharedPool);
 //        issuesRV.setRecycledViewPool(sharedPool);
 //        projectsRV.setRecycledViewPool(sharedPool);
+
+
+
 
         // supportsPredictiveItemAnimations
         Log.e(TAG, "setupRV: DONE");
@@ -394,6 +404,7 @@ public class HomeScrollingActivity
         super.onStart();
 
         projectsUiOps.setupRepository();
+
     }
 
     @Override
@@ -401,12 +412,13 @@ public class HomeScrollingActivity
         Log.e(TAG, "onStop() called");
         super.onStop();
 
+        getDisposable(startDisposable).dispose();
         projectsUiOps.shutdown(); // why is this here and the others on destroy?
     }
 
     @Override
     public void onTrimMemory(int level) {
-        ViewModelCache.getInstance().clear();
+        ViewModelCache.getInstance().clear();   // TODO: 3/7/19 enqueue another cache fill when needed
     }
 
     @Override
@@ -435,5 +447,26 @@ public class HomeScrollingActivity
         projectsUiOps.shutdown();
         projectsUiOps = null;
         projectsRV = null;
+
+        startDisposable.dispose();
     }
+
+
+    // Get a MemoryInfo object for the device's current memory status.
+    private ActivityManager.MemoryInfo getAvailableMemory() {
+        ActivityManager activityManager = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        if (activityManager != null) {
+            activityManager.getMemoryInfo(memoryInfo);
+        }
+        return memoryInfo;
+    }
+
+    private CompositeDisposable getDisposable(CompositeDisposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            return disposable;
+        }
+        return new CompositeDisposable();
+    }
+
 }

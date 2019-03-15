@@ -1,10 +1,14 @@
 package org.rares.miner49er.domain.users.persistence;
 
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.sqlite.Changes;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import lombok.Getter;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.converters.DaoConverter;
@@ -12,16 +16,11 @@ import org.rares.miner49er.persistence.dao.converters.DaoConverterFactory;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLiteGetResolver;
+import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.List;
 
 public class AsyncUsersDao implements AsyncGenericDao<UserData> {
-
-    private static AsyncUsersDao INSTANCE = new AsyncUsersDao();
-
-    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
-    private UserStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver();
-    private DaoConverter<User, UserData> daoConverter = DaoConverterFactory.of(User.class, UserData.class);
 
     public static AsyncGenericDao<UserData> getInstance() {
         return INSTANCE;
@@ -94,4 +93,12 @@ public class AsyncUsersDao implements AsyncGenericDao<UserData> {
 
     private AsyncUsersDao() {
     }
+
+    private static AsyncUsersDao INSTANCE = new AsyncUsersDao();
+
+    private StorIOSQLite storio = StorioFactory.INSTANCE.get();
+    private UserStorIOSQLiteGetResolver eagerResolver = StorioFactory.INSTANCE.getUserStorIOSQLiteGetResolver();
+    private DaoConverter<User, UserData> daoConverter = DaoConverterFactory.of(User.class, UserData.class);
+    @Getter
+    private final Flowable<Changes> dbChangesFlowable = storio.observeChangesInTable(UserTable.NAME, BackpressureStrategy.LATEST);
 }

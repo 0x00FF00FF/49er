@@ -89,6 +89,8 @@ public class StickyLinearLayoutManager
     private boolean scrolling = false;
     private boolean selectedViewDetached = false;
 
+    private List<PreloadSizeConsumer> preloadSizeConsumers = new ArrayList<>();
+
     public StickyLinearLayoutManager() {
 //        setItemPrefetchEnabled(true);
         usedTag = tag + "[ " + hashCode() + " ]:";
@@ -177,6 +179,18 @@ public class StickyLinearLayoutManager
             decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
             itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
 //            removeAndRecycleView(labRatView, recycler);
+
+            View pl = labRatView.findViewById(R.id.project_logo);
+            View pi = labRatView.findViewById(R.id.project_image);
+
+            if (pl != null) {
+                int[] dimensions = {pl.getMeasuredWidth(), pl.getMeasuredHeight(), pi.getMeasuredWidth(), pi.getMeasuredHeight()};
+
+                for (PreloadSizeConsumer psc : preloadSizeConsumers) {
+                    psc.onMeasureComplete(dimensions);
+                }
+            }
+
             recycler.recycleView(labRatView);
         }
 
@@ -1361,11 +1375,21 @@ public class StickyLinearLayoutManager
         }
     }
 
-    public int firstVisiblePosition(){
+    public int firstVisiblePosition() {
         return firstVisiblePosition;
     }
 
-    public int lastVisiblePosition(){
+    public int lastVisiblePosition() {
         return lastVisiblePosition;
+    }
+
+    @Override
+    public void addMeasureCompleteListener(PreloadSizeConsumer listener) {
+        preloadSizeConsumers.add(listener);
+    }
+
+    @Override
+    public void removeMeasureCompleteListener(PreloadSizeConsumer listener) {
+        preloadSizeConsumers.remove(listener);
     }
 }
