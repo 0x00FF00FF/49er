@@ -43,7 +43,6 @@
     <!--project form-->
     <string name="project_form_header_add">Adding a project</string>
     <string name="project_form_header_edit">Editing a project</string>
-    <string name="helper_required">Fields marked with * are required.</string>
 
     <string name="hint_project_name">Project name *</string>
     <string name="helper_project_name">Insert the project name.</string>
@@ -67,6 +66,28 @@
 
     <string name="success_project_add">The %s project has been successfully created.</string>
     <string name="success_project_save">The %s project has been saved.</string>
+
+    <!--issue form-->
+    <string name="issue_form_header_add">Adding an issue</string>
+    <string name="issue_form_header_edit">Editing an issue</string>
+
+    <string name="hint_issue_project_name">Project name</string>
+    <string name="helper_issue_project_name">Insert the project name.</string>
+
+    <string name="hint_issue_name">Issue name *</string>
+    <string name="helper_issue_name">Insert the issue name.</string>
+
+    <string name="hint_issue_owner">Issue owner</string>
+    <string name="helper_issue_owner">Set the issue owner.</string>
+
+    <string name="hint_date_added">Date added</string>
+    <string name="helper_date_added">Shows the date when this item was created.</string>
+
+    <string name="success_issue_add">The %s issue has been successfully created.</string>
+    <string name="success_issue_save">The %s issue has been saved.</string>
+
+
+    <string name="helper_required">Fields marked with * are required.</string>
 
     <string name="error_field_required">This field is required.</string>
     <string name="error_field_already_exists">This name already exists.</string>
