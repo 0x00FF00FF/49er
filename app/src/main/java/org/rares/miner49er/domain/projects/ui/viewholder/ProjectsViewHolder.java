@@ -21,9 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.ImageViewTarget;
-import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -35,7 +33,6 @@ import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
-import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
@@ -47,8 +44,7 @@ import java.util.List;
 
 public class ProjectsViewHolder
         extends ResizeableItemViewHolder
-        implements ItemViewAnimator/*,
-        ExtraInfoListener<ProjectData, IssueData> */ {
+        implements ItemViewAnimator {
 
     private static final String TAG = ProjectsViewHolder.class.getSimpleName();
 
@@ -81,11 +77,6 @@ public class ProjectsViewHolder
 
     private ProjectData itemData;
 
-    @Setter
-    private boolean __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED = false;
-    @Setter
-    private boolean __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED = false;
-
     public ProjectsViewHolder(View itemView) {
         super(itemView);
         setItemProperties(projectViewProperties);
@@ -97,11 +88,10 @@ public class ProjectsViewHolder
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         itemData = (ProjectData) o;
         int itemBgColor = itemData.getColor() == 0 ? Color.parseColor("#AA5C6BC0") : itemData.getColor();
-        projectViewProperties.setItemBgColor(itemBgColor);
+        projectViewProperties.setItemBgColor(itemBgColor);  // use bundle to pass stuff around?
         projectViewProperties.setId(itemData.getId());
 
-        shortTitle = __SETTING_SHOW_PROJECT_NAME_WHILE_COLLAPSED ? TextUtils.extractVowels(itemData.getName()) : "";
-        shortTitle = __SETTING_SHOW_SELECTED_PROJECT_NAME_WHILE_COLLAPSED && selected ? TextUtils.extractVowels(itemData.getName()) : shortTitle;
+        shortTitle = selected ? ""/*TextUtils.extractVowels(itemData.getName())*/ : shortTitle;
 
         longTitle = itemData.getName();
 
@@ -128,7 +118,7 @@ public class ProjectsViewHolder
         GlideApp
                 .with(itemView)
                 .load(pictureUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.skull)
                 .fallback(R.drawable.skull)
                 .error(R.drawable.skull)
@@ -253,14 +243,14 @@ public class ProjectsViewHolder
         lp.width = matchParentWidth ? ViewGroup.LayoutParams.MATCH_PARENT : collapsed ? animationDTO.maxWidth : animationDTO.minWidth;
         lp.height = collapsed ? ViewGroup.LayoutParams.MATCH_PARENT : (int) (originalTextSize * 1.25);
 
-        ViewGroup.MarginLayoutParams mlp = null;
-        if (lp instanceof ViewGroup.MarginLayoutParams) {
-            mlp = (ViewGroup.MarginLayoutParams) lp;
-            mlp.leftMargin = collapsed ? animationDTO.maxMarginLeft : animationDTO.minMarginLeft;
-            mlp.topMargin = collapsed ? animationDTO.maxMarginTop : animationDTO.minMarginTop;
-            mlp.rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
-            mlp.bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
-        }
+//        ViewGroup.MarginLayoutParams mlp = null;
+//        if (lp instanceof ViewGroup.MarginLayoutParams) {
+//            mlp = (ViewGroup.MarginLayoutParams) lp;
+//            mlp.leftMargin = collapsed ? animationDTO.maxMarginLeft : animationDTO.minMarginLeft;
+//            mlp.topMargin = collapsed ? animationDTO.maxMarginTop : animationDTO.minMarginTop;
+//            mlp.rightMargin = collapsed ? animationDTO.maxMarginRight : animationDTO.minMarginRight;
+//            mlp.bottomMargin = collapsed ? animationDTO.maxMarginBottom : animationDTO.minMarginBottom;
+//        }
         ConstraintLayout.LayoutParams clp = null;
         if (lp instanceof ConstraintLayout.LayoutParams) {
             clp = (ConstraintLayout.LayoutParams) lp;
@@ -355,8 +345,10 @@ public class ProjectsViewHolder
 
         if (reverse) {
             if (selected) { // selected item goes back to expanded
+                /*
                 adto.minRotation = startRotation;
                 adto.maxRotation = endRotation;
+                */
                 adto.minTextSize = projectNameTextView.getOriginalTextSize();
                 adto.maxTextSize = selectedTextSize;
                 adto.minTextColor = projectNameTextView.getOriginalTextColor();

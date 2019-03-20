@@ -11,11 +11,7 @@ import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressLint("UseSparseArrays")
 public class EntityOptimizer implements Consumer<List<Project>> {
@@ -108,6 +104,8 @@ public class EntityOptimizer implements Consumer<List<Project>> {
                         issues = p.getIssues();
                     }
                     prepareIssues(issues);
+
+                    p.setPicture(p.getPicture().replaceAll("148", "114"));
 
                     projectsToAdd.put(p.getId(), p);
 

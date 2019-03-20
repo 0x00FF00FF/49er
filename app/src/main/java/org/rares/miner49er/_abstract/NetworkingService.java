@@ -84,7 +84,7 @@ public enum NetworkingService {
     public enum RestServiceGenerator {
         INSTANCE;
 
-        private final String serviceUrl = "http://192.168.1.148/~rares/";
+        private final String serviceUrl = "http://192.168.1.114/~rares/";
 
         private HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
 
