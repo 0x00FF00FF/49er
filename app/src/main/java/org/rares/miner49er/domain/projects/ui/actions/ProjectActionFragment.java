@@ -20,8 +20,12 @@ import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 
 public abstract class ProjectActionFragment extends ActionFragment {
 
@@ -142,17 +146,35 @@ public abstract class ProjectActionFragment extends ActionFragment {
         prepareExit();
     }
 
+
+    protected void updateProjectData() {
+        projectData.setName(editTextProjectName.getEditableText().toString());
+        projectData.setDescription(editTextProjectDescription.getEditableText().toString());
+        String iconUrl = editTextProjectIcon.getEditableText().toString();
+        try {
+            iconUrl = URLEncoder.encode(editTextProjectIcon.getEditableText().toString(), UTFEnc);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        projectData.setIcon(iconUrl);
+        projectData.setPicture(iconUrl);
+    }
+
     protected void resetFields() {
         rootView.smoothScrollTo(0, 0);
-        inputLayoutProjectName.setError("");
+        clearErrors();
         editTextProjectName.setText("");
-        inputLayoutProjectShortName.setError("");
         editTextProjectShortName.setText("");
-        inputLayoutProjectDescription.setError("");
         editTextProjectDescription.setText("");
-        inputLayoutProjectIcon.setError("");
         editTextProjectIcon.setText("");
-        inputLayoutProjectOwner.setError("");
         editTextProjectOwner.setText("");
+    }
+
+    protected void clearErrors() {
+        inputLayoutProjectName.setError("");
+        inputLayoutProjectShortName.setError("");
+        inputLayoutProjectDescription.setError("");
+        inputLayoutProjectIcon.setError("");
+        inputLayoutProjectOwner.setError("");
     }
 }
