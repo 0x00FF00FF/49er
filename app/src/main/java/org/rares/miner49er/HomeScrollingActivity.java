@@ -283,6 +283,7 @@ public class HomeScrollingActivity
 
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
+        issuesUiOps.setFragmentManager(getSupportFragmentManager());
 
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);

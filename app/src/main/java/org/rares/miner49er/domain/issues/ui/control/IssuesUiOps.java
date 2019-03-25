@@ -37,6 +37,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private ToolbarActionManager toolbarManager = null;
 
+    private IssueMenuActionsProvider menuActionsProvider;
     // this component always requires action mode
     private final boolean requiresActionMode = true;
 
@@ -58,6 +59,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
         } else {
+            toolbarManager.setEntityId(holder.getItemProperties().getId());
             toolbarManager.registerActionListener(this);
         }
 
@@ -106,12 +108,17 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public GenericMenuActions getMenuActionsProvider() {
-        return null;
+        return menuActionsProvider;
     }
 
     @Override
     protected void configureMenuActionsProvider(FragmentManager fm) {
-
+        if (toolbarManager == null) {
+            provideToolbarActionManager();
+        }
+        if (menuActionsProvider == null) {
+            menuActionsProvider = new IssueMenuActionsProvider(fragmentManager, toolbarManager);
+        }
     }
 
     @Override
@@ -195,5 +202,18 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     @Override
     protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
         return createNewIssuesAdapter(itemViewProperties);
+    }
+
+    // todo ... i don't like this!
+    private void provideToolbarActionManager() {
+        // TODO: 12/4/18 have the toolbar supplied, do not "grab"
+        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+
+        if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
+            toolbarManager = new ToolbarActionManager(t);
+            t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
+        } else {
+            toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
+        }
     }
 }

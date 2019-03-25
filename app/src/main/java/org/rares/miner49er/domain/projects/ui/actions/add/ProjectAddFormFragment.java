@@ -121,6 +121,11 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         snackbar.setAction(R.string.action_undo, v -> {
             projectsDAO.delete(projectData);
             snackbar.dismiss();
+            snackbarView.postDelayed(() -> {
+                snackbar.setText(entryRemoved);
+                snackbar.setAction(R.string.action_dismiss, d -> snackbar.dismiss());
+                snackbar.show();
+            }, 500);
         });
 
         resetFields();

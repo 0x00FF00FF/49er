@@ -19,7 +19,9 @@ import org.rares.miner49er.ui.custom.spannable.CenteredImageSpan;
 
 import java.util.Stack;
 
+import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_ALWAYS;
 import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_NEVER;
+import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_WITH_TEXT;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
@@ -435,7 +437,22 @@ public class ToolbarActionManager
          */
         boolean onToolbarBackPressed();
 
-        void configureCustomActionMenu(MenuConfig config);
+        default void configureCustomActionMenu(MenuConfig config) {
+            config.subtitle = "";
+            config.createGenericMenu = false;
+            config.menuId = R.menu.menu_action_done;
+            config.overrideGenericMenuResources = null;
+
+            config.menuResources = new int[1][4];
+            config.menuResources[0][ITEM_ID] = R.id.action_add;
+            config.menuResources[0][ICON_ID] = 0;
+            config.menuResources[0][ITEM_NAME] = 0;
+            config.menuResources[0][FLAGS] = SHOW_AS_ACTION_WITH_TEXT | SHOW_AS_ACTION_ALWAYS;
+
+            config.additionalMenuId = 0;
+            config.additionalResources = null;
+            config.requireActionMode = true;
+        }
 
         GenericMenuActions getMenuActionsProvider();
 

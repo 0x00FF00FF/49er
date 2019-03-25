@@ -224,6 +224,7 @@ public class ProjectsViewHolder
             }
         } else {
             itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+            // FIXME: 22.03.2019 at times info label remains null and is not added to the container when scrolling while expanded
         }
 
         if (projectImage != null) {

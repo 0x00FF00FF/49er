@@ -30,6 +30,8 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
     protected String successfulAdd;
     @BindString(R.string.success_project_save)
     protected String successfulUpdate;
+    @BindString(R.string.entry_removed)
+    protected String entryRemoved;
 
     @BindColor(R.color.indigo_100_blacked)
     protected int snackbarBackgroundColor;
@@ -58,7 +60,7 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
     @Setter
     protected ActionEnforcer.FragmentResultListener resultListener;
 
-    protected ScrollView rootView;
+    protected ScrollView rootView;      // root view should not necessarily be a ScrollView
     protected Unbinder unbinder;
 
 

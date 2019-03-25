@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.projects.ui.actions.add;
+package org.rares.miner49er.domain.issues.ui.actions.add;
 
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.actionmode.ActionEnforcer;
@@ -8,21 +8,26 @@ import org.rares.miner49er.ui.actionmode.EmptyActionsProvider;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
+import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
 
-public class ProjectAddActionListener
+public class IssueAddActionListener
         implements
         ToolbarActionManager.MenuActionListener,
         ActionEnforcer.FragmentResultListener {
-
-    private static final String TAG = ProjectAddActionListener.class.getSimpleName();
+    private static final String TAG = IssueAddActionListener.class.getSimpleName();
 
     private ActionFragment fragment;
     private ActionListenerManager actionManager;
 
-    public ProjectAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
+    public IssueAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
         this.fragment = fragment;
         this.actionManager = actionManager;
         this.fragment.setResultListener(this);
+    }
+
+    @Override
+    public void onFragmentDismiss() {
+        actionManager.unregisterActionListener(this);
     }
 
     @Override
@@ -32,9 +37,9 @@ public class ProjectAddActionListener
     }
 
     @Override
-    public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
+    public void configureCustomActionMenu(MenuConfig config) {
         MenuActionListener.super.configureCustomActionMenu(config);
-        config.titleRes = R.string.project_form_header_add;
+        config.titleRes = R.string.issue_form_header_add;
     }
 
     @Override
@@ -50,9 +55,4 @@ public class ProjectAddActionListener
             return true;
         }
     };
-
-    @Override
-    public void onFragmentDismiss() {
-        actionManager.unregisterActionListener(this);
-    }
 }

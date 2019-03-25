@@ -2,10 +2,12 @@ package org.rares.miner49er.domain.issues.persistence;
 
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.converters.DaoConverter;
 import org.rares.miner49er.persistence.dao.converters.DaoConverterFactory;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.TimeEntry;
+import org.rares.miner49er.persistence.entities.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 public class IssueConverter implements DaoConverter<Issue, IssueData> {
 
     private DaoConverter<TimeEntry, TimeEntryData> teConverter = DaoConverterFactory.of(TimeEntry.class, TimeEntryData.class);
+    private DaoConverter<User, UserData> usrConverter = DaoConverterFactory.of(User.class, UserData.class);
 
     @Override
     public Issue vmToDm(IssueData viewModel) {
@@ -27,6 +30,14 @@ public class IssueConverter implements DaoConverter<Issue, IssueData> {
         issue.setProjectId(viewModel.getParentId());
         issue.setDateAdded(viewModel.getDateAdded());
         issue.setDateDue(viewModel.getDateDue());
+        issue.setOwnerId(viewModel.getOwnerId());
+        if (viewModel.getOwner() != null) {
+            issue.setOwnerId(viewModel.getOwner().id);
+            issue.setOwner(usrConverter.vmToDm(viewModel.getOwner()));
+        }
+        if (viewModel.getTimeEntries() != null) {
+            issue.setTimeEntries(teConverter.vmToDm(viewModel.getTimeEntries()));
+        }
 
         return issue;
     }
@@ -43,15 +54,26 @@ public class IssueConverter implements DaoConverter<Issue, IssueData> {
         converted.setLastUpdated(databaseModel.getLastUpdated());
         converted.setDateAdded(databaseModel.getDateAdded());
         converted.setParentId(databaseModel.getProjectId());
+        converted.setOwnerId(databaseModel.getOwnerId());
         if (databaseModel.getTimeEntries() != null) {
             converted.setTimeEntries(teConverter.dmToVm(databaseModel.getTimeEntries()));
+        }
+        if (databaseModel.getOwner() != null) {
+            converted.setOwner(usrConverter.dmToVm(databaseModel.getOwner()));
         }
         return converted;
     }
 
     @Override
     public List<Issue> vmToDm(List<IssueData> viewModelList) {
-        return null;
+        if (viewModelList == null) {
+            return null;
+        }
+        ArrayList<Issue> databaseModelList = new ArrayList<>();
+        for (IssueData i : viewModelList) {
+            databaseModelList.add(vmToDm(i));
+        }
+        return databaseModelList;
     }
 
     @Override

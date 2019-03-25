@@ -995,6 +995,8 @@ public class StickyLinearLayoutManager
             View vv = v.findViewById(R.id.project_image);
             if (vv != null) {
                 vv.setRotation(vv.getRotation() + 3 * Math.signum(dy));
+//                vv.setRotation(vv.getRotation() + virtualBottom*.005F * Math.signum(dy));
+//                vv.setPivotY(v.getY() * .45F);
             }
 
             if (v != selectedView) {

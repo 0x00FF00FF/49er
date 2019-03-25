@@ -4,9 +4,13 @@ import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
 
 // TODO: this seems a bit tangled up
+
+/**
+ * <img src='https://memegenerator.net/img/instances/64537262/very-interface-implement-so-pro-coder.jpg' height='225' width='300'/><br/>
+ */
 public interface ResizePostProcessor {
     // coder philosoraptor asks if this is a code smell?
-    // https://memegenerator.net/img/instances/64537262/very-interface-implement-so-pro-coder.jpg
+    //
 
     /**
      * A post processor is a unit that applies a set

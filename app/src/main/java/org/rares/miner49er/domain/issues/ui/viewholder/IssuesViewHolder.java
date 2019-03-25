@@ -36,9 +36,7 @@ import java.util.List;
  * @since 10.10.2017
  */
 
-public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator
-
-{
+public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator {
     private static final String TAG = IssuesViewHolder.class.getSimpleName();
 
     @BindView(R.id.resizeable_list_item_container)
@@ -516,7 +514,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             infoLabel.setText(infoLabelString);
         }
 
-        Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
+//        Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
     }
 
     @Override

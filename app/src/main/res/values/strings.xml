@@ -94,4 +94,6 @@
     <string name="error_field_contains_illegal_characters">This field contains illegal characters.</string>
 
     <string name="error_name_unavailable">This name is unavailable.</string>
+
+    <string name="entry_removed">The entry has been removed.</string>
 </resources>

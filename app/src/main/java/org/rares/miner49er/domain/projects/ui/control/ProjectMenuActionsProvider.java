@@ -3,6 +3,8 @@ package org.rares.miner49er.domain.projects.ui.control;
 import android.os.Bundle;
 import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddActionListener;
+import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddFormFragment;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddFormFragment;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditActionListener;
@@ -26,6 +28,9 @@ public class ProjectMenuActionsProvider
     private ActionFragment projectEditFormFragment;
     private ProjectEditActionListener projectEditActionListener;
 
+    private ActionFragment issueAddFormFragment;
+    private IssueAddActionListener issueAddActionListener;
+
     ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager) {
         this.fragmentManager = fragmentManager;
         actionManager = manager;
@@ -35,7 +40,22 @@ public class ProjectMenuActionsProvider
     public boolean add(long id) {
 
         // show add issue fragment
-        return false;
+
+        if (issueAddFormFragment == null) {
+            issueAddFormFragment = IssueAddFormFragment.newInstance();
+        }
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putLong(KEY_PROJECT_ID, id);
+        issueAddFormFragment.setArguments(fragmentArgs);
+        if (issueAddActionListener == null) {
+            issueAddActionListener = new IssueAddActionListener(issueAddFormFragment, actionManager);
+        }
+
+        showFragment(issueAddFormFragment);
+
+        actionManager.registerActionListener(issueAddActionListener);
+
+        return true;
     }
 
     @Override

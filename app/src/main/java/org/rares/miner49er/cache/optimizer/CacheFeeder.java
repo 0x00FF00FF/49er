@@ -147,6 +147,10 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                                         .parallel(4)
                                         .runOn(Schedulers.computation())
                                         .map(issueData -> {
+                                            if (issueData.getOwner() == null) {
+                                                UserData owner = userDataCache.getData(issueData.getOwnerId());
+                                                issueData.setOwner(owner);
+                                            }
                                             synchronized (projectDataCache.getData(issueData.parentId)) {
                                                 ProjectData projectData = projectDataCache.getData(issueData.parentId);
                                                 List<IssueData> idList = projectData.getIssues();
