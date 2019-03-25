@@ -112,7 +112,7 @@ public class IssueEditFormFragment extends IssueActionFragment {
             return false;
         }
 
-        final String snackbarText = String.format(successfulAdd, issueNameEditText.getEditableText().toString());
+        final String snackbarText = String.format(successfulSave, issueNameEditText.getEditableText().toString());
         Snackbar snackbar = Snackbar.make(contentContainer, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
         View snackbarView = snackbar.getView();

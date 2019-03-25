@@ -1,19 +1,55 @@
 package org.rares.miner49er.domain.entries.ui.control;
 
+import android.os.Bundle;
+import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.entries.ui.actions.edit.TimeEntryEditActionListener;
+import org.rares.miner49er.domain.entries.ui.actions.edit.TimeEntryEditFormFragment;
+import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 
+import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_TIME_ENTRY_ID;
+
 public class TimeEntryMenuActionsProvider implements GenericMenuActions {
+
+    private static final String TAG = TimeEntryMenuActionsProvider.class.getSimpleName();
+    private FragmentManager fragmentManager;
+    private ActionListenerManager actionManager;
+
+    private ActionFragment timeEntryEditFormFragment;
+    private TimeEntryEditActionListener timeEntryEditActionListener;
+
+    public TimeEntryMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager actionManager) {
+        this.fragmentManager = fragmentManager;
+        this.actionManager = actionManager;
+    }
+
     @Override
     public boolean add(long id) {
-
-        // show add issue fragment
+        // nothing to add here
         return false;
     }
 
     @Override
     public boolean edit(long id) {
-        return false;
+        // show edit time entry fragment
+        if (timeEntryEditFormFragment == null) {
+            timeEntryEditFormFragment = TimeEntryEditFormFragment.newInstance();
+        }
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putLong(KEY_TIME_ENTRY_ID, id);
+        timeEntryEditFormFragment.setArguments(fragmentArgs);
+
+        if (timeEntryEditActionListener == null) {
+            timeEntryEditActionListener = new TimeEntryEditActionListener(timeEntryEditFormFragment, actionManager);
+        }
+
+        showFragment(timeEntryEditFormFragment);
+
+        actionManager.registerActionListener(timeEntryEditActionListener);
+
+        return true;
     }
 
     @Override
@@ -48,5 +84,20 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
             // show add user fragment
         }
         return false;
+    }
+
+    private void showFragment(ActionFragment fragment) {
+        String tag = fragment.getActionTag();
+        if (fragmentManager.findFragmentByTag(tag) == null) {
+
+            fragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.item_animation_from_left, R.anim.item_animation_to_left)
+                    .replace(R.id.main_container, fragment, tag)
+                    .addToBackStack(tag)
+                    .show(fragment)
+                    .commit();
+        }
     }
 }

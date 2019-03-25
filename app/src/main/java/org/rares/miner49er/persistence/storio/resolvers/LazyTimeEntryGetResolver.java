@@ -67,6 +67,11 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
                 .executeAsBlocking();
     }
 
+    public TimeEntry getMatching(StorIOSQLite storIOSQLite, long issueId, long date) {
+        return _getMatching(storIOSQLite, issueId, date)
+                .executeAsBlocking();
+    }
+
     ////
 
     public Single<Optional<TimeEntry>> getByIdAsync(StorIOSQLite storIOSQLite, long id) {
@@ -86,6 +91,11 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
 
     public Single<List<TimeEntry>> getAllAsync(StorIOSQLite storIOSQLite, long issueId) {
         return _getAll(storIOSQLite, issueId)
+                .asRxSingle();
+    }
+
+    public Single<Optional<TimeEntry>> getMatchingAsync(StorIOSQLite storIOSQLite, long issueId, long date) {
+        return _getMatching(storIOSQLite, issueId, date)
                 .asRxSingle();
     }
 
@@ -141,6 +151,21 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
                                 .where(TimeEntryTable.ISSUE_ID_COLUMN + " = ? ")
                                 .whereArgs(issueId)
                                 .build())
+                .withGetResolver(getInstance())
+                .prepare();
+    }
+
+    private PreparedGetObject<TimeEntry> _getMatching(StorIOSQLite storIOSQLite, long issueId, long date) {
+        return storIOSQLite
+                .get()
+                .object(TimeEntry.class)
+                .withQuery(
+                        Query.builder()
+                                .table(TimeEntryTable.NAME)
+                                .where(TimeEntryTable.ISSUE_ID_COLUMN + "=? AND " + TimeEntryTable.WORK_DATE_COLUMN + "=?")
+                                .whereArgs(issueId, date)
+                                .build()
+                )
                 .withGetResolver(getInstance())
                 .prepare();
     }

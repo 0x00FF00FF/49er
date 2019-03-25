@@ -19,6 +19,7 @@ import org.rares.miner49er.persistence.storio.resolvers.LazyTimeEntryGetResolver
 import org.rares.miner49er.persistence.storio.resolvers.TimeEntryStorIOSQLiteGetResolver;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 
+import java.util.Collections;
 import java.util.List;
 
 public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
@@ -47,7 +48,11 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
 
     @Override
     public Single<List<TimeEntryData>> getMatching(String term, boolean lazy) {
-        return null;
+        String data[] = term.split(" ");
+        return lazyResolver.getMatchingAsync(storio, Long.parseLong(data[0]), Long.parseLong(data[1])).map(
+                opt -> opt.isPresent() ?
+                        Collections.singletonList(daoConverter.dmToVm(opt.get())) :
+                        Collections.emptyList());
     }
 
     @Override
@@ -56,9 +61,9 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
                 lazyResolver.getByIdAsync(storio, id) :
                 eagerResolver.getByIdAsync(storio, id))
                 .subscribeOn(Schedulers.io())
-                .map(projectOptional ->
-                        projectOptional.isPresent() ?
-                                Optional.of(daoConverter.dmToVm(projectOptional.get())) :
+                .map(opt ->
+                        opt.isPresent() ?
+                                Optional.of(daoConverter.dmToVm(opt.get())) :
                                 Optional.of(null));
     }
 

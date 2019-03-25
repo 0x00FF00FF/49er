@@ -3,6 +3,8 @@ package org.rares.miner49er.domain.issues.ui.control;
 import android.os.Bundle;
 import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.entries.ui.actions.add.TimeEntryAddActionListener;
+import org.rares.miner49er.domain.entries.ui.actions.add.TimeEntryAddFormFragment;
 import org.rares.miner49er.domain.issues.ui.actions.edit.IssueEditActionListener;
 import org.rares.miner49er.domain.issues.ui.actions.edit.IssueEditFormFragment;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
@@ -20,6 +22,9 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
     private ActionFragment issueEditFormFragment;
     private IssueEditActionListener issueEditActionListener;
 
+    private ActionFragment timeEntryAddFormFragment;
+    private TimeEntryAddActionListener timeEntryAddActionListener;
+
     public IssueMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager actionManager) {
         this.fragmentManager = fragmentManager;
         this.actionManager = actionManager;
@@ -27,9 +32,23 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean add(long id) {
-
         // show add time entry fragment
-        return false;
+        if (timeEntryAddFormFragment == null) {
+            timeEntryAddFormFragment = new TimeEntryAddFormFragment();
+        }
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putLong(KEY_ISSUE_ID, id);
+        timeEntryAddFormFragment.setArguments(fragmentArgs);
+
+        if (timeEntryAddActionListener == null) {
+            timeEntryAddActionListener = new TimeEntryAddActionListener(timeEntryAddFormFragment, actionManager);
+        }
+
+        showFragment(timeEntryAddFormFragment);
+
+        actionManager.registerActionListener(timeEntryAddActionListener);
+
+        return true;
     }
 
     @Override

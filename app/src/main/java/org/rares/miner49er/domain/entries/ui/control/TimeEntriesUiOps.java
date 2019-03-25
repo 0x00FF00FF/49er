@@ -1,15 +1,19 @@
 package org.rares.miner49er.domain.entries.ui.control;
 
 import android.util.Log;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
+import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
+import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 
 /**
  * @author rares
@@ -24,6 +28,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     private TimeEntriesRepository teRepository = new TimeEntriesRepository();
 
+    private ToolbarActionManager toolbarManager = null;
+
+    private TimeEntryMenuActionsProvider menuActionsProvider;
+
     public TimeEntriesUiOps(RecyclerView rv) {
         teRepository.setup();
         repository = teRepository;
@@ -36,6 +44,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         TimeEntriesAdapter adapter = (TimeEntriesAdapter) getRv().getAdapter();
         String text = adapter.getData(getRv().getChildAdapterPosition(holder.itemView));
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + text);
+        menuActionsProvider.edit(holder.getItemProperties().getId());
         return true;
     }
 
@@ -53,9 +62,25 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     @Override
     protected void configureMenuActionsProvider(FragmentManager fm) {
-
+        if (toolbarManager == null) {
+            provideToolbarActionManager();
+        }
+        if (menuActionsProvider == null) {
+            menuActionsProvider = new TimeEntryMenuActionsProvider(fragmentManager, toolbarManager);
+        }
     }
 
+    private void provideToolbarActionManager() {
+        // TODO: 12/4/18 have the toolbar supplied, do not "grab"
+        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+
+        if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
+            toolbarManager = new ToolbarActionManager(t);
+            t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
+        } else {
+            toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
+        }
+    }
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
 

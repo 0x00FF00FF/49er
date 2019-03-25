@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -62,6 +63,11 @@ public abstract class IssueActionFragment extends ActionFragment {
 
     protected Unbinder unbinder;
     protected CompositeDisposable disposable = new CompositeDisposable();
+
+    @BindString(R.string.success_issue_add)
+    protected String successfulAdd;
+    @BindString(R.string.success_issue_save)
+    protected String successfulSave;
 
     protected View createView(LayoutInflater inflater, ViewGroup container) {
         rootView = (ScrollView) inflater.inflate(R.layout.fragment_issue_edit, container, false);

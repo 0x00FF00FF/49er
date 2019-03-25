@@ -3,15 +3,15 @@
      android:duration="@integer/anim_duration_medium">
 
     <translate
+            android:fromXDelta="0"
+            android:toXDelta="30%"
             android:interpolator="@android:anim/decelerate_interpolator"
-            android:fromXDelta="100%p"
-            android:toXDelta="0"
     />
 
     <alpha
-            android:fromAlpha="0.5"
-            android:toAlpha="1"
-            android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+            android:fromAlpha="1"
+            android:toAlpha="0"
+            android:interpolator="@android:anim/decelerate_interpolator"
     />
 
 </set>

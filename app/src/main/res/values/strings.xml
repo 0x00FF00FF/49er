@@ -80,12 +80,36 @@
     <string name="hint_issue_owner">Issue owner</string>
     <string name="helper_issue_owner">Set the issue owner.</string>
 
-    <string name="hint_date_added">Date added</string>
-    <string name="helper_date_added">Shows the date when this item was created.</string>
-
     <string name="success_issue_add">The %s issue has been successfully created.</string>
     <string name="success_issue_save">The %s issue has been saved.</string>
 
+    <!--time entry form-->
+    <string name="time_entry_form_header_add">Adding a time entry</string>
+    <string name="time_entry_form_header_edit">Editing a time entry</string>
+
+    <string name="hint_time_entry_issue_name">Issue name</string>
+    <string name="helper_time_entry_issue_name">The issue name.</string>
+
+    <string name="hint_time_entry_owner">Time entry owner</string>
+    <string name="helper_time_entry_owner">Set the time entry owner.</string>
+
+    <string name="hint_time_entry_work_date">Time entry work date</string>
+    <string name="helper_time_entry_work_date">Set the date for this time entry.</string>
+
+    <string name="hint_time_entry_hours">Hours worked</string>
+    <string name="helper_time_entry_hours">Set the number of hours worked.</string>
+
+    <string name="hint_time_entry_comments">Comments</string>
+    <string name="helper_time_entry_comments">Add comments to this time entry.</string>
+
+    <string name="success_time_entry_add">The time entry has been successfully created.</string>
+    <string name="success_time_entry_save">The time entry has been saved.</string>
+
+    <string name="error_time_entry_already_exists">An entry for this date already exists.</string>
+
+
+    <string name="hint_date_added">Date added</string>
+    <string name="helper_date_added">Shows the date when this item was created.</string>
 
     <string name="helper_required">Fields marked with * are required.</string>
 

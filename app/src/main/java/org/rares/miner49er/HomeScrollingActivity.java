@@ -260,6 +260,7 @@ public class HomeScrollingActivity
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
         timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
+        timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);

@@ -59,6 +59,7 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
         String entryDate = dateTime.toString(pattern);
 
         day.setText(entryDate);
+        getItemProperties().setId(entryData.id);
     }
 
 }
