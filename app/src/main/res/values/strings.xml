@@ -93,10 +93,10 @@
     <string name="hint_time_entry_owner">Time entry owner</string>
     <string name="helper_time_entry_owner">Set the time entry owner.</string>
 
-    <string name="hint_time_entry_work_date">Time entry work date</string>
+    <string name="hint_time_entry_work_date">Time entry work date *</string>
     <string name="helper_time_entry_work_date">Set the date for this time entry.</string>
 
-    <string name="hint_time_entry_hours">Hours worked</string>
+    <string name="hint_time_entry_hours">Hours worked *</string>
     <string name="helper_time_entry_hours">Set the number of hours worked.</string>
 
     <string name="hint_time_entry_comments">Comments</string>
@@ -105,7 +105,8 @@
     <string name="success_time_entry_add">The time entry has been successfully created.</string>
     <string name="success_time_entry_save">The time entry has been saved.</string>
 
-    <string name="error_time_entry_already_exists">An entry for this date already exists.</string>
+    <string name="error_time_entry_too_many_hours">You cannot enter more than %s hours a day.</string>
+    <string name="error_time_entry_hours">You can only enter a number between %s and %s.</string>
 
 
     <string name="hint_date_added">Date added</string>
@@ -120,4 +121,6 @@
     <string name="error_name_unavailable">This name is unavailable.</string>
 
     <string name="entry_removed">The entry has been removed.</string>
+    <string name="err_entry_not_removed">The entry has not been removed.</string>
+    <string name="err_operation_not_completed">The operation could not be completed.</string>
 </resources>

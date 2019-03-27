@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.ui.actions.IssueActionFragment;
@@ -43,9 +44,6 @@ public class IssueAddFormFragment extends IssueActionFragment {
 
     @Override
     public void onStart() {
-        projectData = null;
-        issueData = null;
-        userData = null;
         super.onStart();
         Bundle args = getArguments();
         if (args != null) {
@@ -86,7 +84,7 @@ public class IssueAddFormFragment extends IssueActionFragment {
                     .validate(IssueData::getName, n -> !n.contains("#"), issueNameInputLayout, errCharacters)
                     .validate(IssueData::getName, n -> {
                         List<? extends AbstractViewModel> entities =
-                                issuesDAO.getMatching(n, true).blockingGet();
+                                issuesDAO.getMatching(n, Optional.of(issueData.parentId), true).blockingGet();
                         return (entities == null || entities.isEmpty());
                     }, issueNameInputLayout, errExists)
                     .get();
@@ -107,6 +105,8 @@ public class IssueAddFormFragment extends IssueActionFragment {
 
     private boolean addIssue() {
         issueData.id = issuesDAO.insert(issueData).blockingGet();
+        IssueData toDelete = issueData.clone();
+        issueData = new IssueData();
 
         final String snackbarText = String.format(successfulAdd, issueNameEditText.getEditableText().toString());
         Snackbar snackbar = Snackbar.make(contentContainer, snackbarText, Snackbar.LENGTH_LONG);
@@ -119,10 +119,11 @@ public class IssueAddFormFragment extends IssueActionFragment {
         textView.setTextColor(snackbarTextColor);
 
         snackbar.setAction(R.string.action_undo, v -> {
-            issuesDAO.delete(issueData);
+            final boolean deleted = issuesDAO.delete(toDelete).blockingGet();
             snackbar.dismiss();
             snackbarView.postDelayed(() -> {
-                snackbar.setText(entryRemoved);
+                snackbar.setText(deleted ? entryRemoved : errNotRemoved);
+                textView.setTextColor(deleted ? snackbarTextColor : errorTextColor);
                 snackbar.setAction(R.string.action_dismiss, d -> snackbar.dismiss());
                 snackbar.show();
             }, 500);
@@ -131,5 +132,11 @@ public class IssueAddFormFragment extends IssueActionFragment {
         resetFields();
         snackbar.show();
         return true;
+    }
+
+    @Override
+    protected void updateIssueData() {
+        super.updateIssueData();
+        issueData.id = null;
     }
 }

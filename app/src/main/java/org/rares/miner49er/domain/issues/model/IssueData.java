@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.issues.model;
 
+import android.util.Log;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,10 +19,10 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class IssueData extends AbstractViewModel {
+public class IssueData extends AbstractViewModel implements Cloneable {
 
-    //    private long id;
-//    private Long projectId;
+    private static final String TAG = IssueData.class.getSimpleName();
+
     private String name;
     private UserData owner;
     private long ownerId;
@@ -30,12 +31,6 @@ public class IssueData extends AbstractViewModel {
     private List<TimeEntryData> timeEntries;
     private int color;
 
-    //    List<User> assignedUsers;
-/*
-    public String toString() {
-        return name;// + " [" + id +"]";
-    }
-*/
     public boolean compareContents(IssueData other) {
         return
                 parentId.equals(other.getParentId()) &&
@@ -58,5 +53,18 @@ public class IssueData extends AbstractViewModel {
         color = newData.color;
         owner = newData.owner;
         ownerId = newData.ownerId;
+    }
+
+    public IssueData clone()  {
+        // shallow copy should be enough
+        // if not, use update data
+        try {
+            return (IssueData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            Log.e(TAG, "clone: operation not supported.", e);
+        }
+        IssueData issueData = new IssueData();
+        issueData.updateData(this);
+        return issueData;
     }
 }

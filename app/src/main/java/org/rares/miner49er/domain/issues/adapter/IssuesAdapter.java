@@ -141,7 +141,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
                 if (position == sp) {
                     if (payload instanceof Bundle) {
                         Bundle p = (Bundle) payload;
-                        int id = p.getInt("id");
+                        long id = p.getLong("id");
                         int color = p.getInt("Color", 0);
                         Log.d(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
                         if (color != 0) {
@@ -161,6 +161,10 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     @Override
     public void accept(List list) throws Exception {
 //        Log.d(TAG, "accept() called with: list = [" + list + "]");
+//        for (int i = 0; i < list.size(); i++) {
+//            IssueData issueData = (IssueData) list.get(i);
+//            Log.d(TAG, "accept: " + issueData.getName());
+//        }
         updateData(list);
     }
 }

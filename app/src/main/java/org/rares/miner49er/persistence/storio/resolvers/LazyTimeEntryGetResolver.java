@@ -67,8 +67,8 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
                 .executeAsBlocking();
     }
 
-    public TimeEntry getMatching(StorIOSQLite storIOSQLite, long issueId, long date) {
-        return _getMatching(storIOSQLite, issueId, date)
+    public List<TimeEntry> getMatching(StorIOSQLite storIOSQLite, long issueId, long userId, long startDate, long endDate) {
+        return _getMatching(storIOSQLite, issueId, userId, startDate, endDate)
                 .executeAsBlocking();
     }
 
@@ -94,8 +94,9 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
                 .asRxSingle();
     }
 
-    public Single<Optional<TimeEntry>> getMatchingAsync(StorIOSQLite storIOSQLite, long issueId, long date) {
-        return _getMatching(storIOSQLite, issueId, date)
+    public Single<List<TimeEntry>> getMatchingAsync(
+            StorIOSQLite storIOSQLite, long issueId, long userId, long startDate, long endDate) {
+        return _getMatching(storIOSQLite, issueId, userId, startDate, endDate)
                 .asRxSingle();
     }
 
@@ -155,17 +156,34 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
                 .prepare();
     }
 
-    private PreparedGetObject<TimeEntry> _getMatching(StorIOSQLite storIOSQLite, long issueId, long date) {
+    private PreparedGetListOfObjects<TimeEntry> _getMatching(StorIOSQLite storIOSQLite, long issueId, long userId, long startDate, long endDate) {
+        Query query = Query.builder()
+                .table(TimeEntryTable.NAME)
+                .build();
+        if (issueId != -1) {
+            query = Query.builder()
+                    .table(TimeEntryTable.NAME)
+                    .where(String.format("%s=? AND %s=? AND %s BETWEEN ? AND ?",
+                            TimeEntryTable.ISSUE_ID_COLUMN,
+                            TimeEntryTable.USER_ID_COLUMN,
+                            TimeEntryTable.WORK_DATE_COLUMN))
+                    .whereArgs(issueId, userId, startDate, endDate)
+                    .build();
+        } else {
+            if (userId != -1) {
+                query = Query.builder()
+                        .table(TimeEntryTable.NAME)
+                        .where(String.format("%s=? AND %s BETWEEN ? AND ?",
+                                TimeEntryTable.USER_ID_COLUMN,
+                                TimeEntryTable.WORK_DATE_COLUMN))
+                        .whereArgs(userId, startDate, endDate)
+                        .build();
+            }
+        }
         return storIOSQLite
                 .get()
-                .object(TimeEntry.class)
-                .withQuery(
-                        Query.builder()
-                                .table(TimeEntryTable.NAME)
-                                .where(TimeEntryTable.ISSUE_ID_COLUMN + "=? AND " + TimeEntryTable.WORK_DATE_COLUMN + "=?")
-                                .whereArgs(issueId, date)
-                                .build()
-                )
+                .listOfObjects(TimeEntry.class)
+                .withQuery(query)
                 .withGetResolver(getInstance())
                 .prepare();
     }

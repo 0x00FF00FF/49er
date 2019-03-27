@@ -48,8 +48,7 @@ public class AsyncIssueDataCacheAdapter
     @Override
     public Single<List<IssueData>> getAll(long parentId, boolean lazy) {
         SingleSubject<List<IssueData>> singleSubject = SingleSubject.create();
-        final ProjectData parentProject = projectDataCache.getData(parentId);
-        final List<IssueData> cachedIssues = parentProject.getIssues();
+        final List<IssueData> cachedIssues = issueDataCache.getData(Optional.of(parentId));
         if (cachedIssues != null) {
             return Single.just(cachedIssues);
         } else {
@@ -70,8 +69,8 @@ public class AsyncIssueDataCacheAdapter
     }
 
     @Override
-    public Single<List<IssueData>> getMatching(String term, boolean lazy) {
-        return dao.getMatching(term, lazy);
+    public Single<List<IssueData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        return dao.getMatching(term, parentId, lazy);
     }
 
     @Override

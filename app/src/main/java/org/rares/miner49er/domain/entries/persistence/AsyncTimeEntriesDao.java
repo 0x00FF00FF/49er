@@ -47,11 +47,15 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
     }
 
     @Override
-    public Single<List<TimeEntryData>> getMatching(String term, boolean lazy) {
-        String data[] = term.split(" ");
-        return lazyResolver.getMatchingAsync(storio, Long.parseLong(data[0]), Long.parseLong(data[1])).map(
-                opt -> opt.isPresent() ?
-                        Collections.singletonList(daoConverter.dmToVm(opt.get())) :
+    public Single<List<TimeEntryData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        String[] data = term.split(" ");
+        long startDate = Long.parseLong(data[0]);
+        long endDate = Long.parseLong(data[1]);
+        long userId = Long.parseLong(data[2]);
+        long issueId = parentId.isPresent() ? parentId.get() : -1;
+        return lazyResolver.getMatchingAsync(storio, issueId, userId, startDate, endDate).map(
+                list -> list != null ?
+                        daoConverter.dmToVm(list) :
                         Collections.emptyList());
     }
 
@@ -100,7 +104,7 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io())
-                .map(dr -> dr.numberOfRowsDeleted() != 0);
+                .map(dr -> dr.numberOfRowsDeleted() > 0);
     }
 
     private AsyncTimeEntriesDao() {

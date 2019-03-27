@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.users.model;
 
+import android.util.Log;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,10 +14,9 @@ import org.rares.miner49er.persistence.dao.AbstractViewModel;
 @Getter
 @Setter
 @ToString
-public class UserData extends AbstractViewModel {
+public class UserData extends AbstractViewModel implements Cloneable {
 
-    //    private long id;
-//    private long lastUpdated;
+private static final String TAG = UserData.class.getSimpleName();
     private int role;
     private String name;
     private String email;
@@ -40,5 +40,16 @@ public class UserData extends AbstractViewModel {
         email = newUserData.email;
         picture = newUserData.picture;
         apiKey = newUserData.apiKey;
+    }
+
+    public UserData clone() {
+        try {
+            return (UserData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            Log.e(TAG, "clone: operation not supported.", e);
+        }
+        UserData clone = new UserData();
+        clone.updateData(this);
+        return clone;
     }
 }

@@ -29,6 +29,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     @BindView(R.id.content_container)
     protected ConstraintLayout container;
 
+
+    @BindView(R.id.project_name_input_layout)
+    protected TextInputLayout projectNameInputLayout;
     @BindView(R.id.issue_name_input_layout)
     protected TextInputLayout issueNameInputLayout;
     @BindView(R.id.owner_input_layout)
@@ -42,6 +45,8 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     @BindView(R.id.date_added_input_layout)
     protected TextInputLayout dateAddedInputLayout;
 
+    @BindView(R.id.project_name_edit_text)
+    protected TextInputEditText projectNameEditText;
     @BindView(R.id.issue_name_edit_text)
     protected TextInputEditText issueNameEditText;
     @BindView(R.id.owner_edit_text)
@@ -64,8 +69,10 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     protected String successfulAdd;
     @BindString(R.string.success_time_entry_save)
     protected String successfulSave;
-    @BindString(R.string.error_time_entry_already_exists)
-    protected String errTimeEntryExists;
+    @BindString(R.string.error_time_entry_too_many_hours)
+    protected String errTimeEntryTooManyHours;
+    @BindString(R.string.error_time_entry_hours)
+    protected String errTimeEntryIncorrectHours;
 
     protected AsyncGenericDao<ProjectData> projectsDAO;
     protected AsyncGenericDao<IssueData> issuesDAO;
@@ -76,6 +83,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     protected IssueData issueData = null;
     protected UserData userData = null;
     protected ProjectData projectData = null;
+
+    protected final int maxHours = 16;
+    protected final int minHours = 1;
 
     protected View createView(LayoutInflater inflater, ViewGroup container) {
 
@@ -156,9 +166,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
 
     @OnClick(R.id.btn_cancel)
     public void cancelAction() {
-        issueData = null;
+/*        issueData = null;
         timeEntryData = null;
-        userData = null;
+        userData = null;*/
         resetFields();
         prepareExit();
     }

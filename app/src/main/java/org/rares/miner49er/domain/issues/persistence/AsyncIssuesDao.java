@@ -56,10 +56,11 @@ public class AsyncIssuesDao implements AsyncGenericDao<IssueData> {
     }
 
     @Override
-    public Single<List<IssueData>> getMatching(String term, boolean lazy) {
+    public Single<List<IssueData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        long id = parentId.isPresent() ? parentId.get() : -1;
         return (lazy ?
-                lazyResolver.getMatchingNameAsync(storio, term) :
-                eagerResolver.getMatchingNameAsync(storio, term))
+                lazyResolver.getMatchingNameAsync(storio, term, id) :
+                eagerResolver.getMatchingNameAsync(storio, term, id))
                 .subscribeOn(Schedulers.io())
                 .map(list -> daoConverter.dmToVm(list));
     }
@@ -107,7 +108,7 @@ public class AsyncIssuesDao implements AsyncGenericDao<IssueData> {
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io())
-                .map(dr -> dr.numberOfRowsDeleted() == 0);
+                .map(dr -> dr.numberOfRowsDeleted() > 0);
     }
 
     private AsyncIssuesDao() {

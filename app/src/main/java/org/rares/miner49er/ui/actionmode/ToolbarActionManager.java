@@ -13,7 +13,6 @@ import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.internal.view.SupportMenuItem;
-import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.custom.spannable.CenteredImageSpan;
 
@@ -49,8 +48,8 @@ public class ToolbarActionManager
         toolbar.setOnMenuItemClickListener(this);
     }
 
-    @Setter
-    private long entityId;
+//    @Setter
+//    private long entityId;
 
     /**
      * Adds the listener to the action stack, if necessary.
@@ -223,6 +222,7 @@ public class ToolbarActionManager
     }
 
     private void configureNextListener() {
+        Log.i(TAG, "configureNextListener: title : " + config.title + " " + config.titleRes);
         MenuActionListener listener;
         if (!actionListenerStack.isEmpty()) {
             listener = actionListenerStack.peek();
@@ -322,6 +322,8 @@ public class ToolbarActionManager
          * if !0 is set after the string version
          */
         public int subtitleRes = 0;
+
+        public long entityId = -1;
     }
 
     private void configureGenericMenu() {
@@ -456,8 +458,9 @@ public class ToolbarActionManager
 
         GenericMenuActions getMenuActionsProvider();
 
+        long getMenuActionEntityId();
+        void setMenuActionEntityId(long entityId);
     }
-
 
 
     @Override
@@ -465,7 +468,8 @@ public class ToolbarActionManager
         ensureStackNotEmpty();
 
         int itemId = item.getItemId();
-        GenericMenuActions listener = actionListenerStack.peek().getMenuActionsProvider();
+        MenuActionListener menuActionListener = actionListenerStack.peek();
+        GenericMenuActions listener = menuActionListener.getMenuActionsProvider();
 
         if (listener == null) {
             return true;
@@ -474,24 +478,24 @@ public class ToolbarActionManager
         switch (itemId) {
             // generic list (applicable to any selected domain):
             case R.id.action_add:
-                return listener.add(entityId);
+                return listener.add(menuActionListener.getMenuActionEntityId());
             case R.id.action_remove:
-                return listener.remove(entityId);
+                return listener.remove(menuActionListener.getMenuActionEntityId());
             case R.id.action_details:
-                return listener.details(entityId);
+                return listener.details(menuActionListener.getMenuActionEntityId());
             case R.id.action_edit:
-                return listener.edit(entityId);
+                return listener.edit(menuActionListener.getMenuActionEntityId());
             case R.id.action_favorite:
-                return listener.favorite(entityId);
+                return listener.favorite(menuActionListener.getMenuActionEntityId());
             case R.id.action_search:
-                return listener.search(entityId);
+                return listener.search(menuActionListener.getMenuActionEntityId());
             case R.id.action_filter:
-                return listener.filter(entityId);
+                return listener.filter(menuActionListener.getMenuActionEntityId());
             // the menu that appears on the projects list:
             case R.id.action_add_project:
             case R.id.action_settings:
             default: {
-                return listener.menuAction(itemId, entityId);
+                return listener.menuAction(itemId, menuActionListener.getMenuActionEntityId());
             }
         }
     }

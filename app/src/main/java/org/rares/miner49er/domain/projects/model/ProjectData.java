@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.projects.model;
 
+import android.util.Log;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,9 +19,9 @@ import java.util.List;
 @ToString
 @Getter
 @Setter
-public class ProjectData extends AbstractViewModel {
+public class ProjectData extends AbstractViewModel implements Cloneable {
 
-    public final String TAG = ProjectData.class.getSimpleName();
+    private final String TAG = ProjectData.class.getSimpleName();
 
 //    private long id;
 
@@ -63,5 +64,16 @@ public class ProjectData extends AbstractViewModel {
         parentId = projectData.parentId;
         id = projectData.id;
         lastUpdated = projectData.lastUpdated;
+    }
+
+    public ProjectData clone() {
+        try {
+            return (ProjectData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            Log.e(TAG, "clone: operation not supported.", e);
+        }
+        ProjectData clone = new ProjectData();
+        clone.updateData(this);
+        return  clone;
     }
 }

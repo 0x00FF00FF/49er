@@ -116,9 +116,9 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
 
         updateProjectData();
 
-        projectsDAO.update(projectData);
+        boolean updated = projectsDAO.update(projectData).blockingGet();
 
-        final String snackbarText = String.format(successfulUpdate, editTextProjectName.getEditableText().toString());
+        final String snackbarText = String.format(updated ? successfulUpdate : errNotCompleted, editTextProjectName.getEditableText().toString());
 
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
@@ -139,11 +139,12 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     }
 
     private void populateFields(long projectId) {
+        Log.d(TAG, "populateFields() called with: projectId = [" + projectId + "]");
         if (projectId <= 0) {
             return;
         }
 
-        projectData = projectsDAO.get(projectId, false).blockingGet().get();        ////
+        projectData = projectsDAO.get(projectId, true).blockingGet().get();        ////
 
         clearErrors();
         editTextProjectName.setText(projectData.getName());

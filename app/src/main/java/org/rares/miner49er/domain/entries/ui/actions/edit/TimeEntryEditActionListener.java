@@ -8,6 +8,7 @@ import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
 
 public class TimeEntryEditActionListener implements
         ToolbarActionManager.MenuActionListener,
@@ -31,7 +32,7 @@ public class TimeEntryEditActionListener implements
 
     @Override
     public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
-        addActionListener.configureCustomActionMenu(config);
+        MenuActionListener.super.configureCustomActionMenu(config);
         config.titleRes = R.string.time_entry_form_header_edit;
     }
 
@@ -43,5 +44,15 @@ public class TimeEntryEditActionListener implements
     @Override
     public void onFragmentDismiss() {
         actionManager.unregisterActionListener(this);
+    }
+
+    @Override
+    public long getMenuActionEntityId() {
+        return addActionListener.getMenuActionEntityId();
+    }
+
+    @Override
+    public void setMenuActionEntityId(long entityId) {
+        addActionListener.setMenuActionEntityId(entityId);
     }
 }

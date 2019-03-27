@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
+import lombok.Getter;
+import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -41,6 +43,10 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     // this component always requires action mode
     private final boolean requiresActionMode = true;
 
+    @Getter @Setter
+    private long menuActionEntityId;
+
+
     public IssuesUiOps(RecyclerView rv) {
         setRv(rv);
         issuesRepository.setup();
@@ -59,7 +65,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
         } else {
-            toolbarManager.setEntityId(holder.getItemProperties().getId());
+            menuActionEntityId = holder.getItemProperties().getId();
             toolbarManager.registerActionListener(this);
         }
 
@@ -85,6 +91,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 //            config.subtitle = holder.getInfoLabelString();
             config.subtitle = holder.getLongTitle();
             config.subtitleRes = 0;
+            config.titleRes = 0;
         }
 
         config.requireActionMode = requiresActionMode;

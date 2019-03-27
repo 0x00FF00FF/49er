@@ -17,7 +17,7 @@
 
     <color name="transient_semitransparent_background_margin">@color/indigo_100_blacked</color>
 
-    <color name="error_color">@color/pink.A400</color>
+    <color name="error_color">@color/projects.default.ee5133</color>
     <color name="hint_color_active">@color/indigo.A100</color>
     <color name="hint_color_inactive">@color/indigo.200</color>
 

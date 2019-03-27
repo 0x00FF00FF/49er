@@ -141,7 +141,7 @@ public abstract class ProjectActionFragment extends ActionFragment {
 
     @OnClick(R.id.btn_cancel_add_project)
     public void cancelAction() {
-        projectData = null;
+        /*projectData = null;*/
         resetFields();
         prepareExit();
     }

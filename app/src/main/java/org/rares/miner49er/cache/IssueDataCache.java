@@ -92,7 +92,16 @@ public class IssueDataCache implements Cache<IssueData> {
             ProjectData projectData = projectsCache.get(parentId.get());
             if (projectData != null) {
                 List<IssueData> issues = projectData.getIssues();
-                return issues == null ? Collections.emptyList() : issues;
+                if (issues == null) {
+                    return Collections.emptyList();
+                }
+                Collections.sort(issues, (id1, id2) -> id1.id.compareTo(id2.id));
+                Collections.reverse(issues);
+//                for (int i = 0; i < issues.size(); i++) {
+//                    IssueData issueData = issues.get(i);
+//                    Log.i(IssueDataCache.class.getSimpleName(), "getData: " + issueData.getName() + " " + issueData.id);
+//                }
+                return issues;
             }
         }
         return new ArrayList<>(issuesCache.snapshot().values());

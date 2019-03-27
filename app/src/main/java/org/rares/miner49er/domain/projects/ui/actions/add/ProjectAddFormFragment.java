@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
@@ -79,7 +80,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
                     .validate(ProjectData::getName, p -> !p.contains("#"), inputLayoutProjectName, errCharacters)
                     .validate(ProjectData::getName, name -> {
                         List<? extends AbstractViewModel> entities =
-                                projectsDAO.getMatching(name, true).blockingGet();
+                                projectsDAO.getMatching(name, Optional.of(null), true).blockingGet();
                         return (entities == null || entities.isEmpty());
                     }, inputLayoutProjectName, errExists)
                     .validate(ProjectData::getOwner, o -> o != null, inputLayoutProjectOwner, errRequired)
@@ -108,6 +109,11 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
 
         projectData.setId(projectDataId);
 
+        final ProjectData toDelete = new ProjectData();
+        toDelete.updateData(projectData);
+
+        projectData = new ProjectData();
+
         final String snackbarText = String.format(successfulAdd, editTextProjectName.getEditableText().toString());
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
@@ -119,13 +125,20 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         textView.setTextColor(snackbarTextColor);
 
         snackbar.setAction(R.string.action_undo, v -> {
-            projectsDAO.delete(projectData);
+            projectsDAO.delete(toDelete);
             snackbar.dismiss();
-            snackbarView.postDelayed(() -> {
-                snackbar.setText(entryRemoved);
+            snackbarView.postDelayed(() -> {                                    /////////
+                boolean deleted = projectsDAO.delete(toDelete).blockingGet();   //////
+                if (deleted) {
+                    snackbar.setText(entryRemoved);
+                } else {
+                    textView.setTextColor(errorTextColor);
+                    snackbar.setText(errNotRemoved);
+                }
                 snackbar.setAction(R.string.action_dismiss, d -> snackbar.dismiss());
                 snackbar.show();
             }, 500);
+
         });
 
         resetFields();
@@ -163,12 +176,19 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
     @Override
     protected void updateProjectData() {
         super.updateProjectData();
+        projectData.id = null;
 
         if (projectData.getOwner() == null) {
-            projectData.setOwner(usersDAO.get(1, true).blockingGet().get()); //
+            Optional<UserData> opt = usersDAO.get(1, true).blockingGet();
+            UserData userData = null;
+            if (opt.isPresent()) {
+                userData = opt.get();
+            }
+            projectData.setOwner(userData); //
             projectData.parentId = projectData.getOwner().id;
         }
 
+        // add a team by default, to be deleted when a team can be manually added.
         if (projectData.getTeam() == null || projectData.getTeam().size() == 0) {
             List<UserData> users = usersDAO.getAll(true).blockingGet();         //
             List<UserData> team = new ArrayList<>();

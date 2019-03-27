@@ -11,14 +11,17 @@ import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.pushtorefresh.storio3.Optional;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.ui.actions.IssueActionFragment;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.UiUtil;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.rares.miner49er.domain.issues.IssuesInterfaces.KEY_ISSUE_ID;
@@ -71,7 +74,6 @@ public class IssueEditFormFragment extends IssueActionFragment {
     @OnClick(R.id.btn_add_issue)
     public void applyAction() {
         if (validateForm() && saveIssue()) {
-            issueData = null;
             prepareExit();
         }
     }
@@ -88,6 +90,11 @@ public class IssueEditFormFragment extends IssueActionFragment {
             validator
                     .validate(IssueData::getName, n -> !n.isEmpty(), issueNameInputLayout, errRequired)
                     .validate(IssueData::getName, n -> !n.contains("#"), issueNameInputLayout, errCharacters)
+                    .validate(IssueData::getName, n -> {
+                        List<? extends AbstractViewModel> entities =
+                                issuesDAO.getMatching(n, Optional.of(issueData.parentId), true).blockingGet();
+                        return (entities == null || entities.isEmpty());
+                    }, issueNameInputLayout, errExists)
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = contentContainer.getHeight();

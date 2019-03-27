@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -62,6 +63,10 @@ public class ProjectsUiOps
 
     private boolean requireActionMode = false;
 
+    @Getter
+    @Setter
+    private long menuActionEntityId;
+
     public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
         setRv(rv);
@@ -109,7 +114,8 @@ public class ProjectsUiOps
             toolbarManager.unregisterActionListener(this);
         } else {
             requireActionMode = true;
-            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
+            menuActionEntityId = holder.getItemProperties().getId();
+//            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
             toolbarManager.registerActionListener(this);
         }
 

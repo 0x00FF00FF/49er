@@ -1,5 +1,7 @@
 package org.rares.miner49er.domain.issues.ui.actions.add;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.actionmode.ActionEnforcer;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
@@ -18,6 +20,9 @@ public class IssueAddActionListener
 
     private ActionFragment fragment;
     private ActionListenerManager actionManager;
+
+    @Getter @Setter
+    private long menuActionEntityId;
 
     public IssueAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
         this.fragment = fragment;

@@ -13,13 +13,12 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.entries.ui.actions.HoursPerDayValidation;
 import org.rares.miner49er.domain.entries.ui.actions.TimeEntryActionFragment;
-import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.UiUtil;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_TIME_ENTRY_ID;
@@ -89,14 +88,18 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
         FormValidator<TimeEntryData> validator = FormValidator.of(timeEntryData);
         try {
             validator.validate(TimeEntryData::getWorkDate, n -> n != -1, workDateInputLayout, errRequired)
-                    .validate(TimeEntryData::getWorkDate, date -> {
-                        List<? extends AbstractViewModel> entities =
-                                timeEntriesDAO.getMatching(issueData.id + " " + date, true).blockingGet();
-                        return (entities == null || entities.isEmpty());
-                    }, workDateInputLayout, errTimeEntryExists)
+                    .validate(TimeEntryData::getWorkDate,
+                            HoursPerDayValidation.builder()
+                                    .dao(timeEntriesDAO)
+                                    .timeEntryData(timeEntryData)
+                                    .maxHours(maxHours)
+                                    .build()
+                                    .validation(),
+                            hoursWorkedInputLayout, String.format(errTimeEntryTooManyHours, maxHours))
                     .validate(TimeEntryData::getUserId, o -> o != -1, ownerInputLayout, errRequired)
                     .validate(TimeEntryData::getComments, d -> !d.contains("#"), commentsInputLayout, errCharacters)
-                    .validate(TimeEntryData::getHours, d -> d > 0 && d <= 16, hoursWorkedInputLayout, errCharacters)
+                    .validate(TimeEntryData::getHours, d -> d >= minHours && d <= maxHours,
+                            hoursWorkedInputLayout, String.format(errTimeEntryIncorrectHours, minHours, maxHours))
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = container.getHeight();
@@ -150,6 +153,7 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
         userData = projectData.getTeam().get(0);    ///
 
         clearErrors();
+        projectNameEditText.setText(projectData.getName());
         issueNameEditText.setText(issueData.getName());
         commentsEditText.setText(timeEntryData.getComments());
         dateAddedEditText.setText(new DateTime(timeEntryData.getDateAdded()).toString("EE, d MMMM, y"));

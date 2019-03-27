@@ -69,8 +69,8 @@ public class AsyncUserDataCacheAdapter
     }
 
     @Override
-    public Single<List<UserData>> getMatching(String term, boolean lazy) {
-        return dao.getMatching(term, lazy).subscribeOn(Schedulers.io());
+    public Single<List<UserData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        return dao.getMatching(term, parentId, lazy).subscribeOn(Schedulers.io());
     }
 
     @Override

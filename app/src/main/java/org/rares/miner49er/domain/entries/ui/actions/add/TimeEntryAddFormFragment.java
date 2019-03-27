@@ -13,21 +13,21 @@ import com.pushtorefresh.storio3.Optional;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.entries.ui.actions.HoursPerDayValidation;
 import org.rares.miner49er.domain.entries.ui.actions.TimeEntryActionFragment;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
-import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.UiUtil;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_COMMENTS;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_DATE_ADDED;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_HOURS_WORKED;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_ISSUE_NAME;
+import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_PROJECT_NAME;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_WORK_DATE;
 import static org.rares.miner49er.domain.issues.IssuesInterfaces.KEY_ISSUE_ID;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_OWNER_NAME;
@@ -57,11 +57,6 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
     @Override
     public void onStart() {
         super.onStart();
-
-        projectData = null;
-        issueData = null;
-        userData = null;
-        timeEntryData = null;
 
         Bundle args = getArguments();
         if (args != null) {
@@ -101,14 +96,18 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         FormValidator<TimeEntryData> validator = FormValidator.of(timeEntryData);
         try {
             validator.validate(TimeEntryData::getWorkDate, n -> n != -1, workDateInputLayout, errRequired)
-                    .validate(TimeEntryData::getWorkDate, date -> {
-                        List<? extends AbstractViewModel> entities =
-                                timeEntriesDAO.getMatching(issueData.id + " " + date, true).blockingGet();
-                        return (entities == null || entities.isEmpty());
-                    }, workDateInputLayout, errTimeEntryExists)
+                    .validate(TimeEntryData::getWorkDate,
+                            HoursPerDayValidation.builder()
+                                    .dao(timeEntriesDAO)
+                                    .timeEntryData(timeEntryData)
+                                    .maxHours(maxHours)
+                                    .build()
+                                    .validation(),
+                            hoursWorkedInputLayout, String.format(errTimeEntryTooManyHours, maxHours))
                     .validate(TimeEntryData::getUserId, o -> o != -1, ownerInputLayout, errRequired)
                     .validate(TimeEntryData::getComments, d -> !d.contains("#"), commentsInputLayout, errCharacters)
-                    .validate(TimeEntryData::getHours, d -> d > 0 && d <= 16, hoursWorkedInputLayout, errCharacters)
+                    .validate(TimeEntryData::getHours, d -> d >= minHours && d <= maxHours,
+                            hoursWorkedInputLayout, String.format(errTimeEntryIncorrectHours, minHours, maxHours))
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = container.getHeight();
@@ -128,9 +127,11 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
 
     private boolean addTimeEntry() {
 
-        final long timeEntryId = timeEntriesDAO.insert(timeEntryData).blockingGet(); //
+        timeEntryData.id = timeEntriesDAO.insert(timeEntryData).blockingGet(); //
 
-        timeEntryData.setId(timeEntryId);
+        final TimeEntryData toDelete = timeEntryData.clone();
+
+        timeEntryData = new TimeEntryData();
 
         final String snackbarText = successfulAdd;
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
@@ -143,10 +144,11 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         textView.setTextColor(snackbarTextColor);
 
         snackbar.setAction(R.string.action_undo, v -> {
-            timeEntriesDAO.delete(timeEntryData);
+            boolean deleted = timeEntriesDAO.delete(toDelete).blockingGet();        //// blocking IO op on android main thread?
             snackbar.dismiss();
             snackbarView.postDelayed(() -> {
-                snackbar.setText(entryRemoved);
+                snackbar.setText(deleted ? entryRemoved : errNotRemoved);
+                textView.setTextColor(deleted ? snackbarTextColor : errorTextColor);
                 snackbar.setAction(R.string.action_dismiss, d -> snackbar.dismiss());
                 snackbar.show();
             }, 500);
@@ -165,21 +167,29 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         }
         userData = projectData.getTeam().get(0);    ///
 
+        String projectName = bundle.getString(KEY_PROJECT_NAME, projectData.getName());
         String issueName = bundle.getString(KEY_ISSUE_NAME, "");
         String ownerName = bundle.getString(KEY_OWNER_NAME, userData.getName());
-        String workDate = bundle.getString(KEY_WORK_DATE, "");
+        String workDate = bundle.getString(KEY_WORK_DATE, DateTime.now().toString("EE, d MMMM, y"));
         String dateAdded = bundle.getString(KEY_DATE_ADDED, DateTime.now().toString("EE, d MMMM, y"));
         String comments = bundle.getString(KEY_COMMENTS, "");
         String hoursWorked = bundle.getString(KEY_HOURS_WORKED, "");
 
         clearErrors();
 
+        projectNameEditText.setText(projectName);
         issueNameEditText.setText(issueName);
         ownerEditText.setText(ownerName);
         workDateEditText.setText(workDate);
         dateAddedEditText.setText(dateAdded);
         commentsEditText.setText(comments);
         hoursWorkedEditText.setText(hoursWorked);
+    }
+
+    @Override
+    protected void updateData() {
+        super.updateData();
+        timeEntryData.id = null;
     }
 }
 

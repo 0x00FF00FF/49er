@@ -41,7 +41,7 @@ public class AsyncUsersDao implements AsyncGenericDao<UserData> {
     }
 
     @Override
-    public Single<List<UserData>> getMatching(String term, boolean lazy) {
+    public Single<List<UserData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
         return eagerResolver
                 .getMatchingNameAsync(storio, term)
                 .subscribeOn(Schedulers.io())

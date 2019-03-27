@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.entries.model;
 
+import android.util.Log;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import lombok.Getter;
@@ -15,10 +16,10 @@ import org.rares.miner49er.util.TextUtils;
 
 @Getter
 @Setter
-public class TimeEntryData extends AbstractViewModel {
+public class TimeEntryData extends AbstractViewModel implements Cloneable {
 
-    //    private long id;
-//    private Long issueId;
+    private static final String TAG = TimeEntryData.class.getSimpleName();
+
     private long dateAdded;
     private long workDate;
     private String comments;
@@ -67,6 +68,16 @@ public class TimeEntryData extends AbstractViewModel {
         userPhoto = newData.userPhoto;
         color = newData.color;
         hours = newData.hours;
+    }
 
+    public TimeEntryData clone() {
+        try {
+            return (TimeEntryData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            Log.e(TAG, "clone: operation not supported.", e);
+        }
+        TimeEntryData clone = new TimeEntryData();
+        clone.updateData(this);
+        return clone;
     }
 }

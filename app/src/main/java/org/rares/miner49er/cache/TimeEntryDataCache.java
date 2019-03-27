@@ -90,7 +90,12 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
             IssueData issueData = issueDataCache.get(parentId.get());
             if (issueData != null) {
                 List<TimeEntryData> timeEntries = issueData.getTimeEntries();
-                return timeEntries == null ? Collections.emptyList() : timeEntries;
+                if (timeEntries == null) {
+                    return Collections.emptyList();
+                }
+                Collections.sort(timeEntries, (te1, te2) -> te1.id.compareTo(te2.id));
+                Collections.reverse(timeEntries);
+                return timeEntries;
             }
         }
         return new ArrayList<>(timeEntriesCache.snapshot().values());

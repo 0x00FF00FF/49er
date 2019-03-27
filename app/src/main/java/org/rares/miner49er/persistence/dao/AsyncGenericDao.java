@@ -13,7 +13,7 @@ public interface AsyncGenericDao<EntityType extends AbstractViewModel> {
 
     Single<List<EntityType>> getAll(long parentId, boolean lazy);
 
-    Single<List<EntityType>> getMatching(String term, boolean lazy);
+    Single<List<EntityType>> getMatching(String term, Optional<Long> parentId, boolean lazy);
 
     Single<Optional<EntityType>> get(long id, boolean lazy);
 

@@ -48,7 +48,7 @@ public class AsyncProjectsDao implements AsyncGenericDao<ProjectData> {
     }
 
     @Override
-    public Single<List<ProjectData>> getMatching(String term, boolean lazy) {
+    public Single<List<ProjectData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
         return (lazy ?
                 lazyGetResolver.getMatchingNameAsync(storio, term) :
                 eagerResolver.getMatchingNameAsync(storio, term))
@@ -102,7 +102,7 @@ public class AsyncProjectsDao implements AsyncGenericDao<ProjectData> {
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io())
-                .map(dr -> dr.numberOfRowsDeleted() == 0);
+                .map(dr -> dr.numberOfRowsDeleted() > 0);
     }
 
     private AsyncProjectsDao() {

@@ -119,7 +119,7 @@ public abstract class IssueActionFragment extends ActionFragment {
 
     @Override
     public void prepareExit() {
-        resetFields();
+//        resetFields();
         if (getView() != null) {
             actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         }
@@ -131,9 +131,6 @@ public abstract class IssueActionFragment extends ActionFragment {
 
     @OnClick(R.id.btn_cancel_add_issue)
     public void cancelAction() {
-        projectData = null;
-        issueData = null;
-        userData = null;
         resetFields();
         prepareExit();
     }
@@ -144,6 +141,7 @@ public abstract class IssueActionFragment extends ActionFragment {
         issueData.setLastUpdated(System.currentTimeMillis());
         issueData.setParentId(projectData.id);
         issueData.setOwner(userData);
+        issueData.setOwnerId(userData.id);
     }
 
     protected void resetFields() {
