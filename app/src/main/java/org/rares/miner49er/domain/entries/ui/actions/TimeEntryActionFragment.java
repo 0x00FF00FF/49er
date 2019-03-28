@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import butterknife.BindInt;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -85,8 +86,12 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     protected UserData userData = null;
     protected ProjectData projectData = null;
 
-    protected final int maxHours = 16;
-    protected final int minHours = 1;
+    @BindInt(R.integer.max_hours)
+    protected int maxHours;
+    @BindInt(R.integer.min_hours)
+    protected int minHours;
+    @BindInt(R.integer.comment_max_length)
+    protected int maxCommentCharacters;
 
     protected View createView(LayoutInflater inflater, ViewGroup container) {
 

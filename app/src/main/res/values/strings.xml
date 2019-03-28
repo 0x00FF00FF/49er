@@ -106,7 +106,7 @@
     <string name="success_time_entry_save">The time entry has been saved.</string>
 
     <string name="error_time_entry_too_many_hours">You cannot enter more than %s hours a day.</string>
-    <string name="error_time_entry_hours">You can only enter a number between %s and %s.</string>
+    <string name="error_time_entry_hours">You must enter a number between %s and %s.</string>
 
 
     <string name="hint_date_added">Date added</string>
@@ -117,6 +117,7 @@
     <string name="error_field_required">This field is required.</string>
     <string name="error_field_already_exists">This name already exists.</string>
     <string name="error_field_contains_illegal_characters">This field contains illegal characters.</string>
+    <string name="error_field_number_of_characters">This field contains too many characters.</string>
 
     <string name="error_name_unavailable">This name is unavailable.</string>
 

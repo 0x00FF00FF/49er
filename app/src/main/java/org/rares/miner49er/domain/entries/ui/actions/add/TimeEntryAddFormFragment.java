@@ -105,7 +105,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
                                     .validation(),
                             hoursWorkedInputLayout, String.format(errTimeEntryTooManyHours, maxHours))
                     .validate(TimeEntryData::getUserId, o -> o != -1, ownerInputLayout, errRequired)
-                    .validate(TimeEntryData::getComments, d -> !d.contains("#"), commentsInputLayout, errCharacters)
+                    .validate(TimeEntryData::getComments, d -> d.length() <= maxCommentCharacters, commentsInputLayout, errCharactersNumber)
                     .validate(TimeEntryData::getHours, d -> d >= minHours && d <= maxHours,
                             hoursWorkedInputLayout, String.format(errTimeEntryIncorrectHours, minHours, maxHours))
                     .get();

@@ -104,10 +104,14 @@
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox"
            parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <item name="boxStrokeColor">@color/pureWhite</item>
+        <item name="boxStrokeColor">@color/color_selector_outline</item>
         <!--<item name="android:layout_margin">@dimen/sv_margin</item>-->
         <item name="hintTextAppearance">@style/Custom.TextAppearance.MaterialComponents.Hint</item>
+        <item name="errorTextColor">@color/error_color</item>
+        <item name="counterTextColor">@color/indigo.A100_grayed</item>
+        <item name="counterOverflowTextColor">@color/error_color</item>
         <item name="android:textColorHint">@color/color_selector_hint</item>
+        <item name="android:textColor">@color/color_selector_text</item>
         <item name="android:inputType">textNoSuggestions</item>
         <item name="android:singleLine">true</item>
     </style>
@@ -127,6 +131,7 @@
 
         <!-- Cursor and Active underline color, uses colorAccent by default if not defined-->
         <item name="colorControlActivated">@color/projects.default.c9aac8</item>
+        <!--<item name="editTextColor">@color/color_selector_hint</item>-->
     </style>
 
     <style name="Custom.TextAppearance.MaterialComponents.Hint" parent="TextAppearance.Design.Hint">

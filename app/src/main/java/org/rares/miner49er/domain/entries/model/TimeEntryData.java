@@ -29,7 +29,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
     private String userPhoto;
     private int color;
 
-    @IntRange(from = 0, to = 10)
+    @IntRange(from = 1, to = 16)
     private int hours;
 
     public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {

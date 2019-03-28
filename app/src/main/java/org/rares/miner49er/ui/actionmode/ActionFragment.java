@@ -18,6 +18,8 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
     protected String errRequired;
     @BindString(R.string.error_field_contains_illegal_characters)
     protected String errCharacters;
+    @BindString(R.string.error_field_number_of_characters)
+    protected String errCharactersNumber;
     @BindString(R.string.error_field_already_exists)
     protected String errExists;
     @BindString(R.string.success_project_add)

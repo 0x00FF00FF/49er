@@ -21,7 +21,7 @@
     <color name="hint_color_active">@color/indigo.A100</color>
     <color name="hint_color_inactive">@color/indigo.200</color>
 
-    <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">@color/hint_color_inactive</color>
+    <!--<color name="mtrl_textinput_default_box_stroke_color" tools:override="true">@color/hint_color_inactive</color>-->
 
     <color name="design_dark_default_color_surface" tools:override="true">@android:color/transparent</color>
     <color name="design_default_color_surface" tools:override="true">@android:color/transparent</color>
