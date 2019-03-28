@@ -32,7 +32,7 @@ public class StickyLinearLayoutManager
         implements ResizeableLayoutManager,
         ResizePostProcessor.PostProcessorValidatorConsumer {
 
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
 
     private final static String tag = StickyLinearLayoutManager.class.getSimpleName() + ":";
     private String usedTag = tag;
@@ -177,7 +177,6 @@ public class StickyLinearLayoutManager
 
             decoratedChildWidth = getDecoratedMeasuredWidth(labRatView);
             decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
-            itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
 //            removeAndRecycleView(labRatView, recycler);
 
             View pl = labRatView.findViewById(R.id.project_logo);
@@ -194,8 +193,17 @@ public class StickyLinearLayoutManager
             recycler.recycleView(labRatView);
         }
 
+        itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
+
         if (!state.isMeasuring()) {
             drawChildren(NONE, recycler, state);
+            if (DEBUG) {
+                Log.d(TAG, "onLayoutChildren: " +
+                        "height: " + getHeight() + "/" + decoratedChildHeight + "=" + getHeight() / decoratedChildHeight +
+                        " cc(" + getChildCount() + ")*ch(" + decoratedChildHeight + "): " + getChildCount() * decoratedChildHeight +
+                        " total items: " + itemsNumber + "/" + getItemCount()
+                );
+            }
         }
 
         if (DEBUG && METHOD_DEBUG) {
@@ -206,7 +214,7 @@ public class StickyLinearLayoutManager
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        final boolean METHOD_DEBUG = false;
+        final boolean METHOD_DEBUG = true;
 
         int itemAddPosition = dy > 0 ? BOTTOM : TOP;
         TAG = usedTag + (dy > 0 ? " v " : " ^ ");
@@ -380,7 +388,7 @@ public class StickyLinearLayoutManager
             RecyclerView.State state
     ) {
 
-        final boolean METHOD_DEBUG = false;
+        final boolean METHOD_DEBUG = true;
         boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
