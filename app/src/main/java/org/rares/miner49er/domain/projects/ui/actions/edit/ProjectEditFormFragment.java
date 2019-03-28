@@ -11,9 +11,11 @@ import androidx.annotation.NonNull;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
@@ -21,6 +23,7 @@ import org.rares.miner49er.util.UiUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.List;
 import java.util.Map;
 
 import static org.rares.miner49er.BaseInterfaces.UTFEnc;
@@ -88,11 +91,22 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         try {
             validator.validate(ProjectData::getName, n -> !n.isEmpty(), inputLayoutProjectName, errRequired)
                     .validate(ProjectData::getName, p -> !p.contains("#"), inputLayoutProjectName, errCharacters)
-//                    .validate(ProjectData::getName, name -> {
-//                        List<? extends AbstractViewModel> entities =
-//                                projectsDAO.getMatching(name, true).blockingGet();
-//                        return (entities == null || entities.isEmpty());
-//                    }, inputLayoutProjectName, errExists)
+                    .validate(ProjectData::getName, name -> {
+                        List<? extends AbstractViewModel> entities =
+                                projectsDAO.getMatching(name, Optional.of(null), true).blockingGet();
+                        if ((entities == null || entities.isEmpty())) {
+                            return false;
+                        }
+                        // TODO: optimize this by querying the database for results not including projectData.id
+                        for (int i = 0; i < entities.size(); i++) {
+                            ProjectData pd = (ProjectData) entities.get(i);
+                            if (pd.id.equals(projectData.id)) {
+                                entities.remove(pd);
+                                break;
+                            }
+                        }
+                        return entities.isEmpty();
+                    }, inputLayoutProjectName, errExists)
                     .validate(ProjectData::getOwner, o -> o != null, inputLayoutProjectOwner, errRequired)
                     .validate(ProjectData::getDescription, d -> !d.contains("#"), inputLayoutProjectDescription, errCharacters)
                     .validate(ProjectData::getIcon, d -> !d.contains("#"), inputLayoutProjectIcon, errCharacters)

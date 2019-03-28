@@ -22,6 +22,7 @@ import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.util.TextUtils;
 
 
 public abstract class TimeEntryActionFragment extends ActionFragment {
@@ -153,6 +154,11 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     @Override
     public void prepareExit() {
         resetFields();
+
+        Context context = getContext();
+        if (context != null) {
+            TextUtils.hideKeyboardFrom(context, rootView.findFocus());
+        }
 
         actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         resultListener.onFragmentDismiss();

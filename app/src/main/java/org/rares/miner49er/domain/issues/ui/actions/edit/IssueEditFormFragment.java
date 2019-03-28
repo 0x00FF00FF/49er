@@ -93,7 +93,19 @@ public class IssueEditFormFragment extends IssueActionFragment {
                     .validate(IssueData::getName, n -> {
                         List<? extends AbstractViewModel> entities =
                                 issuesDAO.getMatching(n, Optional.of(issueData.parentId), true).blockingGet();
-                        return (entities == null || entities.isEmpty());
+                        if ((entities == null || entities.isEmpty())) {
+                            return true;
+                        }
+                        // TODO: optimize this by querying the database for results not including issueData.id
+                        for (int i = 0; i < entities.size(); i++) {
+                            IssueData isData = (IssueData) entities.get(i);
+                            if (isData.id.equals(issueData.id)) {
+                                entities.remove(isData);
+                                break;
+                            }
+                        }
+                        Log.i(TAG, "validateForm: " + entities);
+                        return entities.isEmpty();
                     }, issueNameInputLayout, errExists)
                     .get();
         } catch (FormValidationException e) {

@@ -19,11 +19,10 @@ import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.util.TextUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 
@@ -114,19 +113,11 @@ public abstract class ProjectActionFragment extends ActionFragment {
 
     @Override
     public void prepareExit() {
-        List<TextInputLayout> layouts = new ArrayList<>();
-        layouts.add(inputLayoutProjectName);
-        layouts.add(inputLayoutProjectShortName);
-        layouts.add(inputLayoutProjectDescription);
-        layouts.add(inputLayoutProjectIcon);
-        layouts.add(inputLayoutProjectOwner);
+        resetFields();
 
-        for (TextInputLayout til : layouts) {
-            if (til.getEditText().getEditableText().length() == 0) {
-                if (til.getError() != null && til.getError().equals(errRequired)) {
-                    til.setError("");
-                }
-            }
+        Context context = getContext();
+        if (context != null) {
+            TextUtils.hideKeyboardFrom(context, rootView.findFocus());
         }
 
         actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
