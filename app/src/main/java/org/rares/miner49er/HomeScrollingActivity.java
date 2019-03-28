@@ -325,8 +325,6 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
 
-
-
         // supportsPredictiveItemAnimations
         Log.e(TAG, "setupRV: DONE");
     }
@@ -420,7 +418,11 @@ public class HomeScrollingActivity
 
     @Override
     public void onTrimMemory(int level) {
-        ViewModelCache.getInstance().clear();   // TODO: 3/7/19 enqueue another cache fill when needed
+        // not going to clear cache every time we're not in foreground
+        // 10_000 cached items occupy about 2MB of memory
+        if (TRIM_MEMORY_RUNNING_CRITICAL == level) {
+            ViewModelCache.getInstance().clear();
+        }
     }
 
     @Override

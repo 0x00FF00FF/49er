@@ -32,7 +32,7 @@ public class StickyLinearLayoutManager
         implements ResizeableLayoutManager,
         ResizePostProcessor.PostProcessorValidatorConsumer {
 
-    private final boolean DEBUG = true;
+    private final boolean DEBUG = false;
 
     private final static String tag = StickyLinearLayoutManager.class.getSimpleName() + ":";
     private String usedTag = tag;
@@ -197,7 +197,7 @@ public class StickyLinearLayoutManager
 
         if (!state.isMeasuring()) {
             drawChildren(NONE, recycler, state);
-            if (DEBUG) {
+            if (DEBUG && METHOD_DEBUG) {
                 Log.d(TAG, "onLayoutChildren: " +
                         "height: " + getHeight() + "/" + decoratedChildHeight + "=" + getHeight() / decoratedChildHeight +
                         " cc(" + getChildCount() + ")*ch(" + decoratedChildHeight + "): " + getChildCount() * decoratedChildHeight +
@@ -214,7 +214,7 @@ public class StickyLinearLayoutManager
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        final boolean METHOD_DEBUG = true;
+        final boolean METHOD_DEBUG = false;
 
         int itemAddPosition = dy > 0 ? BOTTOM : TOP;
         TAG = usedTag + (dy > 0 ? " v " : " ^ ");
@@ -388,7 +388,7 @@ public class StickyLinearLayoutManager
             RecyclerView.State state
     ) {
 
-        final boolean METHOD_DEBUG = true;
+        final boolean METHOD_DEBUG = false;
         boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";

@@ -102,14 +102,10 @@ public class TimeEntriesRepository extends Repository {
         List<TimeEntryData> timeEntryDataList = asyncDao.getAll(parentProperties.getId(), true).blockingGet();
         List<TimeEntryData> clones = new ArrayList<>();
         for (TimeEntryData teData : timeEntryDataList) {
-            TimeEntryData clone = new TimeEntryData();
-            clone.updateData(teData);
-            clone.id = teData.id;
-            clone.parentId = teData.parentId;
-            clone.lastUpdated = teData.lastUpdated;
-            clones.add(clone);
+//            Log.d(TAG, "getDbItems: " + teData.toLongString());
+            clones.add(teData.clone());
         }
-
+//        Log.d(TAG, "getDbItems: " + clones.size());
         return clones;
     }
 }

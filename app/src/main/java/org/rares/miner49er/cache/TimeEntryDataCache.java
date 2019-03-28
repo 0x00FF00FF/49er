@@ -15,6 +15,7 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
     private final ViewModelCache cache = ViewModelCache.getInstance();
     private LruCache<Long, TimeEntryData> timeEntriesCache = cache.getTimeEntriesLruCache();
     private LruCache<Long, IssueData> issueDataCache = cache.getIssuesLruCache();
+    private final String TAG = TimeEntryDataCache.class.getSimpleName();
 
     @Override
     public void putData(List<TimeEntryData> list, Predicate<TimeEntryData> ptCondition, boolean link) {

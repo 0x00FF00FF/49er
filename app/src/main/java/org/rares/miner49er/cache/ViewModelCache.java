@@ -76,6 +76,11 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         projectsCache.evictAll();
         issuesCache.evictAll();
         timeEntriesCache.evictAll();
+        // FIXME: 28.03.2019
+        // * unfortunately it's not enough to clear this,
+        // * we need to also clear every reference to
+        // * these and references to all the cached objects
+        // * (in other files)
     }
 
     @Override

@@ -95,7 +95,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
                         List<? extends AbstractViewModel> entities =
                                 projectsDAO.getMatching(name, Optional.of(null), true).blockingGet();
                         if ((entities == null || entities.isEmpty())) {
-                            return false;
+                            return true;
                         }
                         // TODO: optimize this by querying the database for results not including projectData.id
                         for (int i = 0; i < entities.size(); i++) {
@@ -158,7 +158,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             return;
         }
 
-        projectData = projectsDAO.get(projectId, true).blockingGet().get();        ////
+        projectData = projectsDAO.get(projectId, true).blockingGet().get().clone();        ////
 
         clearErrors();
         editTextProjectName.setText(projectData.getName());

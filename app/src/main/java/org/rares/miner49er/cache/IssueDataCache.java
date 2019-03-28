@@ -34,7 +34,7 @@ public class IssueDataCache implements Cache<IssueData> {
             synchronized (projectsCache.get(issue.parentId)) {
                 ProjectData projectData = projectsCache.get(issue.parentId);
                 if (projectData != null) {
-                    List<IssueData> issues = projectsCache.get(projectData.id).getIssues();
+                    List<IssueData> issues = projectData.getIssues();
                     if (issues != null) {
 
                         boolean found = false;

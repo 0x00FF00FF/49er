@@ -128,7 +128,7 @@ public class AsyncTimeEntryDataCacheAdapter
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
                         .subscribe(updated -> {
-                            timeEntryDataCache.putData(toUpdate, false);
+                            timeEntryDataCache.putData(toUpdate, true);
                             singleSubject.onSuccess(updated);
                         })
         );

@@ -156,27 +156,27 @@ public class IssueEditFormFragment extends IssueActionFragment {
         disposable.add(issuesDAO.get(issueId, true).subscribe(
                 optionalData -> {
                     if (optionalData.isPresent()) {
-                        issueData = optionalData.get();
+                        issueData = optionalData.get().clone();
                         issueNameEditText.setText(issueData.getName());
                         dateAddedEditText.setText(new DateTime(issueData.getDateAdded()).toString("EE, d MMMM, y"));
                         if (issueData.getOwner() == null) {
                             disposable.add(usersDAO.get(issueData.getOwnerId(), true).subscribe(
                                     optionalUser -> {
                                         if (optionalUser.isPresent()) {
-                                            userData = optionalUser.get();
+                                            userData = optionalUser.get().clone();
                                         }
                                         issueData.setOwner(userData);
                                         issueOwnerEditText.setText(userData.getName());
                                     }
                             ));
                         } else {
-                            userData = issueData.getOwner();
+                            userData = issueData.getOwner().clone();
                             issueOwnerEditText.setText(userData.getName());
                         }
                         disposable.add(projectsDAO.get(issueData.parentId, true).subscribe(
                                 optionalProject -> {
                                     if (optionalProject.isPresent()) {
-                                        projectData = optionalProject.get();
+                                        projectData = optionalProject.get().clone();
                                         projectNameEditText.setText(projectData.getName());
                                     }
                                 }

@@ -192,7 +192,8 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         if (hoursWorkedEditText.getEditableText().toString().equals("")) {
             timeEntryData.setHours(0);
         } else {
-            timeEntryData.setHours(Integer.parseInt(hoursWorkedEditText.getEditableText().toString()));
+            String inputHours = hoursWorkedEditText.getEditableText().toString();
+            timeEntryData.setHours(inputHours.length() > 2 ? Integer.MAX_VALUE : Integer.parseInt(inputHours));
         }
         timeEntryData.setUserId(userData.id);
         timeEntryData.setUserName(userData.getName());

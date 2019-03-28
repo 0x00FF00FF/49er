@@ -118,8 +118,6 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
 
     private boolean saveTimeEntry() {
 
-        updateData();
-
         timeEntriesDAO.update(timeEntryData);
 
         final String snackbarText = successfulSave;
@@ -147,10 +145,10 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
             return;
         }
 
-        timeEntryData = timeEntriesDAO.get(timeEntryId, true).blockingGet().get();        ////
-        issueData = issuesDAO.get(timeEntryData.parentId, true).blockingGet().get();
-        projectData = projectsDAO.get(issueData.parentId, true).blockingGet().get();
-        userData = projectData.getTeam().get(0);    ///
+        timeEntryData = timeEntriesDAO.get(timeEntryId, true).blockingGet().get().clone();        ////
+        issueData = issuesDAO.get(timeEntryData.parentId, true).blockingGet().get().clone();
+        projectData = projectsDAO.get(issueData.parentId, true).blockingGet().get().clone();
+        userData = projectData.getTeam().get(0).clone();    ///
 
         clearErrors();
         projectNameEditText.setText(projectData.getName());

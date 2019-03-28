@@ -48,7 +48,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
         DateTime dateTime = new DateTime(getWorkDate());
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
         String entryDate = dateTime.toString(pattern);
-        return getUserName() + " | " + getHours() + " | " + entryDate + " | " + comments;
+        return id + " | " + getUserName() + " | " + getHours() + " | " + entryDate + " | " + comments;
     }
 
     public String toString() {
