@@ -125,8 +125,16 @@ public class ProjectsUiOps
     @Override
     public void onListItemChanged(ItemViewProperties ivp) {
         super.onListItemChanged(ivp);
+        // TODO: 01.04.2019 the data should be updated via the toolbar manager refresh action mode method
+//        toolbarManager.refreshActionMode();
         if (ivp.getName() != null) {
-            ((Toolbar) ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c)).setTitle(ivp.getName());    //
+            // but the viewHolder doesn't get updated until after this gets called
+            // this method of getting data out of a view holder is stupid and should replaced with some other way
+            // of getting the title and subtitle data from the adapter.
+            // for now, let's do it peasant-style.
+            Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+            t.setTitle(ivp.getName());                  //
+            t.setSubtitle(ivp.getSecondaryData());      //
         }
     }
 
@@ -141,8 +149,7 @@ public class ProjectsUiOps
 
     @Override
     public void configureCustomActionMenu(MenuConfig config) {
-
-        ResizeableItemViewHolder selectedHolder = getSelectedViewHolder();
+        ResizeableItemViewHolder selectedHolder = getSelectedViewHolder();  // TODO: get data (title, subtitle) from adapter for selected item
 
         config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
         config.requireActionMode = requireActionMode;

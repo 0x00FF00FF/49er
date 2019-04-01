@@ -487,28 +487,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private void prepareIssueInfo() {
 
-//        float entriesNumber = 100.44F;
-//        float userHours = 100.24F;
-//        float totalHours = 60000.1234F;
-
-        List<TimeEntryData> entries = holderData.getTimeEntries();
-        int entriesNumber = 0;
-        int userHours = 0;
-        int totalHours = 0;
-        if (entries != null) {
-            entriesNumber = entries.size();
-            for (TimeEntryData entry : entries) {
-                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
-                totalHours += entry.getHours();
-            }
-        }
-
-//        Log.i(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
-
-        infoLabelString =
-                entriesLabel + " " + entriesNumber + " " +
-                        userHoursLabel + " " + userHours + " " +
-                        totalHoursLabel + " " + totalHours;
+        infoLabelString = prepareSecondaryData(holderData);
 
         if (infoLabel != null) {
             infoLabel.setText(infoLabelString);
@@ -534,5 +513,31 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabelString = null;
 
         super.unbind();
+    }
+
+    public String prepareSecondaryData(IssueData issueData) {
+        List<TimeEntryData> entries = issueData.getTimeEntries();
+        int entriesNumber = 0;
+        int userHours = 0;
+        int totalHours = 0;
+        if (entries != null) {
+            entriesNumber = entries.size();
+            for (TimeEntryData entry : entries) {
+                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
+                totalHours += entry.getHours();
+            }
+        }
+
+        return entriesLabel +
+                " " +
+                entriesNumber +
+                " " +
+                userHoursLabel +
+                " " +
+                userHours +
+                " " +
+                totalHoursLabel +
+                " " +
+                totalHours;
     }
 }

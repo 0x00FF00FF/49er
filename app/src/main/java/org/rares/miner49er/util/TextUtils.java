@@ -5,7 +5,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -93,10 +92,10 @@ public class TextUtils {
     }
 
     public static String getItemText(View view) {
-        if (!(view instanceof LinearLayout)) {
+        if (!(view instanceof ViewGroup)) {
             return "BAD VIEW!";
         }
-        LinearLayout layout = (LinearLayout) view;
+        ViewGroup layout = (ViewGroup) view;    // constraint layout
         View childView = layout.getChildAt(0);
         if (childView instanceof TextView) {
             TextView tv = (TextView) childView;
@@ -107,6 +106,9 @@ public class TextUtils {
             if (v instanceof RotationAwareTextView) {
                 return ((RotationAwareTextView) v).getText();
             }
+        }
+        if (childView instanceof RotationAwareTextView) {
+            return ((RotationAwareTextView) childView).getText();
         }
         throw new UnsupportedOperationException("Unsupported view: " + view.getClass().toString());
     }

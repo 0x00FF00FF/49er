@@ -67,7 +67,7 @@ public class ToolbarActionManager
 
             actionListenerStack.push(listener);
 
-            dumpStack();
+//            dumpStack();
 
         }
         configureNextListener();
@@ -222,11 +222,13 @@ public class ToolbarActionManager
     }
 
     private void configureNextListener() {
-        Log.i(TAG, "configureNextListener: title : " + config.title + " " + config.titleRes);
+//        Log.i(TAG, "configureNextListener: title : " + config.title + " " + config.titleRes);
         MenuActionListener listener;
         if (!actionListenerStack.isEmpty()) {
             listener = actionListenerStack.peek();
             if (listener != null) {
+                // TODO: 01.04.2019 this gets called twice when unregisterActionListener is called
+                // once here and once in refreshActionMode
                 listener.configureCustomActionMenu(config);
                 if (config.requireActionMode) {
                     if (inActionMode) {

@@ -140,8 +140,10 @@ public class StickyLinearLayoutManager
         }
 
         if ((state.willRunSimpleAnimations() || scrolling) && selectedView != null) {
-            Log.i(TAG, "onLayoutChildren: detach with for. " +
-                    "[simple animations: " + state.willRunSimpleAnimations() + "][scrolling: " + scrolling + "]");
+            if (DEBUG && METHOD_DEBUG) {
+                Log.i(TAG, "onLayoutChildren: detach with for. " +
+                        "[simple animations: " + state.willRunSimpleAnimations() + "][scrolling: " + scrolling + "]");
+            }
             final int childCount = getChildCount();
             for (int i = childCount - 1; i >= 0; i--) {
                 final View v = getChildAt(i);

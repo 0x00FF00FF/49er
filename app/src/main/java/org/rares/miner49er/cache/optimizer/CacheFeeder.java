@@ -183,7 +183,9 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                                                     .map(
                                                             projectData -> {
                                                                 uDao.getAll(projectData.getId(), true);
-                                                                projectData.setOwner(userDataCache.getData(projectData.parentId));
+                                                                UserData userData = userDataCache.getData(projectData.parentId);
+                                                                Log.i(TAG, "linkData: " + userData);
+                                                                projectData.setOwner(userData);
                                                                 return projectData;
                                                             })
                                                     .sequential()

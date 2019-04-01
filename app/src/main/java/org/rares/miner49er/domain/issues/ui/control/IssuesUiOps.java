@@ -89,7 +89,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (holder != null) {
 //            config.title = holder.getLongTitle();
 //            config.subtitle = holder.getInfoLabelString();
-            config.subtitle = holder.getLongTitle();
+            config.subtitle = ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId());
             config.subtitleRes = 0;
             config.titleRes = 0;
         }
@@ -194,6 +194,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         }
         resizeRv(true);
         domainLink.onParentRemoved(projectProperties);
+    }
+
+    @Override
+    public void onListItemChanged(ItemViewProperties ivp) {
+        super.onListItemChanged(ivp);
+        toolbarManager.refreshActionMode();
     }
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {

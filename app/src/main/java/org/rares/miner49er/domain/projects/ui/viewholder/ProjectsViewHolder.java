@@ -94,6 +94,7 @@ public class ProjectsViewHolder
         shortTitle = selected ? ""/*TextUtils.extractVowels(itemData.getName())*/ : shortTitle;
 
         longTitle = itemData.getName();
+        projectViewProperties.setName(longTitle);
 
         Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
@@ -454,6 +455,8 @@ public class ProjectsViewHolder
                 issuesLabel + " " + issuesNumber + " " +
                         usersLabel + " " + usersNumber + " " +
                         hoursLabel + " " + hoursNumber;
+
+        projectViewProperties.setSecondaryData(infoLabelString);        /// ugly hack
 
 
         if (itemData.getIssues() == null && itemData.getTeam() == null) {
