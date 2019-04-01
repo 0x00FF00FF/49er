@@ -23,6 +23,7 @@ import org.rares.miner49er.util.UiUtil;
 
 import java.util.Map;
 
+import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.DATE_PATTERN;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_COMMENTS;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_DATE_ADDED;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_HOURS_WORKED;
@@ -170,8 +171,8 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         String projectName = bundle.getString(KEY_PROJECT_NAME, projectData.getName());
         String issueName = bundle.getString(KEY_ISSUE_NAME, "");
         String ownerName = bundle.getString(KEY_OWNER_NAME, userData.getName());
-        String workDate = bundle.getString(KEY_WORK_DATE, DateTime.now().toString("EE, d MMMM, y"));
-        String dateAdded = bundle.getString(KEY_DATE_ADDED, DateTime.now().toString("EE, d MMMM, y"));
+        String workDate = bundle.getString(KEY_WORK_DATE, DateTime.now().toString(DATE_PATTERN));
+        String dateAdded = bundle.getString(KEY_DATE_ADDED, DateTime.now().toString(DATE_PATTERN));
         String comments = bundle.getString(KEY_COMMENTS, "");
         String hoursWorked = bundle.getString(KEY_HOURS_WORKED, "");
 

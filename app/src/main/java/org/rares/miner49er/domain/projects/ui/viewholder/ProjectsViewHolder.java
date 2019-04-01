@@ -429,7 +429,7 @@ public class ProjectsViewHolder
 //        }
 //    }
 
-    private void populateInfoLabel() {
+    public void populateInfoLabel() {
         int issuesNumber = 0;
         int usersNumber = 0;
         int hoursNumber = 0;

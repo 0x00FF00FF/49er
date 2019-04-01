@@ -20,6 +20,7 @@ import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
+import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -127,15 +128,16 @@ public class ProjectsUiOps
         super.onListItemChanged(ivp);
         // TODO: 01.04.2019 the data should be updated via the toolbar manager refresh action mode method
 //        toolbarManager.refreshActionMode();
+        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
         if (ivp.getName() != null) {
             // but the viewHolder doesn't get updated until after this gets called
             // this method of getting data out of a view holder is stupid and should replaced with some other way
             // of getting the title and subtitle data from the adapter.
             // for now, let's do it peasant-style.
-            Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
             t.setTitle(ivp.getName());                  //
             t.setSubtitle(ivp.getSecondaryData());      //
         }
+        Log.i(TAG, "onListItemChanged: " + t.getTitle() + " " + t.getSubtitle());
     }
 
     @Override
@@ -155,6 +157,10 @@ public class ProjectsUiOps
         config.requireActionMode = requireActionMode;
 
         if (selectedHolder != null) {
+
+            ProjectsViewHolder pvh = (ProjectsViewHolder) selectedHolder;   ///
+            pvh.populateInfoLabel();
+
             config.menuId = R.menu.menu_generic_actions;
             config.additionalMenuId = R.menu.menu_additional_projects;
             config.additionalResources = new int[1][4];

@@ -2,19 +2,27 @@ package org.rares.miner49er.domain.entries.ui.actions;
 
 import android.content.Context;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentManager;
 import butterknife.BindInt;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnFocusChange;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
@@ -25,12 +33,17 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.TextUtils;
 
+import java.util.Calendar;
+import java.util.Locale;
+
+import static android.text.InputType.TYPE_NULL;
+import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.DATE_PATTERN;
+
 
 public abstract class TimeEntryActionFragment extends ActionFragment {
 
     @BindView(R.id.content_container)
     protected ConstraintLayout container;
-
 
     @BindView(R.id.project_name_input_layout)
     protected TextInputLayout projectNameInputLayout;
@@ -131,6 +144,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         hoursWorkedEditText.setFilters(numberFilters);
         commentsEditText.setFilters(filters);
 //        dateAddedEditText.setFilters(filters);
+        workDateEditText.setInputType(TYPE_NULL);
 
         return rootView;
     }
@@ -177,9 +191,6 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
 
     @OnClick(R.id.btn_cancel)
     public void cancelAction() {
-/*        issueData = null;
-        timeEntryData = null;
-        userData = null;*/
         resetFields();
         prepareExit();
     }
@@ -198,9 +209,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         timeEntryData.setUserId(userData.id);
         timeEntryData.setUserName(userData.getName());
         timeEntryData.setUserPhoto(userData.getPicture());
-//        DateTimeFormatter format = DateTimeFormat.forPattern("EE, d MMMM, y");
-//        timeEntryData.setWorkDate(DateTime.parse( ,format));
-        timeEntryData.setWorkDate(System.currentTimeMillis());
+        DateTimeFormatter format = DateTimeFormat.forPattern(DATE_PATTERN);
+        timeEntryData.setWorkDate(DateTime.parse(workDateEditText.getEditableText().toString(), format).getMillis());
+//        timeEntryData.setWorkDate(System.currentTimeMillis());
     }
 
     protected void resetFields() {
@@ -219,4 +230,49 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         workDateInputLayout.setError("");
         commentsInputLayout.setError("");
     }
+
+    private OnDateSetListener dateSetListener = new OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+            DateTime day = new DateTime(year, monthOfYear + 1, dayOfMonth, 9, 0);
+            workDateEditText.setText(day.toString(DATE_PATTERN));
+        }
+    };
+
+    @OnFocusChange(R.id.work_date_edit_text)
+    void selectDateOnFocus(boolean focused) {
+        if (focused) {
+            long workDate = timeEntryData == null ? 0 : timeEntryData.getDateAdded();
+            DateTime date = workDate == 0 ? DateTime.now() : new DateTime(workDate);
+            DatePickerDialog dpd = DatePickerDialog.newInstance(
+                    dateSetListener,
+                    date.getYear(), // Initial year selection
+                    date.getMonthOfYear() - 1, // -1 because the library expects Calendar format month
+                    date.getDayOfMonth() // Inital day selection
+            );
+            dpd.dismissOnPause(true);
+//        dpd.setThemeDark(true);
+            Calendar minDate = date.toCalendar(Locale.GERMANY);
+            minDate.add(Calendar.DAY_OF_YEAR, -7);
+            dpd.setMinDate(minDate);
+            dpd.setMaxDate(Calendar.getInstance());
+            dpd.setAccentColor(getResources().getColor(R.color.indigo_A100_grayed));
+            dpd.setOkColor(getResources().getColor(R.color.colorPrimaryDark));
+            FragmentManager manager = getFragmentManager();
+            if (manager != null) {
+                dpd.show(manager, "Datepickerdialog");
+            } else {
+                Log.w(TAG, "Fragment manager is null.");
+            }
+        }
+    }
+
+    @OnClick(R.id.work_date_edit_text)
+    void selectDateOnClick() {
+        if (workDateEditText.isFocused()) {
+            selectDateOnFocus(true);
+        }
+    }
+
+    private static final String TAG = TimeEntryActionFragment.class.getSimpleName();
 }

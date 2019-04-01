@@ -8,4 +8,6 @@ public interface TimeEntriesInterfaces {
     String KEY_DATE_ADDED = "dateAdded";
     String KEY_COMMENTS = "coments";
     String KEY_HOURS_WORKED = "hoursWorked";
+
+    String DATE_PATTERN = "EE, d MMMM, y";
 }
