@@ -341,6 +341,7 @@
                 android:layout_width="0dp"
                 android:layout_height="32dp"
                 android:layout_marginTop="0dp"
+                app:layout_constraintEnd_toEndOf="@id/btn_cancel_add_project"
                 app:layout_constraintTop_toBottomOf="@id/btn_cancel_add_project"
                 />
     </androidx.constraintlayout.widget.ConstraintLayout>

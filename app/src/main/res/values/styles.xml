@@ -165,4 +165,9 @@
         <item name="android:layout_marginStart">@dimen/sv_margin</item>
         <item name="android:layout_marginEnd">@dimen/sv_margin</item>
     </style>
+
+
+    <style name="mdtp_ActionButton.Text.custom" parent="mdtp_ActionButton.Text">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
 </resources>

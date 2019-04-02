@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#1A237E</color>
     <color name="colorAccent">#FF4081</color>
     <color name="greatGreen">#88FF00</color>
-    <color name="pureWhite">#FFFFFF</color>
+    <color name="pureWhite">#FFFFFFEE</color>
 
     <color name="colorOnPrimary">@color/colorPrimaryDark</color>
 
@@ -53,7 +53,7 @@
     <color name="indigo.800">#283593</color>
     <color name="indigo.900">#1A237E</color>
     <color name="indigo.A100">#8C9EFF</color>
-    <color name="indigo.A100_grayed">#535d91</color>
+    <color name="indigo.A100_grayed">#FF535d91</color>
     <color name="indigo.A200">#536DFE</color>
     <color name="indigo.A400">#3D5AFE</color>
     <color name="indigo.A700">#304FFE</color>

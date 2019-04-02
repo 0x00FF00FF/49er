@@ -251,13 +251,19 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
                     date.getDayOfMonth() // Inital day selection
             );
             dpd.dismissOnPause(true);
-//        dpd.setThemeDark(true);
+            dpd.setThemeDark(true);
             Calendar minDate = date.toCalendar(Locale.GERMANY);
             minDate.add(Calendar.DAY_OF_YEAR, -7);
             dpd.setMinDate(minDate);
-            dpd.setMaxDate(Calendar.getInstance());
-            dpd.setAccentColor(getResources().getColor(R.color.indigo_A100_grayed));
+            Calendar maxDate = date.toCalendar(Locale.GERMANY);
+            maxDate.add(Calendar.DAY_OF_YEAR, 7);
+            dpd.setMaxDate(maxDate);
             dpd.setOkColor(getResources().getColor(R.color.colorPrimaryDark));
+            dpd.setCancelColor(getResources().getColor(R.color.pureWhite));
+            dpd.setAccentColor(getResources().getColor(R.color.indigo_A100_grayed));
+            dpd.setVersion(DatePickerDialog.Version.VERSION_1);
+            dpd.setScrollOrientation(DatePickerDialog.ScrollOrientation.HORIZONTAL);
+            dpd.setBackground(R.drawable.background_date_picker_white);
             FragmentManager manager = getFragmentManager();
             if (manager != null) {
                 dpd.show(manager, "Datepickerdialog");

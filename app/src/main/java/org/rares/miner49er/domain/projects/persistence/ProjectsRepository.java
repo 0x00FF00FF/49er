@@ -57,7 +57,7 @@ public class ProjectsRepository extends Repository {
         disposables.add(
 //                Flowable.merge(
                 userActionsObservable
-                        .map(action -> getData())
+                        .map(action -> getData())       // todo: [getFromCache|getFromDB]|getFromNetwork -> take 1 ->
                         .startWith(() -> {
                             Disposable cacheFillDisposable = cacheFeeder.enqueueCacheFill();
                             if (cacheFillDisposable != null) {
@@ -94,8 +94,8 @@ public class ProjectsRepository extends Repository {
 
         List<ProjectData> clones = new ArrayList<>();
         for (ProjectData prd : toReturn) {
-            ProjectData clone = new ProjectData();
-            clone.updateData(prd);
+            ProjectData clone = prd.clone();
+//            Log.d(TAG, "getData() clone link: " + clone.getOwner());
             clones.add(clone);
         }
         return clones;

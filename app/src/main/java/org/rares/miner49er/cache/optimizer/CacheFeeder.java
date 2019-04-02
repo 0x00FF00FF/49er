@@ -85,6 +85,9 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
         return disposables;
     }
 
+    // parallel :  24ms
+    // sequential: 29ms
+
     private Disposable linkData() {
         CompositeDisposable disposables = new CompositeDisposable();
         try {
@@ -101,10 +104,11 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                 return disposables;
             }
 
-            disposables.add(
+            disposables.add(        // todo: also try the flatMap way, as parallel is "experimental"/unstable
                     Flowable.fromIterable(cachedTimeEntries)
-                            .parallel(4)
-                            .runOn(Schedulers.computation())
+                            .subscribeOn(Schedulers.computation())
+//                            .parallel(4)
+//                            .runOn(Schedulers.computation())
                             .map(timeEntryData -> {
                                 if (timeEntryData.getUserName() == null || timeEntryData.getUserPhoto() == null) {
                                     UserData userData = userDataCache.getData(timeEntryData.getUserId());
@@ -140,12 +144,13 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                                 }
                                 return timeEntryData;
                             })
-                            .sequential()
+//                            .sequential()
                             .doOnComplete(() -> {
                                 Log.v(TAG, "linkData: start work on issues");
                                 Flowable.fromIterable(cachedIssues)
-                                        .parallel(4)
-                                        .runOn(Schedulers.computation())
+                                        .subscribeOn(Schedulers.computation())
+//                                        .parallel(4)
+//                                        .runOn(Schedulers.computation())
                                         .map(issueData -> {
                                             if (issueData.getOwner() == null) {
                                                 UserData owner = userDataCache.getData(issueData.getOwnerId());
@@ -174,23 +179,30 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                                             }
                                             return issueData;
                                         })
-                                        .sequential()
+//                                        .sequential()
                                         .doOnComplete(() -> {
                                             Log.v(TAG, "linkData: start work on projects");
                                             Flowable.fromIterable(cachedProjects)
-                                                    .parallel(4)
-                                                    .runOn(Schedulers.computation())
+                                                    .subscribeOn(Schedulers.computation())
+//                                                    .parallel(4)
+//                                                    .runOn(Schedulers.computation())
                                                     .map(
                                                             projectData -> {
                                                                 uDao.getAll(projectData.getId(), true);
                                                                 UserData userData = userDataCache.getData(projectData.parentId);
-                                                                Log.i(TAG, "linkData: " + userData);
+//                                                                Log.i(TAG, "linkData: " + userData);
                                                                 projectData.setOwner(userData);
                                                                 return projectData;
                                                             })
-                                                    .sequential()
+                                                    .map(pd-> {Log.v(TAG, "linkData after map: " + pd.getOwner()); return pd;})
+//                                                    .sequential()
                                                     .doOnComplete(() -> {
                                                         Log.v(TAG, "linkData: ------------------------ end adding teams ");
+
+//                                                        for (ProjectData pd: projectDataCache.getData(Optional.of(null))){
+//                                                            Log.i(TAG, "------- linkData: " + pd.getOwner());
+//                                                        }
+
                                                         cache.lastUpdateTime = System.currentTimeMillis();
                                                         cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
                                                     })
