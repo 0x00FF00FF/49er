@@ -30,7 +30,7 @@ public class SimpleItemRotator extends AbstractItemRotator {
 
             int itemPosition = vh.getAdapterPosition();
 
-            String text = _tempAdapter.resolveData(itemPosition);
+            String text = _tempAdapter.resolveData(itemPosition, false);
 
             if (childView instanceof TextView) {
                 TextView tv = (TextView) childView;

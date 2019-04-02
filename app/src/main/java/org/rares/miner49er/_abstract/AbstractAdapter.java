@@ -89,7 +89,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 
     public abstract void clearData();
 
-    public abstract String resolveData(int position);
+    public abstract String resolveData(int position, boolean forceFullData);
 
     public abstract Object getDisplayData(int adapterPosition);
 }

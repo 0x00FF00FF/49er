@@ -89,7 +89,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (holder != null) {
 //            config.title = holder.getLongTitle();
 //            config.subtitle = holder.getInfoLabelString();
-            config.subtitle = ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId());
+            config.subtitle = ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId(), true);
             config.subtitleRes = 0;
             config.titleRes = 0;
         }

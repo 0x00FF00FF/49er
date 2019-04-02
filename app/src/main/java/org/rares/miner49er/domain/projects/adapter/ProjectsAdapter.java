@@ -110,11 +110,11 @@ public class ProjectsAdapter
     }
 
     @Override
-    public String resolveData(int position) {
+    public String resolveData(int position, boolean forceFullData) {
         ProjectData projectData = data.get(position);
         String name = projectData.getName();
         String minified = TextUtils.extractInitials(name);
-        return getLastSelectedPosition() != -1 ? minified : name;
+        return getLastSelectedPosition() != -1 ? forceFullData ? name : minified : name;
     }
 
     @Override

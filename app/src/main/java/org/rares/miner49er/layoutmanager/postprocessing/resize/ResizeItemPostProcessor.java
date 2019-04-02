@@ -30,7 +30,7 @@ public class ResizeItemPostProcessor implements ResizePostProcessor.PostProcesso
             for (int i = 0; i < recyclerView.getChildCount(); i++) {
                 ViewGroup listItem = (ViewGroup) recyclerView.getChildAt(i);
                 View childView = listItem.getChildAt(0);
-                String text = _adapter.resolveData(recyclerView.getChildAdapterPosition(listItem));
+                String text = _adapter.resolveData(recyclerView.getChildAdapterPosition(listItem), false);
                 if (childView instanceof TextView) {
                     TextView textView = (TextView) childView;
                     if (text != null) {

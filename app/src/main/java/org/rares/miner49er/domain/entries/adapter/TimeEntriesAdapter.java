@@ -73,7 +73,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     }
 
     @Override
-    public String resolveData(int position) {
+    public String resolveData(int position, boolean forceFullData) {
         return data.get(position).toString();
     }
 

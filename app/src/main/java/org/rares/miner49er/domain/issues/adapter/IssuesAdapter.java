@@ -85,12 +85,12 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     }
 
     @Override
-    public String resolveData(int position) {
+    public String resolveData(int position, boolean forceFullData) {
         if (position < 0 || position >= data.size()) {
             return null;
         }
         String issueName = this.data.get(position).getName();
-        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(issueName) : issueName;
+        return getLastSelectedPosition() != -1 ? forceFullData ? issueName : TextUtils.extractInitials(issueName) : issueName;
     }
 
     @Override
