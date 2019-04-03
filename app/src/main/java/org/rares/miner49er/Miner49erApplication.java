@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import android.app.Application;
+import com.facebook.stetho.Stetho;
 import net.danlew.android.joda.JodaTimeAndroid;
 import org.rares.miner49er.persistence.storio.StorioFactory;
 
@@ -28,6 +29,8 @@ public class Miner49erApplication extends Application {
         JodaTimeAndroid.init(this);
 
         StorioFactory.INSTANCE.setup(this);
+
+        Stetho.initializeWithDefaults(this);
 
 //        NetworkingService.INSTANCE.start();
 
