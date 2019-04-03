@@ -97,6 +97,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     protected TimeEntryData timeEntryData = null;
     protected IssueData issueData = null;
     protected UserData userData = null;
+    protected UserData loggedInUser = null;
     protected ProjectData projectData = null;
 
     @BindInt(R.integer.max_hours)
@@ -156,6 +157,8 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         issuesDAO = InMemoryCacheAdapterFactory.ofType(IssueData.class);
         timeEntriesDAO = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
         usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
+        loggedInUser = usersDAO.get(12, true).blockingGet().get();   ///
+        Log.i(TAG, "onAttach: currently 'logged in user' is " + loggedInUser.getName());
     }
 
     @Override
@@ -260,7 +263,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
             dpd.setMaxDate(maxDate);
             dpd.setOkColor(getResources().getColor(R.color.colorPrimaryDark));
             dpd.setCancelColor(getResources().getColor(R.color.pureWhite));
-            dpd.setAccentColor(getResources().getColor(R.color.indigo_A100_grayed));
+            dpd.setAccentColor(getResources().getColor(R.color.colorAccent));
             dpd.setVersion(DatePickerDialog.Version.VERSION_1);
             dpd.setScrollOrientation(DatePickerDialog.ScrollOrientation.HORIZONTAL);
             dpd.setBackground(R.drawable.background_date_picker_white);
@@ -278,6 +281,10 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         if (workDateEditText.isFocused()) {
             selectDateOnFocus(true);
         }
+    }
+
+    protected boolean isLoggedInUser() {
+        return userData.id.equals(loggedInUser.id);
     }
 
     private static final String TAG = TimeEntryActionFragment.class.getSimpleName();

@@ -28,7 +28,7 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
     @Override
     public boolean add(long id) {
         // nothing to add here
-        return false;
+        return true;
     }
 
     @Override

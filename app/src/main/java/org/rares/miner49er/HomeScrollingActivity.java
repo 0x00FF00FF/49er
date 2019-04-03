@@ -143,6 +143,10 @@ public class HomeScrollingActivity
                 int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
                 projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
                 projectsUiOps.refreshData(false);
+
+//                ViewModelCache.getInstance().dump();
+
+
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }

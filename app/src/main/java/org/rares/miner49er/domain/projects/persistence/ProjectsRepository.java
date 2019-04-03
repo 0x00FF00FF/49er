@@ -31,7 +31,7 @@ public class ProjectsRepository extends Repository {
             disposables.add(
                     ((EventBroadcaster) asyncDao).getBroadcaster()
                             .onBackpressureLatest()
-                            .throttleLatest(500, TimeUnit.MILLISECONDS)
+                            .throttleLast(1000, TimeUnit.MILLISECONDS)
                             .subscribe(o -> refreshData(true)));
         }
     }
@@ -51,6 +51,18 @@ public class ProjectsRepository extends Repository {
             ((AbstractAsyncCacheAdapter) asyncDao).shutdown();
         }
     }
+
+    /*
+     * todo:
+     * Observable.concat(
+     *	[getFromLocalCache(id),
+     *	getFromPersistentCache(id)],
+     *	getFromNetwork(id)
+     *      )
+     *	.take(1)
+     *	.singleOrError()
+     *
+     */
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
@@ -90,12 +102,13 @@ public class ProjectsRepository extends Repository {
                 // and data is being transferred
                 .blockingGet();
 
-        Log.i(TAG, "getData: toReturn: " + toReturn.size());
+//        Log.i(TAG, "getData: toReturn: " + toReturn.size());
 
         List<ProjectData> clones = new ArrayList<>();
         for (ProjectData prd : toReturn) {
             ProjectData clone = prd.clone();
-//            Log.d(TAG, "getData() clone link: " + clone.getOwner());
+//            List<UserData> team = clone.getTeam();
+//            Log.v(TAG, "getData() clone link: " + (team==null?"null":team.size()));
             clones.add(clone);
         }
         return clones;

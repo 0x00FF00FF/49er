@@ -68,12 +68,21 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
 //        UiUtil.sendViewToBack(getView());
         if (timeEntryData != null && timeEntryData.getId() > 0) {
             populateFields(timeEntryData.getId());
+            if (isLoggedInUser()) {
+                enableEditFields();
+            } else {
+                disableEditFields();
+            }
         }
     }
 
     @Override
     @OnClick(R.id.btn_add)
     public void applyAction() {
+        if (!isLoggedInUser()) {
+            prepareExit();
+            return;
+        }
         if (validateForm() && saveTimeEntry()) {
             prepareExit();
         }
@@ -148,7 +157,7 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
         timeEntryData = timeEntriesDAO.get(timeEntryId, true).blockingGet().get().clone();        ////
         issueData = issuesDAO.get(timeEntryData.parentId, true).blockingGet().get().clone();
         projectData = projectsDAO.get(issueData.parentId, true).blockingGet().get().clone();
-        userData = projectData.getTeam().get(0).clone();    ///
+        userData = usersDAO.get(timeEntryData.getUserId(), true).blockingGet().get().clone();
 
         clearErrors();
         projectNameEditText.setText(projectData.getName());
@@ -158,6 +167,18 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
         hoursWorkedEditText.setText(String.valueOf(timeEntryData.getHours()));
         ownerEditText.setText(timeEntryData.getUserName());
         workDateEditText.setText(new DateTime(timeEntryData.getWorkDate()).toString("EE, d MMMM, y"));
+    }
+
+    private void disableEditFields() {
+        commentsEditText.setEnabled(false);
+        hoursWorkedEditText.setEnabled(false);
+        workDateEditText.setEnabled(false);
+    }
+
+    private void enableEditFields() {
+        commentsEditText.setEnabled(true);
+        hoursWorkedEditText.setEnabled(true);
+        workDateEditText.setEnabled(true);
     }
 
 }

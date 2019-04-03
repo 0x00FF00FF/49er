@@ -18,6 +18,7 @@ import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.util.TextUtils;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
@@ -89,9 +90,10 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         if (holder != null) {
 //            config.title = holder.getLongTitle();
 //            config.subtitle = holder.getInfoLabelString();
-            config.subtitle = ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId(), true);
             config.subtitleRes = 0;
             config.titleRes = 0;
+            config.subtitle = TextUtils.capitalize(
+                    ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId(), true));
         }
 
         config.requireActionMode = requiresActionMode;

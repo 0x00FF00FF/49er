@@ -1,7 +1,10 @@
 package org.rares.miner49er.cache;
 
+import android.util.Log;
 import android.util.LruCache;
 import androidx.annotation.CallSuper;
+import com.pushtorefresh.storio3.Optional;
+import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -14,6 +17,8 @@ import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
 import java.io.Closeable;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
@@ -65,9 +70,13 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     @Override
     public void sendEvent(Byte event) {
-        if (cacheUpdatedProcessor.hasSubscribers()) {
-            cacheUpdatedProcessor.onNext(event);
-        }
+//        if (cacheUpdatedProcessor.hasSubscribers()) {
+        cacheUpdatedProcessor.onNext(event);
+//        if (!cacheUpdatedProcessor.offer(event)) {
+//            Log.w(TAG, "sendEvent: CACHE EVENT OFFER FAILED " + event);
+//         wait some time, then retry....
+//        }
+//        }
     }
 
     @CallSuper
@@ -80,7 +89,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         // * unfortunately it's not enough to clear this,
         // * we need to also clear every reference to
         // * these and references to all the cached objects
-        // * (in other files)
+        // * (in other objects)
     }
 
     @Override
@@ -165,6 +174,13 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         return projectUserDataCache;
     }
 
+    public void dump() {
+        for (ProjectData pd : projectDataCache.getData(Optional.of(null))) {
+            List<UserData> team = pd.getTeam();
+            Log.i(TAG, "dump: " + pd.getName() + "/" + (team == null ? "null" : team.size()));
+        }
+    }
+
 
     private LruCache<Long, ProjectData> projectsCache = null;
     private LruCache<Long, IssueData> issuesCache = null;
@@ -179,9 +195,20 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
     private static final String TAG = ViewModelCache.class.getSimpleName();
 
     private PublishProcessor<Byte> cacheUpdatedProcessor = PublishProcessor.create();
-    private Flowable<Byte> cacheUpdateFlowable = cacheUpdatedProcessor
-            .subscribeOn(Schedulers.computation())
-            .onBackpressureDrop()
-            .share();
+    private Flowable<Byte> cacheUpdateFlowable =
+            cacheUpdatedProcessor
+                    .window(50, TimeUnit.MILLISECONDS)
+                    .flatMap(Flowable::distinct)
+//                    .map(b -> {
+//                        Log.i(TAG, "cache update event: \t\t" + b);
+//                        return b;
+//                    })
+                    .onBackpressureBuffer(
+                            128,
+                            () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
+                            BackpressureOverflowStrategy.DROP_OLDEST)
+                    .subscribeOn(Schedulers.computation())
+                    .onBackpressureLatest()
+                    .share();
     private CompositeDisposable disposables = new CompositeDisposable();
 }

@@ -77,7 +77,11 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         holderData = (IssueData) o;
-        shortTitle = TextUtils.extractInitials(holderData.getName());
+        shortTitle = !holderData.getName().contains(" ") ?
+                TextUtils.extractVowels(holderData.getName()) :
+                TextUtils.extractInitials(holderData.getName());
+
+
         longTitle = TextUtils.capitalize(holderData.getName());
 
 /*        Drawable d = itemView.getBackground();

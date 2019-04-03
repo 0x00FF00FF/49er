@@ -194,7 +194,7 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
                                                                 projectData.setOwner(userData);
                                                                 return projectData;
                                                             })
-                                                    .map(pd-> {Log.v(TAG, "linkData after map: " + pd.getOwner()); return pd;})
+//                                                    .map(pd-> {Log.v(TAG, "linkData after map: " + pd.getOwner()); return pd;})
 //                                                    .sequential()
                                                     .doOnComplete(() -> {
                                                         Log.v(TAG, "linkData: ------------------------ end adding teams ");
