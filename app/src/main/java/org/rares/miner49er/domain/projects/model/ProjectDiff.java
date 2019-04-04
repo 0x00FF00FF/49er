@@ -53,15 +53,19 @@ public class ProjectDiff extends DiffUtil.Callback {
 
         Bundle diffBundle = new Bundle();
         if (!newData.getName().equals(oldData.getName())) {
+//            Log.i(TAG, "getChangePayload: name");
             diffBundle.putString(ProjectsInterfaces.KEY_NAME, newData.getName());
         }
         if (newData.getColor() != oldData.getColor()) {
+//            Log.i(TAG, "getChangePayload: color");
             diffBundle.putInt(ProjectsInterfaces.KEY_COLOR, newData.getColor());
         }
         if (!newData.getIcon().equals(oldData.getIcon())) {
+//            Log.i(TAG, "getChangePayload: icon");
             diffBundle.putString(ProjectsInterfaces.KEY_ICON, newData.getIcon());
         }
         if (!newData.getPicture().equals(oldData.getPicture())) {
+//            Log.i(TAG, "getChangePayload: picture");
             diffBundle.putString(ProjectsInterfaces.KEY_PICTURE, newData.getPicture());
         }
         List<IssueData> oldIssueList = oldData.getIssues();

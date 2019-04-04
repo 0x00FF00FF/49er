@@ -655,12 +655,15 @@ public class StickyLinearLayoutManager
 //                    Log.d(TAG, "drawChildren: newly added view: " + TextUtils.getItemText(item) +
 //                            "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
 //                            "; children: " + getChildCount());
-//                    Log.i(TAG, "drawChildren: " + TextUtils.getItemText(item) +
-//                            " adapter position: " + i +
-//                            (i == selectedPosition ? " [selected] " : "") +
-//                            " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
-//                            "; lastTopY: " + lastTopY +
-//                            "; rv height: " + getHeight());
+//                Log.i(TAG, "drawChildren: " + TextUtils.getItemText(item) +
+//                        " adapter position: " + i +
+//                        (i == selectedPosition ? " [selected] " : "") +
+//                        " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
+//                        "; lastTopY: " + lastTopY +
+//                        "; rv height: " + getHeight() +
+//                        "; sp: " + selectedPosition +
+//                        "; sv null: " + (selectedView == null)
+//                );
 //                }
                 if (DEBUG && METHOD_DEBUG) {
                     Log.e(TAG, "drawChildren: PER ITEM: " + (System.currentTimeMillis() - cs));

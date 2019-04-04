@@ -1,7 +1,6 @@
 package org.rares.miner49er.domain.projects.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,7 +79,7 @@ public class ProjectsAdapter
             throw new IllegalStateException("Unbinder host is needed for memory management!");
         }
 
-        Log.w(TAG, "onCreateViewHolder: " + pvh.hashCode());
+//        Log.w(TAG, "onCreateViewHolder: " + pvh.hashCode());
         return pvh;
     }
 
@@ -88,6 +87,16 @@ public class ProjectsAdapter
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
+        // newHolder variable to be used for checking if the event
+        // listener should be made aware of the changes that happen
+        // in the view holder. the issue behind this is not to change
+        // the toolbar/action bar title/subtitle when not needed.
+        // this may be happening when the sticky layout manager needs
+        // information about the selected view: rv needs to create a
+        // holder for the selected position because the selected position
+        // holder is locked by the StickyLinearLayoutManager and at
+        // times it needs to be refreshed
+        final boolean newHolder = holder.getItemData() == null;
         if (holder.isToBeRebound()) {
 //            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
             holder.bindData(
@@ -95,13 +104,14 @@ public class ProjectsAdapter
                     getLastSelectedPosition() != -1,
                     position == getLastSelectedPosition());
         }
-        if (position == getLastSelectedPosition()) {
+        if (!newHolder && position == getLastSelectedPosition()) {
+            // todo: find a better way to achieve this ^
             eventListener.onListItemChanged(holder.getItemProperties());
         }
-        Log.v(TAG, "onBindViewHolder() called with: " +
-                "holder = [" + holder.hashCode() + "], " +
-                "position = [" + position + "], " +
-                "data = [" + data.get(position).getName() + "]");
+//        Log.v(TAG, "onBindViewHolder() called with: " +
+//                "holder = [" + holder.hashCode() + "], " +
+//                "position = [" + position + "], " +
+//                "data = [" + data.get(position).getName() + "]");
     }
 
     @Override

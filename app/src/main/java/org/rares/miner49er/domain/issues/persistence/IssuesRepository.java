@@ -69,9 +69,9 @@ public class IssuesRepository extends Repository {
     public void registerSubscriber(Consumer<List> consumer) {
         disposables.add(
                 userActionsObservable
-                        .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
+//                        .doOnNext((a) -> Log.i(TAG, "LOCAL ON NEXT"))
                         .map(event -> {
-                            Log.w(TAG, "registerSubscriber: MAP");
+//                            Log.w(TAG, "registerSubscriber: MAP");
                             return getDbItems();
                         })
                         .startWith(getDbItems())
@@ -100,7 +100,7 @@ public class IssuesRepository extends Repository {
 
     @Override
     public void refreshData(boolean onlyLocal) {
-        Log.i(TAG, "refreshData: >>>>");
+//        Log.i(TAG, "refreshData: >>>>");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 }

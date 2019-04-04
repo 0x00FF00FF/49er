@@ -21,6 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import com.bumptech.glide.request.target.ImageViewTarget;
+import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -74,6 +75,7 @@ public class ProjectsViewHolder
 
     private int infoLabelId = -1;
 
+    @Getter
     private ProjectData itemData;
 
     public ProjectsViewHolder(View itemView) {

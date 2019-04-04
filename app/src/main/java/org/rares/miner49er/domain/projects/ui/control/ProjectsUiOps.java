@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.projects.ui.control;
 
-import android.util.Log;
 import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -31,7 +30,6 @@ import org.rares.miner49er.ui.custom.glide.preload.MultipleListPreloader;
 import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
 import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
@@ -97,7 +95,7 @@ public class ProjectsUiOps
      * Should be called on activity start.
      */
     public void setupRepository() {
-        Log.e(TAG, "setupRepository() called");
+//        Log.e(TAG, "setupRepository() called");
         projectsRepository.setup();
         projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
     }
@@ -137,7 +135,7 @@ public class ProjectsUiOps
             t.setTitle(ivp.getName());                  //
             t.setSubtitle(ivp.getSecondaryData());      //
         }
-        Log.i(TAG, "onListItemChanged: " + t.getTitle() + " " + t.getSubtitle());
+//        Log.i(TAG, "onListItemChanged: " + t.getTitle() + " " + t.getSubtitle());
     }
 
     @Override
@@ -229,7 +227,7 @@ public class ProjectsUiOps
 
     @Override
     public void onMeasureComplete(int[] dimensions) {
-        Log.d(TAG, "onMeasureComplete() called with: dimensions = [" + Arrays.toString(dimensions) + "]");
+//        Log.d(TAG, "onMeasureComplete() called with: dimensions = [" + Arrays.toString(dimensions) + "]");
         if (dimensions.length < 2) {
             return;
         }

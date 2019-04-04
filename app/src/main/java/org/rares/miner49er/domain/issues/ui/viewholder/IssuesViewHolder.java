@@ -7,7 +7,6 @@ import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -394,7 +393,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      */
     private void addInfoLabelToContainer(Resources res, boolean collapsed) {
         if (res == null || issueName == null || topContainer == null || infoLabelId != -1) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
+//            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
             return;
         }
         int textColor = 0xAA999999;

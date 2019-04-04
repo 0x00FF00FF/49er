@@ -324,8 +324,6 @@ public class ToolbarActionManager
          * if !0 is set after the string version
          */
         public int subtitleRes = 0;
-
-        public long entityId = -1;
     }
 
     private void configureGenericMenu() {
