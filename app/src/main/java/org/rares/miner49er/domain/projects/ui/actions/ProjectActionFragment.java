@@ -17,6 +17,7 @@ import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.domain.users.userlist.UserListFragment;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.TextUtils;
@@ -57,6 +58,8 @@ public abstract class ProjectActionFragment extends ActionFragment {
     @BindView(R.id.btn_cancel_add_project)
     protected MaterialButton btnCancel;
 
+    protected UserListFragment userListFragment;
+
     protected AsyncGenericDao<ProjectData> projectsDAO;
     protected AsyncGenericDao<UserData> usersDAO;
 
@@ -66,6 +69,8 @@ public abstract class ProjectActionFragment extends ActionFragment {
 
         rootView = (ScrollView) inflater.inflate(R.layout.fragment_project_edit, container, false);
         setReplacedView(container.findViewById(R.id.scroll_views_container));        //
+
+        userListFragment = (UserListFragment) getChildFragmentManager().findFragmentById(R.id.users_rv);
 
         unbinder = ButterKnife.bind(this, rootView);
         prepareEntry();

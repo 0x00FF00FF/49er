@@ -120,7 +120,7 @@ public class TextUtils {
         return "";
     }
 
-    private static String clearNamePrefix(String s) {
+    public static String clearNamePrefix(String s) {
         String res = s;
 
         res = res.replace("-", " ");

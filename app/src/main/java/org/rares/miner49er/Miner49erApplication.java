@@ -1,6 +1,6 @@
 package org.rares.miner49er;
 
-import android.app.Application;
+import androidx.multidex.MultiDexApplication;
 import com.facebook.stetho.Stetho;
 import net.danlew.android.joda.JodaTimeAndroid;
 import org.rares.miner49er.persistence.storio.StorioFactory;
@@ -15,7 +15,7 @@ import android.content.Context;*/
  * @since 04.03.2018
  */
 
-public class Miner49erApplication extends Application {
+public class Miner49erApplication extends MultiDexApplication {
 //    private RefWatcher refWatcher;
 
 /*    public static RefWatcher getRefWatcher(Context context) {

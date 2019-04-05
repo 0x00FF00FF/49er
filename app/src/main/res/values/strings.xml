@@ -124,4 +124,9 @@
     <string name="entry_removed">The entry has been removed.</string>
     <string name="err_entry_not_removed">The entry has not been removed.</string>
     <string name="err_operation_not_completed">The operation could not be completed.</string>
+
+    <string name="role_developer">developer</string>
+    <string name="role_designer">designer</string>
+    <string name="role_project_owner">project owner</string>
+    <string name="role_project_manager">project manager</string>
 </resources>

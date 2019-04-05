@@ -8,6 +8,7 @@
             android:left="@dimen/_list_item_invisible_margin"
             android:right="@dimen/_list_item_invisible_margin"
             android:bottom="@dimen/_list_item_invisible_margin"
+            android:top="@dimen/_list_item_invisible_margin"
     >
         <shape
                 android:shape="rectangle">

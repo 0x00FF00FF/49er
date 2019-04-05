@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="168dp"
+        android:layout_height="96dp"
+        android:layout_margin="@dimen/sv_margin"
+        style="@style/TempCardViewStyle"
+>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent" android:layout_height="match_parent"
+    >
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_user_photo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:srcCompat="@drawable/skull"
+                app:layout_constraintStart_toStartOf="parent"
+                android:background="@color/colorAccent"
+                app:layout_constraintDimensionRatio="w, 1:1"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
+                app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_name"
+                android:textColor="@color/pureWhite"
+                android:textSize="12sp"
+                android:textAllCaps="true"
+                android:maxLines="3"
+                tools:lines="2"
+                tools:text="Mark\nGutenberg"
+                app:layout_constraintStart_toEndOf="@+id/img_user_photo"
+                android:layout_marginLeft="8dp" android:layout_marginStart="8dp"
+                app:layout_constraintTop_toTopOf="@+id/img_user_photo"
+        />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_role"
+                android:textColor="@color/indigo_100_blacked"
+                android:textAllCaps="true"
+                android:textSize="10sp"
+                tools:text="developer"
+                app:layout_constraintTop_toBottomOf="@+id/tv_user_name"
+                app:layout_constraintStart_toStartOf="@+id/tv_user_name"
+        />
+
+        <!--<com.google.android.material.switchmaterial.SwitchMaterial-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:checked="false"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/tv_user_name"-->
+        <!--app:useMaterialThemeColors="false"-->
+        <!--app:showText="false"-->
+        <!--app:splitTrack="false"-->
+        <!--android:text=""-->
+        <!--app:layout_constraintStart_toEndOf="@+id/img_user_photo"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--/>-->
+
+        <!--<androidx.appcompat.widget.AppCompatTextView-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/tv_user_email"-->
+        <!--android:textColor="@color/indigo.200"-->
+        <!--android:textSize="10sp"-->
+        <!--android:text="marktwain@ourcompany.com"-->
+        <!--android:layout_marginStart="8dp"-->
+        <!--app:layout_constraintStart_toStartOf="parent" android:layout_marginLeft="8dp"-->
+        <!--android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"-->
+        <!--android:layout_marginRight="8dp" android:layout_marginBottom="8dp"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"/>-->
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_projects"
+                android:textColor="#FF9999AA"
+                android:background="@color/indigo_100_blacked_transparent2"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center"
+                tools:text="Member of 2 other projects"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

@@ -13,8 +13,10 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
+import org.rares.miner49er.domain.users.userlist.UserListFragment;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
@@ -59,7 +61,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         if (pid == null) {
             throw new IllegalStateException("To edit a project you need an id.");
         }
-        populateFields(getArguments().getLong(KEY_PROJECT_ID));
+//        populateFields(getArguments().getLong(KEY_PROJECT_ID));
 
         btnApply.setIcon(getResources().getDrawable(R.drawable.icon_path_done));
         btnApply.setText(R.string.action_save);
@@ -71,9 +73,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     public void onStart() {
         super.onStart();
 //        UiUtil.sendViewToBack(getView());
-        if (projectData != null && projectData.getId() > 0) {
-            populateFields(projectData.getId());
-        }
+        populateFields(getArguments().getLong(KEY_PROJECT_ID));
     }
 
     @Override
@@ -159,6 +159,20 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         }
 
         projectData = projectsDAO.get(projectId, true).blockingGet().get().clone();        ////
+
+
+        if (userListFragment == null) {
+            userListFragment = UserListFragment.newInstance(projectData.id);
+        } else {
+            Bundle args = new Bundle();
+            args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectData.id);
+            userListFragment.setArguments(args);
+        }
+        userListFragment.refresh();
+
+        getChildFragmentManager().beginTransaction()
+                .show(userListFragment)
+                .commit();
 
         clearErrors();
         editTextProjectName.setText(projectData.getName());
