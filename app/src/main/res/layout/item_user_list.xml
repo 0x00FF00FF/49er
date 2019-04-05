@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="168dp"
         android:layout_height="96dp"
+        android:layout_margin="@dimen/sv_margin"
         style="@style/TempCardViewStyle"
 >
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent" android:layout_height="match_parent"
     >
-        <androidx.appcompat.widget.AppCompatImageView
+        <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/img_user_photo"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:srcCompat="@drawable/skull"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/tv_user_name"
                 android:layout_marginTop="4dp"
-                android:background="@color/colorAccent"
                 app:layout_constraintDimensionRatio="w,1:1"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/indigo_100_grayed"
+                android:elevation="4dp"
         />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -34,7 +36,7 @@
                 android:textSize="12sp"
                 android:textAllCaps="true"
                 android:gravity="center"
-                android:text="Elizabeth Macintosh-Nueves"
+                tools:text="Elizabeth Macintosh-Nueves"
         />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -44,10 +46,10 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"
-                android:textColor="@color/indigo_100_blacked"
+                android:textColor="@color/indigo_100_grayed"
                 android:textAllCaps="true"
                 android:textSize="10sp"
-                android:text="designer"
+                tools:text="designer"
         />
 
         <!--    <androidx.appcompat.widget.AppCompatTextView
@@ -59,7 +61,7 @@
                     app:layout_constraintTop_toBottomOf="@id/tv_user_role"
                     android:textColor="@color/indigo.200"
                     android:textSize="10sp"
-                    android:text="jdenver@ourcompany.com"
+                    tools:text="jdenver@ourcompany.com"
             />-->
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -70,10 +72,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:textColor="#FF9999AA"
-                android:background="@color/indigo_100_blacked_transparent2"
+                android:background="@color/semitransparent_black_right"
                 android:gravity="center"
                 android:textSize="10sp"
-                android:text="Member of 2 other projects"
+                tools:text="Member of 2 other projects"
                 android:visibility="visible"
         />
     </androidx.constraintlayout.widget.ConstraintLayout>

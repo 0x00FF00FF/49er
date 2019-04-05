@@ -147,7 +147,7 @@ public class UserListFragment extends Fragment {
 
         @Override
         public int getLayout() {
-            return userData.getName().length() > 24 ? R.layout.item_user_list : R.layout.item_user_list_v2;
+            return /*userData.getName().length() > 24 ? R.layout.item_user_list : */R.layout.item_user_list_v2;
         }
     }
 }
