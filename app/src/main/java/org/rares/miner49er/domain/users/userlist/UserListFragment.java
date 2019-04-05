@@ -3,12 +3,10 @@ package org.rares.miner49er.domain.users.userlist;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -19,6 +17,7 @@ import butterknife.Unbinder;
 import com.xwray.groupie.GroupAdapter;
 import com.xwray.groupie.Item;
 import com.xwray.groupie.ViewHolder;
+import de.hdodenhof.circleimageview.CircleImageView;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
@@ -74,6 +73,7 @@ public class UserListFragment extends Fragment {
 
         RecyclerView rootRv = (RecyclerView) inflater.inflate(R.layout.fragment_user_list, container, false);
         rootRv.setLayoutManager(new GridLayoutManager(rootRv.getContext(), 2, RecyclerView.HORIZONTAL, false));
+//        rootRv.setLayoutManager(new LinearLayoutManager(rootRv.getContext(), RecyclerView.HORIZONTAL, false));
         unbinder = ButterKnife.bind(this, rootRv);
         refresh();
         rootRv.setAdapter(userAdapter);
@@ -94,12 +94,12 @@ public class UserListFragment extends Fragment {
     }
 
     public void refresh() {
-        Log.d(TAG, "refresh() called");
         getProjectId();
         if (projectId > 0) {
             ProjectData projectData = projectsDAO.get(projectId, true).blockingGet().get();
             List<UserData> team = projectData.getTeam();
             if (team != null) {
+                userAdapter.clear();
                 for (UserData userData : team) {
                     userAdapter.add(new UserItem(userData, userData.id % 2 == 0 ? 1 : userData.id % 3 == 0 ? 0 : 2));
                 }
@@ -114,9 +114,6 @@ public class UserListFragment extends Fragment {
     private void getProjectId() {
         if (getArguments() != null) {
             projectId = getArguments().getLong(ProjectsInterfaces.KEY_PROJECT_ID, -1);
-            Log.i(TAG, "getProjectId: arguments not null, project id: " + projectId);
-        } else {
-            Log.w(TAG, "getProjectId: arguments null");
         }
     }
 
@@ -133,7 +130,7 @@ public class UserListFragment extends Fragment {
         @Override
         public void bind(@NonNull ViewHolder viewHolder, int position) {
             String role = userData.id % 2 == 0 ? roleDeveloper : userData.id % 3 == 0 ? roleProjectManager : roleDesigner;
-            AppCompatImageView userPhoto = viewHolder.itemView.findViewById(R.id.img_user_photo);
+            CircleImageView userPhoto = viewHolder.itemView.findViewById(R.id.img_user_photo);
             ((AppCompatTextView) viewHolder.itemView.findViewById(R.id.tv_user_name)).setText(
                     TextUtils.clearNamePrefix(userData.getName()).replace(" ", "\n"));
             ((AppCompatTextView) viewHolder.itemView.findViewById(R.id.tv_user_role)).setText(role);
@@ -144,6 +141,7 @@ public class UserListFragment extends Fragment {
             GlideApp.with(viewHolder.itemView)
                     .load(userData.getPicture())
                     .error(R.drawable.skull)
+//                    .apply(RequestOptions.circleCropTransform())
                     .into(userPhoto);
         }
 
