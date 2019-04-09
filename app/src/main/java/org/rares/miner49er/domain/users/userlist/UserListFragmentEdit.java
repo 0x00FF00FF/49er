@@ -64,7 +64,12 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 .build();
         refreshData();
         recyclerView.setAdapter(userAdapter);
-        recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), 2, RecyclerView.VERTICAL, false));
+        int spanCount = 2; //columns
+        recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), spanCount, RecyclerView.VERTICAL, false));
+        int spacing = 10; // px
+        boolean includeEdge = false;
+        recyclerView.addItemDecoration(new VerticalGridSpacingItemDecoration(spanCount, spacing, includeEdge));
+
         return v;
     }
 

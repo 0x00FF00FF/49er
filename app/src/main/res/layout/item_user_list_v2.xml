@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="168dp"
         android:layout_height="96dp"
-        android:layout_margin="@dimen/sv_margin"
+        android:layout_marginBottom="@dimen/sv_margin"
         style="@style/TempCardViewStyle"
 >
     <androidx.constraintlayout.widget.ConstraintLayout

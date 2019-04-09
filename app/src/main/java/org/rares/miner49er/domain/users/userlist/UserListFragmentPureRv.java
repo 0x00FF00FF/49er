@@ -73,9 +73,10 @@ public class UserListFragmentPureRv extends Fragment {
                              Bundle savedInstanceState) {
         recyclerView = (RecyclerView) inflater.inflate(R.layout.fragment_user_list, container, false);
         unbinder = ButterKnife.bind(this, recyclerView);
-
-        recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), 2, RecyclerView.HORIZONTAL, false));
+        int spanCount = 2;
+        recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), spanCount, RecyclerView.HORIZONTAL, false));
 //        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext(), RecyclerView.HORIZONTAL, false));
+        recyclerView.addItemDecoration(new HorizontalGridSpacingItemDecoration(spanCount, 24, false));
 
         UserAdapter userAdapter = UserAdapter.builder()
                 .data(Collections.emptyList())
