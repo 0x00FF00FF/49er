@@ -1,12 +1,16 @@
 package org.rares.miner49er.domain.projects.ui.actions;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentManager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -15,19 +19,28 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.domain.users.userlist.UserListFragment;
+import org.rares.miner49er.domain.users.userlist.UserInterfaces;
+import org.rares.miner49er.domain.users.userlist.UserListFragmentEdit;
+import org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.util.TextUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 
-public abstract class ProjectActionFragment extends ActionFragment {
+public abstract class ProjectActionFragment
+        extends ActionFragment
+        implements UserInterfaces.SelectedUsersListConsumer {
+
+    public static final String TAG = ProjectActionFragment.class.getSimpleName();
 
     @BindView(R.id.content_container)
     protected ConstraintLayout container;
@@ -58,19 +71,24 @@ public abstract class ProjectActionFragment extends ActionFragment {
     @BindView(R.id.btn_cancel_add_project)
     protected MaterialButton btnCancel;
 
-    protected UserListFragment userListFragment;
+    @BindView(R.id.btn_edit_users)
+    protected AppCompatImageView btnEditUsers;
+
+    protected UserListFragmentPureRv userListFragment;
+    protected UserListFragmentEdit userListFragmentEdit;
 
     protected AsyncGenericDao<ProjectData> projectsDAO;
     protected AsyncGenericDao<UserData> usersDAO;
 
     protected ProjectData projectData = null;
+    protected List<UserData> team;
 
     protected View createView(LayoutInflater inflater, ViewGroup container) {
 
         rootView = (ScrollView) inflater.inflate(R.layout.fragment_project_edit, container, false);
         setReplacedView(container.findViewById(R.id.scroll_views_container));        //
 
-        userListFragment = (UserListFragment) getChildFragmentManager().findFragmentById(R.id.users_rv);
+        userListFragment = (UserListFragmentPureRv) getChildFragmentManager().findFragmentById(R.id.users_rv);
 
         unbinder = ButterKnife.bind(this, rootView);
         prepareEntry();
@@ -154,6 +172,7 @@ public abstract class ProjectActionFragment extends ActionFragment {
         }
         projectData.setIcon(iconUrl);
         projectData.setPicture(iconUrl);
+        projectData.setTeam(userListFragment.getUsers());
     }
 
     protected void resetFields() {
@@ -172,5 +191,62 @@ public abstract class ProjectActionFragment extends ActionFragment {
         inputLayoutProjectDescription.setError("");
         inputLayoutProjectIcon.setError("");
         inputLayoutProjectOwner.setError("");
+    }
+
+    @OnClick(R.id.btn_edit_users)
+    public void showUsersEditFragment() {
+        btnEditUsers.setEnabled(false);
+        List<UserData> users = userListFragment.getUsers();
+        long[] ids = new long[users.size()];
+        for (int i = 0; i < users.size(); i++) {
+            ids[i] = users.get(i).id;
+            Log.i(TAG, "showUsersEditFragment: " + ids[i]);
+        }
+        long prId = projectData == null || projectData.id == null ? -1 : projectData.id;
+        if (userListFragmentEdit == null) {
+            userListFragmentEdit = UserListFragmentEdit.newInstance(prId, ids, this, 0);
+        } else {
+            Bundle args = new Bundle();
+            args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, prId);
+            args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
+            args.putSerializable(UserInterfaces.KEY_SELECTED_USERS_CONSUMER, this);
+            userListFragmentEdit.setArguments(args);
+        }
+        FragmentManager fragmentManager = getChildFragmentManager();
+        fragmentManager.beginTransaction()
+                .add(container.getId(), userListFragmentEdit, UserListFragmentEdit.TAG)
+                .addToBackStack(userListFragment.getTag())
+                .show(userListFragmentEdit)
+                .commit();
+    }
+
+    @Override
+    public void fragmentClosed(String tag) {
+        if (tag != null && tag.equals(userListFragmentEdit.getTag())) {
+            btnEditUsers.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void setSelectedList(List<Long> selectedUsersList) {
+        if (team == null) {
+            team = new ArrayList<>();
+        }
+        team.clear();
+        for (Long userId : selectedUsersList) {
+            team.add(usersDAO.get(userId, true).blockingGet().get());
+        }
+        long[] ids = new long[selectedUsersList.size()];
+        for (int i = 0; i < selectedUsersList.size(); i++) {
+            ids[i] = selectedUsersList.get(i);
+        }
+        Bundle args = userListFragment.getArguments();
+        if (args == null) {
+            args = new Bundle();
+        }
+        args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
+        userListFragment.setArguments(args);
+
+        userListFragment.refreshData();
     }
 }

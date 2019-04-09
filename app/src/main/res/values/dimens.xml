@@ -29,5 +29,7 @@
     <dimen name="toolbar_material_height_regular">56dp</dimen>
 
     <dimen name="material_textinput_box_corner_radius_medium">4dp</dimen>
+
+    <dimen name="users_status_icon">12dp</dimen>
 </resources>
 

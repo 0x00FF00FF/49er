@@ -16,7 +16,8 @@ import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
-import org.rares.miner49er.domain.users.userlist.UserListFragment;
+import org.rares.miner49er.domain.users.userlist.UserInterfaces;
+import org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
@@ -160,15 +161,17 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
 
         projectData = projectsDAO.get(projectId, true).blockingGet().get().clone();        ////
 
-
+        long[] ids = {};
         if (userListFragment == null) {
-            userListFragment = UserListFragment.newInstance(projectData.id);
+            userListFragment = UserListFragmentPureRv.newInstance(projectData.id, ids, this);
         } else {
             Bundle args = new Bundle();
             args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectData.id);
+            args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
+            args.putSerializable(UserInterfaces.KEY_SELECTED_USERS_CONSUMER, this);
             userListFragment.setArguments(args);
         }
-        userListFragment.refresh();
+        userListFragment.refreshData();
 
         getChildFragmentManager().beginTransaction()
                 .show(userListFragment)

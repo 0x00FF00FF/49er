@@ -21,7 +21,6 @@ import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -188,19 +187,25 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
             projectData.parentId = projectData.getOwner().id;
         }
 
+        if (userListFragment != null) {
+            userListFragment.sendSelectedIds(); ///
+        }
+
         // add a team by default, to be deleted when a team can be manually added.
         if (projectData.getTeam() == null || projectData.getTeam().size() == 0) {
-            List<UserData> users = usersDAO.getAll(true).blockingGet();         //
-            List<UserData> team = new ArrayList<>();
-            for (UserData u : users) {
-                if (u.getRole() != 12) {
-                    team.add(u);
-                }
-                if (team.size() > 6) {
-                    break;
-                }
+//            List<UserData> users = usersDAO.getAll(true).blockingGet();         //
+//            List<UserData> team = new ArrayList<>();
+//            for (UserData u : users) {
+//                if (u.getRole() != 12) {
+//                    team.add(u);
+//                }
+//                if (team.size() > 6) {
+//                    break;
+//                }
+//            }
+            if (team != null) {
+                projectData.setTeam(team);
             }
-            projectData.setTeam(team);
         }
     }
 }

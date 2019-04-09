@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/user_edit_container"
+        android:background="@color/semitransparent_black_left"
+        android:elevation="10dp"
+>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            tools:layout_marginTop="24dp"
+            tools:layout_marginBottom="24dp"
+            tools:layout_height="match_parent"
+            tools:layout_width="match_parent"
+            android:background="@drawable/background_date_picker_white"
+    >
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_edit_users_title"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_edit_users"
+                tools:text="@string/title_edit_users"
+                android:textAllCaps="true"
+                android:gravity="center"
+                android:background="@color/indigo_100_blacked_transparent2"
+                android:paddingTop="@dimen/sv_margin"
+                android:paddingBottom="@dimen/sv_margin"
+                android:layout_marginTop="@dimen/_list_item_invisible_margin"
+                android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+                android:layout_marginRight="@dimen/_list_item_invisible_margin"
+                android:layout_marginStart="@dimen/_list_item_invisible_margin"
+                android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+                android:textColor="@color/pureWhite"
+        />
+
+        <include layout="@layout/fragment_user_list"
+                 android:id="@+id/rv_users_list"
+                 android:layout_height="0dp"
+                 android:layout_width="match_parent"
+                 app:layout_constraintStart_toStartOf="parent"
+                 app:layout_constraintEnd_toEndOf="parent"
+                 app:layout_constraintTop_toBottomOf="@+id/tv_edit_users_title"
+                 app:layout_constraintBottom_toTopOf="@+id/tv_users_selection_helper"
+                 android:layout_marginBottom="8dp" android:layout_marginTop="16dp"
+                 android:layout_marginStart="8dp"
+                 android:layout_marginLeft="8dp"
+                 android:layout_marginRight="8dp"
+                 android:layout_marginEnd="8dp"
+        />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_users_selection_helper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/indigo.100"
+                android:textSize="@dimen/list_item_secondary_text_size"
+                app:layout_constraintBottom_toTopOf="@+id/btn_add_users"
+                android:text="@string/helper_users_selection"
+                android:layout_marginBottom="16dp" app:layout_constraintEnd_toEndOf="@+id/btn_cancel_users"
+                android:layout_marginEnd="8dp" android:layout_marginRight="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cancel_users"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_cancel"
+                android:layout_marginRight="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_marginBottom="32dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_users"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_save"
+                android:layout_marginRight="@dimen/sv_margin"
+                android:layout_marginEnd="@dimen/sv_margin"
+                app:layout_constraintEnd_toStartOf="@id/btn_cancel_users"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:icon="@drawable/icon_path_done"
+                app:strokeColor="@color/color_selector_outline"
+                app:strokeWidth="0dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginBottom="32dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

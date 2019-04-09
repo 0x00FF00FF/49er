@@ -160,8 +160,21 @@
                     app:layout_constraintTop_toTopOf="parent"
             />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:id="@+id/btn_edit_users"
+                    app:srcCompat="@drawable/icon_path_edit"
+                    app:layout_constraintTop_toTopOf="@id/project_team_text"
+                    app:layout_constraintBottom_toBottomOf="@id/project_team_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"/>
+
             <fragment
-                    android:name="org.rares.miner49er.domain.users.userlist.UserListFragment"
+                    android:name="org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv"
                     android:id="@+id/users_rv"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

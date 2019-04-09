@@ -67,6 +67,12 @@
     <string name="success_project_add">The %s project has been successfully created.</string>
     <string name="success_project_save">The %s project has been saved.</string>
 
+    <string name="btn_edit_users">Edit users</string>
+
+    <string name="title_edit_users">Select team members</string>
+
+    <string name="helper_users_selection">* Cards marked with a star indicate team members.</string>
+
     <!--issue form-->
     <string name="issue_form_header_add">Adding an issue</string>
     <string name="issue_form_header_edit">Editing an issue</string>
