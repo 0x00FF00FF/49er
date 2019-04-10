@@ -58,8 +58,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> implements
         diffResult.dispatchUpdatesTo(this);
     }
 
-    public List<Long> getSelectedItems() {
-        return selectedData;
+    public long[] getSelectedItems() {
+        int size = selectedData.size();
+        long[] selectedList = new long[size];
+        for (int i = 0; i < size; i++) {
+            selectedList[i] = selectedData.get(i);
+        }
+        return selectedList;
     }
 
     private void addSelected(Long id) {

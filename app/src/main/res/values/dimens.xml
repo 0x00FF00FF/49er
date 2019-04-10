@@ -30,6 +30,12 @@
 
     <dimen name="material_textinput_box_corner_radius_medium">4dp</dimen>
 
+
+    <!--users list-->
     <dimen name="users_status_icon">12dp</dimen>
+    <dimen name="users_list_item_width">152dp</dimen>
+    <dimen name="users_list_item_height">96dp</dimen>
+    <dimen name="users_list_item_picture_margin_start">4dp</dimen>
+    <dimen name="users_list_item_name_margin_start">@dimen/users_list_item_picture_margin_start</dimen>
 </resources>
 

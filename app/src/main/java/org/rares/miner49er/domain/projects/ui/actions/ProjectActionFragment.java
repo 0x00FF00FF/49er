@@ -3,7 +3,6 @@ package org.rares.miner49er.domain.projects.ui.actions;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ import androidx.fragment.app.FragmentManager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -156,7 +156,6 @@ public abstract class ProjectActionFragment
     @OnClick(R.id.btn_cancel_add_project)
     public void cancelAction() {
         /*projectData = null;*/
-        resetFields();
         prepareExit();
     }
 
@@ -193,6 +192,7 @@ public abstract class ProjectActionFragment
         inputLayoutProjectOwner.setError("");
     }
 
+    @OnLongClick(R.id.user_list_container)
     @OnClick(R.id.btn_edit_users)
     public void showUsersEditFragment() {
         btnEditUsers.setEnabled(false);
@@ -200,51 +200,48 @@ public abstract class ProjectActionFragment
         long[] ids = new long[users.size()];
         for (int i = 0; i < users.size(); i++) {
             ids[i] = users.get(i).id;
-            Log.i(TAG, "showUsersEditFragment: " + ids[i]);
         }
         long prId = projectData == null || projectData.id == null ? -1 : projectData.id;
         if (userListFragmentEdit == null) {
-            userListFragmentEdit = UserListFragmentEdit.newInstance(prId, ids, this, 0);
+            userListFragmentEdit = UserListFragmentEdit.newInstance(prId, ids, 0);
         } else {
             Bundle args = new Bundle();
             args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, prId);
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
-            args.putSerializable(UserInterfaces.KEY_SELECTED_USERS_CONSUMER, this);
             userListFragmentEdit.setArguments(args);
         }
         FragmentManager fragmentManager = getChildFragmentManager();
-        fragmentManager.beginTransaction()
-                .add(container.getId(), userListFragmentEdit, UserListFragmentEdit.TAG)
-                .addToBackStack(userListFragment.getTag())
-                .show(userListFragmentEdit)
-                .commit();
+//        fragmentManager.beginTransaction()
+//                .add(container.getId(), userListFragmentEdit, UserListFragmentEdit.TAG)
+//                .addToBackStack(userListFragment.getTag())
+//                .show(userListFragmentEdit)
+//                .commit();
+        userListFragmentEdit.show(fragmentManager, UserListFragmentEdit.TAG);
     }
 
     @Override
     public void fragmentClosed(String tag) {
         if (tag != null && tag.equals(userListFragmentEdit.getTag())) {
-            btnEditUsers.setEnabled(true);
+            if (btnEditUsers != null) {
+                btnEditUsers.setEnabled(true);
+            }
         }
     }
 
     @Override
-    public void setSelectedList(List<Long> selectedUsersList) {
+    public void setSelectedList(long[] selectedUsersList) {
         if (team == null) {
             team = new ArrayList<>();
         }
         team.clear();
-        for (Long userId : selectedUsersList) {
+        for (long userId : selectedUsersList) {
             team.add(usersDAO.get(userId, true).blockingGet().get());
-        }
-        long[] ids = new long[selectedUsersList.size()];
-        for (int i = 0; i < selectedUsersList.size(); i++) {
-            ids[i] = selectedUsersList.get(i);
         }
         Bundle args = userListFragment.getArguments();
         if (args == null) {
             args = new Bundle();
         }
-        args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
+        args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, selectedUsersList);
         userListFragment.setArguments(args);
 
         userListFragment.refreshData();

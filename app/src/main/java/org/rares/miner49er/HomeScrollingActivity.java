@@ -394,6 +394,15 @@ public class HomeScrollingActivity
     protected void onPause() {
         Log.e(TAG, "onPause() called");
         super.onPause();
+/*
+        // clear backstack for now. no fragment re-creation.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            int id = fragmentManager.getBackStackEntryAt(0).getId();
+            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        // need to also clear the TAM queue
+*/
     }
 
     @Override
@@ -432,13 +441,6 @@ public class HomeScrollingActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-//        // clear backstack for now. no fragment re-creation.
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        if (fragmentManager.getBackStackEntryCount() > 0) {
-//            int id = fragmentManager.getBackStackEntryAt(0).getId();
-//            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-//        }
 
         NetworkingService.INSTANCE.end();
 

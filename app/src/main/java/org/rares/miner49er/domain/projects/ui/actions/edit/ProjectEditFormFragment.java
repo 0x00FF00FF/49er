@@ -163,12 +163,11 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
 
         long[] ids = {};
         if (userListFragment == null) {
-            userListFragment = UserListFragmentPureRv.newInstance(projectData.id, ids, this);
+            userListFragment = UserListFragmentPureRv.newInstance(projectData.id, ids);
         } else {
             Bundle args = new Bundle();
             args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectData.id);
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
-            args.putSerializable(UserInterfaces.KEY_SELECTED_USERS_CONSUMER, this);
             userListFragment.setArguments(args);
         }
         userListFragment.refreshData();
