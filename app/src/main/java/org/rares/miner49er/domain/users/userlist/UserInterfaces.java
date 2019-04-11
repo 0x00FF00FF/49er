@@ -13,6 +13,6 @@ public interface UserInterfaces {
 
     interface SelectedUsersListConsumer extends Serializable {
         void setSelectedList(long[] selectedUsersList);
-        void fragmentClosed(String tag);
+        void UsersListFragmentClosed(String tag);
     }
 }

@@ -116,7 +116,7 @@ public class UserListFragmentPureRv extends DialogFragment {
     public void onDetach() {
         super.onDetach();
         if (usersListConsumer != null) {
-            usersListConsumer.fragmentClosed(getTag());
+            usersListConsumer.UsersListFragmentClosed(getTag());
         }
         usersListConsumer = null;
     }
@@ -130,7 +130,7 @@ public class UserListFragmentPureRv extends DialogFragment {
     public void refreshData() {
         getArgs();
         List<UserData> team = new ArrayList<>();
-        if (userIds != null && userIds.length > 0) {
+        if (userIds != null) {
             for (long userId : userIds) {
                 team.add(usersDAO.get(userId, true).blockingGet().get());
                 // hopefully the users are already in the cache, but

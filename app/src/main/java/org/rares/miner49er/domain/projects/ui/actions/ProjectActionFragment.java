@@ -220,7 +220,7 @@ public abstract class ProjectActionFragment
     }
 
     @Override
-    public void fragmentClosed(String tag) {
+    public void UsersListFragmentClosed(String tag) {
         if (tag != null && tag.equals(userListFragmentEdit.getTag())) {
             if (btnEditUsers != null) {
                 btnEditUsers.setEnabled(true);
