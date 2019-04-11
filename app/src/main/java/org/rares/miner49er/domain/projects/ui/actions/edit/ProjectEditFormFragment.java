@@ -13,7 +13,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
-import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces;
@@ -161,12 +160,11 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
 
         projectData = projectsDAO.get(projectId, true).blockingGet().get().clone();        ////
 
-        long[] ids = {};
+        long[] ids = getUsersIds(projectData.getTeam());
         if (userListFragment == null) {
-            userListFragment = UserListFragmentPureRv.newInstance(projectData.id, ids);
+            userListFragment = UserListFragmentPureRv.newInstance(ids);
         } else {
             Bundle args = new Bundle();
-            args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectData.id);
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
             userListFragment.setArguments(args);
         }

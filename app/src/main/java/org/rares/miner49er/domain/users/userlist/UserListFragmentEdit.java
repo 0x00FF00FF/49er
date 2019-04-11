@@ -15,8 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import org.rares.miner49er.R;
-import org.rares.miner49er.domain.projects.ProjectsInterfaces;
-import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.userlist.itemdecorator.VerticalGridSpacingItemDecoration;
 import org.rares.miner49er.util.UiUtil;
@@ -33,11 +31,9 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     public UserListFragmentEdit() {
     }
 
-    public static UserListFragmentEdit newInstance(
-            long projectId, long[] userIds, int zero) {
+    public static UserListFragmentEdit newInstance(long[] userIds, int zero) {
         UserListFragmentEdit fragment = new UserListFragmentEdit();
         Bundle args = new Bundle();
-        args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectId);
         if (userIds != null && userIds.length > 0) {
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, userIds);
         }
@@ -140,24 +136,17 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 // hopefully the users are already in the cache, but
                 // this should be one call: dao.getAllIn(long[] ids)
             }
-        } else {
-            if (projectId > 0) {
-                ProjectData projectData = projectsDAO.get(projectId, true).blockingGet().get();
-                team = projectData.getTeam();
-            }
         }
-        if (team != null) {
-            if (recyclerView != null) {
-                UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
-                if (adapter != null) {
-                    allUsers = usersDAO.getAll(true).blockingGet();
-                    List<Long> selectedUsersIds = new ArrayList<>();
-                    for (UserData ud : team) {
-                        selectedUsersIds.add(ud.id);
-                    }
-                    adapter.setSelectedData(selectedUsersIds);
-                    adapter.setData(allUsers);
+        if (recyclerView != null) {
+            UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
+            if (adapter != null) {
+                allUsers = usersDAO.getAll(true).blockingGet();
+                List<Long> selectedUsersIds = new ArrayList<>();
+                for (UserData ud : team) {
+                    selectedUsersIds.add(ud.id);
                 }
+                adapter.setSelectedData(selectedUsersIds);
+                adapter.setData(allUsers);
             }
         }
     }

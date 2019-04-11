@@ -16,8 +16,6 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.domain.projects.ProjectsInterfaces;
-import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces.SelectedUsersListConsumer;
 import org.rares.miner49er.domain.users.userlist.itemdecorator.HorizontalGridSpacingItemDecoration;
@@ -31,10 +29,9 @@ import java.util.List;
 public class UserListFragmentPureRv extends DialogFragment {
 
     public static final String TAG = UserListFragmentPureRv.class.getSimpleName();
-    protected long projectId = -1;
     protected Unbinder unbinder;
 
-    protected AsyncGenericDao<ProjectData> projectsDAO;
+    //    protected AsyncGenericDao<ProjectData> projectsDAO;
     protected AsyncGenericDao<UserData> usersDAO;
 
     protected SelectedUsersListConsumer usersListConsumer;
@@ -54,15 +51,32 @@ public class UserListFragmentPureRv extends DialogFragment {
     public UserListFragmentPureRv() {
     }
 
-    public static UserListFragmentPureRv newInstance(long projectId, long[] userIds) {
+    public static UserListFragmentPureRv newInstance(long[] userIds) {
         UserListFragmentPureRv fragment = new UserListFragmentPureRv();
         Bundle args = new Bundle();
-        args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, projectId);
         if (userIds != null && userIds.length > 0) {
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, userIds);
         }
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+//        projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
+        usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
+
+        Fragment parentFragment = getParentFragment();
+        if (parentFragment != null) {
+            usersListConsumer = (SelectedUsersListConsumer) parentFragment;
+        } else {
+            if (context instanceof SelectedUsersListConsumer) {
+                usersListConsumer = (SelectedUsersListConsumer) context;
+            } else {
+                throw new UnsupportedOperationException("This fragment expects a SelectedUsersListConsumer parent.");
+            }
+        }
     }
 
     @Override
@@ -76,7 +90,7 @@ public class UserListFragmentPureRv extends DialogFragment {
                              Bundle savedInstanceState) {
         recyclerView = (RecyclerView) inflater.inflate(R.layout.fragment_user_list, container, false);
         unbinder = ButterKnife.bind(this, recyclerView);
-        int spanCount = 2;
+        int spanCount = 1;
         recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), spanCount, RecyclerView.HORIZONTAL, false));
 //        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext(), RecyclerView.HORIZONTAL, false));
         recyclerView.addItemDecoration(new HorizontalGridSpacingItemDecoration(spanCount, 18, false));
@@ -92,24 +106,6 @@ public class UserListFragmentPureRv extends DialogFragment {
         refreshData();
         recyclerView.setAdapter(userAdapter);
         return recyclerView;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
-        usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
-
-        Fragment parentFragment = getParentFragment();
-        if (parentFragment != null) {
-            usersListConsumer = (SelectedUsersListConsumer) parentFragment;
-        } else {
-            if (context instanceof SelectedUsersListConsumer) {
-                usersListConsumer = (SelectedUsersListConsumer) context;
-            } else {
-                throw new UnsupportedOperationException("This fragment expects a SelectedUsersListConsumer parent.");
-            }
-        }
     }
 
     @Override
@@ -136,36 +132,34 @@ public class UserListFragmentPureRv extends DialogFragment {
                 // hopefully the users are already in the cache, but
                 // this should be one call: dao.getAllIn(long[] ids)
             }
-        } else {
-            if (projectId > 0) {
-                ProjectData projectData = projectsDAO.get(projectId, true).blockingGet().get();
-                team = projectData.getTeam();
-            }
         }
-        if (team != null) {
-            if (recyclerView != null) {
-                UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
-                if (adapter == null) {
-                    adapter = UserAdapter.builder()
-                            .data(team)
-                            .selectedData(Collections.emptyList())
-                            .roleProjectManager(roleProjectManager)
-                            .roleDesigner(roleDesigner)
-                            .roleDeveloper(roleDeveloper)
-                            .build();
-                    recyclerView.setAdapter(adapter);
-                } else {
-                    adapter.setData(team);
-                }
+        if (recyclerView != null) {
+            UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
+            if (adapter == null) {
+                adapter = UserAdapter.builder()
+                        .data(team)
+                        .selectedData(Collections.emptyList())
+                        .roleProjectManager(roleProjectManager)
+                        .roleDesigner(roleDesigner)
+                        .roleDeveloper(roleDeveloper)
+                        .build();
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.setData(team);
+            }
+            GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
+            if (adapter.getItemCount() > 2) {
+                glm.setSpanCount(2);
+            } else {
+                glm.setSpanCount(1);
             }
         }
     }
 
 
-    protected void getArgs() {
+    void getArgs() {
         Bundle args = getArguments();
         if (args != null) {
-            projectId = args.getLong(ProjectsInterfaces.KEY_PROJECT_ID, -1);
             userIds = args.getLongArray(UserInterfaces.KEY_SELECTED_USERS);
         }
     }

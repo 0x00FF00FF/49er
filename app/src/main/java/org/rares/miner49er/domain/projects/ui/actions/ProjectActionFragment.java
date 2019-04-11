@@ -19,7 +19,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces;
@@ -197,16 +196,11 @@ public abstract class ProjectActionFragment
     public void showUsersEditFragment() {
         btnEditUsers.setEnabled(false);
         List<UserData> users = userListFragment.getUsers();
-        long[] ids = new long[users.size()];
-        for (int i = 0; i < users.size(); i++) {
-            ids[i] = users.get(i).id;
-        }
-        long prId = projectData == null || projectData.id == null ? -1 : projectData.id;
+        long[] ids = getUsersIds(users);
         if (userListFragmentEdit == null) {
-            userListFragmentEdit = UserListFragmentEdit.newInstance(prId, ids, 0);
+            userListFragmentEdit = UserListFragmentEdit.newInstance(ids, 0);
         } else {
             Bundle args = new Bundle();
-            args.putLong(ProjectsInterfaces.KEY_PROJECT_ID, prId);
             args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
             userListFragmentEdit.setArguments(args);
         }
@@ -217,6 +211,17 @@ public abstract class ProjectActionFragment
 //                .show(userListFragmentEdit)
 //                .commit();
         userListFragmentEdit.show(fragmentManager, UserListFragmentEdit.TAG);
+    }
+
+    protected long[] getUsersIds(List<UserData> users) {
+        if (users == null) {
+            return new long[0];
+        }
+        long[] ids = new long[users.size()];
+        for (int i = 0; i < users.size(); i++) {
+            ids[i] = users.get(i).id;
+        }
+        return ids;
     }
 
     @Override
