@@ -11,12 +11,16 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.domain.users.userlist.UserInterfaces.PositionListener;
 import org.rares.miner49er.domain.users.userlist.itemdecorator.VerticalGridSpacingItemDecoration;
+import org.rares.miner49er.domain.users.userlist.seek.SmallUsersAdapter;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
@@ -27,6 +31,8 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
 
     public static final String TAG = UserListFragmentEdit.class.getSimpleName();
     private int spanCount = 2;
+    @BindView(R.id.rv_small_users_list)
+    RecyclerView smallUsersRv;
 
     public UserListFragmentEdit() {
     }
@@ -69,22 +75,23 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
 //            lp.bottomToBottom = LayoutParams.PARENT_ID;
 //        }
         unbinder = ButterKnife.bind(this, v);
-        recyclerView = v.findViewById(R.id.rv_users_list);
+//        recyclerView = v.findViewById(R.id.rv_users_list);
         UserAdapter userAdapter = UserAdapter.builder()
                 .data(Collections.emptyList())
                 .selectedData(Collections.emptyList())
                 .roleDesigner(roleDesigner)
                 .roleDeveloper(roleDeveloper)
                 .roleProjectManager(roleProjectManager)
+                .positionListener(plLargeToSmall)
                 .clickable(true)
                 .build();
-        refreshData();
         recyclerView.setAdapter(userAdapter);
         recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), spanCount, RecyclerView.VERTICAL, false));
         int spacing = 12;   // px   //
         boolean includeEdge = true;
         recyclerView.addItemDecoration(new VerticalGridSpacingItemDecoration(spanCount, spacing, includeEdge));
-
+        smallUsersRv.setLayoutManager(new LinearLayoutManager(recyclerView.getContext(), RecyclerView.HORIZONTAL, false));
+        smallUsersRv.setAdapter(new SmallUsersAdapter(plSmallToLarge));
         return v;
     }
 
@@ -139,6 +146,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         }
         if (recyclerView != null) {
             UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
+            SmallUsersAdapter smallAdapter = (SmallUsersAdapter) smallUsersRv.getAdapter();
             if (adapter != null) {
                 allUsers = usersDAO.getAll(true).blockingGet();
                 List<Long> selectedUsersIds = new ArrayList<>();
@@ -147,6 +155,9 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 }
                 adapter.setSelectedData(selectedUsersIds);
                 adapter.setData(allUsers);
+                if (smallAdapter != null) {
+                    smallAdapter.updateData(team);
+                }
             }
         }
     }
@@ -165,4 +176,40 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         }
         return Collections.emptyList();
     }
+
+    private PositionListener plSmallToLarge = userId -> {
+        UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
+        int position = -1;
+        if (adapter != null) {
+            position = adapter.getData().indexOf(usersDAO.get(userId, true).blockingGet().get());
+        }
+        recyclerView.smoothScrollToPosition(position);
+    };
+
+    private PositionListener plLargeToSmall = userId -> {
+        SmallUsersAdapter adapter = (SmallUsersAdapter) smallUsersRv.getAdapter();
+        if (adapter != null) {
+            UserData userData = usersDAO.get(userId, true).blockingGet().get();
+            List<UserData> adapterData = adapter.getData();
+            int position = deepContains(adapterData, userData);
+            if (position > -1) {
+                adapterData.remove(position);
+                adapter.notifyItemRemoved(position);
+            } else {
+                adapterData.add(userData);
+                adapter.notifyItemInserted(adapterData.size());
+            }
+        }
+    };
+
+    private int deepContains(List<UserData> list, UserData data) {
+        for (int i = 0; i < list.size(); i++) {
+            UserData userData = list.get(i);
+            if (userData.id.equals(data.id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 }

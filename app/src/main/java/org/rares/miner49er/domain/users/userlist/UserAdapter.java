@@ -13,6 +13,7 @@ import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.model.UserDiff;
+import org.rares.miner49er.domain.users.userlist.UserInterfaces.PositionListener;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> implements
     @Setter
     private List<Long> selectedData;
     private boolean clickable;
+    private PositionListener positionListener;
 
     @NonNull
     @Override
@@ -89,5 +91,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> implements
         } else {
             addSelected(userData.id);
         }
+        positionListener.clickedOnUser(userData.id);
     }
 }

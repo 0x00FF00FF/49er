@@ -32,8 +32,8 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
     public TimeEntriesViewHolder(View itemView) {
         super(itemView);
         setItemProperties(new TimeEntryViewProperties());
-        userInitials.setTypeface(typefaceLight);
-        day.setTypeface(typefaceLight);
+//        userInitials.setTypeface(typefaceLight);
+//        day.setTypeface(typefaceLight);
     }
 
     @Override

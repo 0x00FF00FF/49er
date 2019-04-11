@@ -70,7 +70,8 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         animationUpdateListener = new NoWidthUpdateListener(issueName);
         animatorHost = new DefaultRotationAnimatorHost(issueName.gatherAnimationData());
 
-        issueName.getTextPaint().setTypeface(typefaceLight);
+//        issueName.getTextPaint().setTypeface(typefaceLight);
+        issueName.getTextPaint().setTypeface(customTypeface);
     }
 
     @Override
@@ -403,6 +404,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabelId = NumberUtils.generateViewId();
         infoLabel.setId(infoLabelId);
 
+        infoLabel.setTypeface(customTypeface);
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);
@@ -412,7 +414,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabel.setSingleLine();
         infoLabel.setEllipsize(TruncateAt.END);
 
-        infoLabel.setTypeface(typefaceLight);
+//        infoLabel.setTypeface(typefaceLight);
 
         int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
         infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
@@ -460,7 +462,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 issueName.setEllipsize(reverse);
             }
             toggleInfoContainerVisiblity(reverse);
-            issueName.getTextPaint().setTypeface(selected ? reverse ? typefaceLight : typefaceRegular : typefaceLight);
+//            issueName.getTextPaint().setTypeface(selected ? reverse ? typefaceLight : typefaceRegular : typefaceLight);
         }
     }
 

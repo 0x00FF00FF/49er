@@ -83,6 +83,7 @@ public class ProjectsViewHolder
         setItemProperties(projectViewProperties);
         animationUpdateListener = new NoWidthUpdateListener(projectNameTextView);
         animatorHost = new DefaultRotationAnimatorHost(projectNameTextView.gatherAnimationData());
+        projectNameTextView.getTextPaint().setTypeface(customTypeface);
     }
 
     @Override
@@ -514,6 +515,7 @@ public class ProjectsViewHolder
         infoLabelId = NumberUtils.generateViewId();
         infoLabel.setId(infoLabelId);
 
+        infoLabel.setTypeface(customTypeface);
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);

@@ -61,6 +61,26 @@
                      android:id="@+id/rv_users_list"
                      android:layout_height="match_parent"
                      android:layout_width="match_parent"
+                     tools:spanCount="3"
+            />
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_small_users_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginRight="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:layout_marginBottom="@dimen/_list_item_invisible_margin"
+                    android:background="@drawable/background_snackbar"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:orientation="horizontal"
+                    tools:listitem="@layout/item_user_small"
+                    tools:itemCount="8"
             />
         </FrameLayout>
 

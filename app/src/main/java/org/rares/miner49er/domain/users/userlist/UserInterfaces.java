@@ -7,6 +7,10 @@ import java.io.Serializable;
 public interface UserInterfaces {
     String KEY_SELECTED_USERS = "selectedUsers";
 
+    interface PositionListener {
+        void clickedOnUser(long userId);
+    }
+
     interface UserItemClickListener {
         void onListItemClick(RecyclerView.ViewHolder holder);
     }

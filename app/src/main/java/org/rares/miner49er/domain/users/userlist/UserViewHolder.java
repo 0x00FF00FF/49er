@@ -58,7 +58,7 @@ public class UserViewHolder extends RecyclerView.ViewHolder {
 //                    .apply(RequestOptions.circleCropTransform())
                 .into(userPhoto);
         if (member) {
-            statusView.setImageDrawable(itemView.getContext().getResources().getDrawable(android.R.drawable.star_off));
+//            statusView.setImageDrawable(itemView.getContext().getResources().getDrawable(android.R.drawable.star_off));
             statusView.setVisibility(View.VISIBLE);
         } else {
             statusView.setVisibility(View.GONE);

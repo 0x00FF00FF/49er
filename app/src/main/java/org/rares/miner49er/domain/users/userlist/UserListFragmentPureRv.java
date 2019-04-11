@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import org.rares.miner49er.R;
@@ -37,6 +38,7 @@ public class UserListFragmentPureRv extends DialogFragment {
     protected SelectedUsersListConsumer usersListConsumer;
     protected long[] userIds;
 
+    @BindView(R.id.rv_users_list)
     protected RecyclerView recyclerView;
 
     @BindString(R.string.role_developer)
