@@ -179,7 +179,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
 
         Context context = getContext();
         if (context != null) {
-            TextUtils.hideKeyboardFrom(context, rootView.findFocus());
+            TextUtils.hideKeyboardFrom(rootView.findFocus());
         }
 
         actionFragmentTransition.prepareExitAnimation(getView(), replacedView);

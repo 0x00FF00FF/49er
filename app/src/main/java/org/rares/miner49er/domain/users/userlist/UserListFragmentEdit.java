@@ -4,9 +4,9 @@ import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,16 +27,27 @@ import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnTextChanged;
+import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces.PositionListener;
 import org.rares.miner49er.domain.users.userlist.itemdecorator.VerticalGridSpacingItemDecoration;
 import org.rares.miner49er.domain.users.userlist.seek.SmallUsersAdapter;
+import org.rares.miner49er.ui.custom.functions.Binder;
+import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class UserListFragmentEdit extends UserListFragmentPureRv {
 
@@ -131,8 +142,19 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     @Override
     public void onStart() {
         super.onStart();
+        if (disposables == null) {
+            disposables = new CompositeDisposable();
+        }
         recyclerView.scrollToPosition(0);
         refreshData();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (disposables != null) {
+            disposables.dispose();
+        }
     }
 
     @Override
@@ -145,7 +167,45 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         params.width = WindowManager.LayoutParams.MATCH_PARENT;
         params.height = WindowManager.LayoutParams.MATCH_PARENT;
 
+        BiConsumer<List<UserData>, UserAdapter> userDataConsumer = (data, adapter) -> {
+            adapter.setData(data);
+            recyclerView.scrollToPosition(0);
+        };
+
         getDialog().getWindow().setAttributes(params);
+        disposables.add(
+                searchFlowable
+                        .debounce(100, TimeUnit.MILLISECONDS)
+                        .subscribe(text -> {
+                            UserAdapter userAdapter = (UserAdapter) recyclerView.getAdapter();
+                            if (userAdapter != null) {
+                                Consumer<List<UserData>> consumer = Binder.bindLast(userDataConsumer, userAdapter);
+                                if (text != null && text.length() > 0) {
+                                    // cache.getMatching just sorts the list by the closest results, data should remain the same
+                                    // using lazy:false will use the db
+                                    // db.getMatching will only get matching results (probably 0 or 1)
+                                    // db.getMatching will crash the app (when users are selected and user clicks on the small list). todo
+                                    disposables.add(
+                                            usersDAO
+                                                    .getMatching(text.toString(), null, true)
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(consumer));
+                                } else {
+                                    disposables.add(
+                                            usersDAO
+                                                    .getAll(true)
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(consumer));
+                                }
+                            }
+                        })
+        );
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        disposables.clear();
     }
 
     @OnClick(R.id.btn_add_users)
@@ -164,6 +224,11 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 fm.popBackStack();
             }
         }
+    }
+
+    @OnTextChanged(R.id.et_search)
+    public void searchUsers(CharSequence text) {
+        searchTermProcessor.onNext(text);
     }
 
     public void refreshData() {
@@ -213,31 +278,22 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     @OnClick(R.id.btn_search)
     void toggleSearch() {
         boolean reverse = searchContainer.getTranslationY() == 0;
+        Context context = getContext();
 
         AnimatorListener addPaddingListener = new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                Log.i(TAG, "onAnimationStart + : " + recyclerView.getPaddingBottom());
-            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 recyclerView.setPadding(0, 0, 0, (int) startTranslation);
-                Log.i(TAG, "onAnimationEnd + : " + recyclerView.getPaddingBottom());
             }
         };
 
         AnimatorListener removePaddingListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                Log.i(TAG, "onAnimationStart - : " + recyclerView.getPaddingBottom());
                 recyclerView.setPadding(0, 0, 0, (int) invisibleMarginHeight);
             }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                Log.i(TAG, "onAnimationEnd - : " + recyclerView.getPaddingBottom());
-            }
         };
 
         searchContainer.animate()
@@ -251,6 +307,14 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 .setStartDelay(reverse ? 0 : 150)
                 .setListener(reverse ? removePaddingListener : addPaddingListener)
                 .start();
+
+        if (reverse) {
+            if (context != null) {
+                TextUtils.hideKeyboardFrom(searchEditText);
+            }
+        } else {
+            TextUtils.showKeyboardFor(searchEditText);
+        }
     }
 
     private PositionListener plSmallToLarge = userId -> {
@@ -283,14 +347,20 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
 //        final int DRAWABLE_TOP = 1;
 //        final int DRAWABLE_BOTTOM = 3;
         final int DRAWABLE_RIGHT = 2;
-        v.performClick();   // gaah
+        v.performClick();   // gaah!
         AppCompatEditText editText;
         if (v instanceof AppCompatEditText) {
             editText = (AppCompatEditText) v;
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 if (event.getRawX() >= (
                         editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
-                    editText.setText("");
+                    if (editText.getEditableText().length() > 0) {
+                        editText.setText("");
+                        editText.clearFocus();
+                    } else {
+                        editText.clearFocus();
+                        toggleSearch();
+                    }
                     return true;
                 }
             }
@@ -307,4 +377,12 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         }
         return -1;
     }
+
+    private CompositeDisposable disposables;
+    private PublishProcessor<CharSequence> searchTermProcessor = PublishProcessor.create();
+    private Flowable<CharSequence> searchFlowable = searchTermProcessor
+            .onBackpressureLatest()
+            .subscribeOn(Schedulers.computation())
+            .share();
+
 }

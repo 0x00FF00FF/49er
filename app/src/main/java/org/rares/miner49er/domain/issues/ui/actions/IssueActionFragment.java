@@ -124,7 +124,7 @@ public abstract class IssueActionFragment extends ActionFragment {
 
         Context context = getContext();
         if (context != null) {
-            TextUtils.hideKeyboardFrom(context, rootView.findFocus());
+            TextUtils.hideKeyboardFrom(rootView.findFocus());
         }
 
         if (getView() != null) {

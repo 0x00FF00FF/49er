@@ -12,6 +12,7 @@ import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.AsyncGenericDaoFactory;
+import org.rares.miner49er.util.ModelUtil;
 
 import java.util.List;
 
@@ -70,7 +71,9 @@ public class AsyncUserDataCacheAdapter
 
     @Override
     public Single<List<UserData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
-        return dao.getMatching(term, parentId, lazy).subscribeOn(Schedulers.io());
+        return lazy ?
+                Single.just(ModelUtil.getMatching(userDataCache.getData(Optional.of(null)), term)) :
+                dao.getMatching(term, parentId, false).subscribeOn(Schedulers.io());
     }
 
     @Override

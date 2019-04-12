@@ -145,12 +145,24 @@ public class TextUtils {
         return res;
     }
 
-    public static void hideKeyboardFrom(Context context, View view) {
+    public static void hideKeyboardFrom(View view) {
         if (view == null) {
             return;
         }
+        Context context = view.getContext();
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         view.clearFocus();
+    }
+
+
+    public static void showKeyboardFor(View view) {
+        if (view == null) {
+            return;
+        }
+        Context context = view.getContext();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        view.requestFocus();
+        imm.showSoftInput(view, 0);
     }
 }
