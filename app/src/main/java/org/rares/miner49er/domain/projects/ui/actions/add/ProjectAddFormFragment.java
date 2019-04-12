@@ -124,7 +124,6 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         textView.setTextColor(snackbarTextColor);
 
         snackbar.setAction(R.string.action_undo, v -> {
-            projectsDAO.delete(toDelete);
             snackbar.dismiss();
             snackbarView.postDelayed(() -> {                                    /////////
                 boolean deleted = projectsDAO.delete(toDelete).blockingGet();   //////
