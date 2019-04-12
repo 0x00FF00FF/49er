@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
@@ -142,7 +141,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     @Override
     public void onStart() {
         super.onStart();
-        if (disposables == null) {
+        if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
         }
         recyclerView.scrollToPosition(0);
@@ -152,6 +151,10 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     @Override
     public void onStop() {
         super.onStop();
+
+        searchEditText.setText("");
+        TextUtils.hideKeyboardFrom(getView().findFocus());
+
         if (disposables != null) {
             disposables.dispose();
         }
@@ -160,19 +163,13 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     @Override
     public void onResume() {
         super.onResume();
-        WindowManager.LayoutParams params = getDialog().getWindow().getAttributes();
-
-        params.horizontalMargin = (int) UiUtil.pxFromDp(getDialog().getContext(), 24);
-        params.verticalMargin = (int) UiUtil.pxFromDp(getDialog().getContext(), 24);
-        params.width = WindowManager.LayoutParams.MATCH_PARENT;
-        params.height = WindowManager.LayoutParams.MATCH_PARENT;
+        setDialogSize();
 
         BiConsumer<List<UserData>, UserAdapter> userDataConsumer = (data, adapter) -> {
             adapter.setData(data);
             recyclerView.scrollToPosition(0);
         };
 
-        getDialog().getWindow().setAttributes(params);
         disposables.add(
                 searchFlowable
                         .debounce(100, TimeUnit.MILLISECONDS)
@@ -376,6 +373,17 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
             }
         }
         return -1;
+    }
+
+    private void setDialogSize() {
+        LayoutParams params = getDialog().getWindow().getAttributes();
+
+        params.horizontalMargin = (int) UiUtil.pxFromDp(getDialog().getContext(), 24);
+        params.verticalMargin = (int) UiUtil.pxFromDp(getDialog().getContext(), 24);
+        params.width = LayoutParams.MATCH_PARENT;
+        params.height = LayoutParams.MATCH_PARENT;
+
+        getDialog().getWindow().setAttributes(params);
     }
 
     private CompositeDisposable disposables;
