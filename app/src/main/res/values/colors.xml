@@ -15,6 +15,8 @@
     <color name="semitransparent_black_left_issues">#99000000</color>
     <color name="semitransparent_black_left_selected_issues">#66000000</color>
 
+    <color name="semitransparent_search_background">#E8232636</color>
+    <!--<color name="semitransparent_search_background">#CC232533</color>-->
     <color name="transient_semitransparent_background_margin">@color/indigo_100_blacked</color>
 
     <color name="error_color">@color/projects.default.ee5133</color>
@@ -42,6 +44,7 @@
     <color name="indigo_100_blacked">#30344B</color>
     <color name="indigo_100_blacked_transparent">#4030344B</color>
     <color name="indigo_100_blacked_transparent2">#8030344B</color>
+    <color name="indigo_100_blacked_transparent3">#EE30344B</color>
     <color name="indigo_100_grayed">#606586</color>
     <color name="indigo.050">#E8EAF6</color>
     <color name="indigo.100">#c5cae9</color>

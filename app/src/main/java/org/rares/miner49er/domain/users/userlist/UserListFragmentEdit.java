@@ -1,18 +1,29 @@
 package org.rares.miner49er.domain.users.userlist;
 
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -33,6 +44,22 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     private int spanCount = 2;
     @BindView(R.id.rv_small_users_list)
     RecyclerView smallUsersRv;
+
+    @BindView(R.id.search_container)
+    FrameLayout searchContainer;
+    @BindView(R.id.et_search)
+    AppCompatEditText searchEditText;
+
+    @BindView(R.id.btn_search)
+    AppCompatImageButton searchButton;
+
+    @BindDimen(R.dimen.users_list_search_height)
+    float searchHeight;
+
+    @BindDimen(R.dimen._list_item_invisible_margin)
+    float invisibleMarginHeight;
+
+    private float startTranslation = 0;
 
     public UserListFragmentEdit() {
     }
@@ -61,6 +88,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         return dialog;
     }
 
@@ -92,6 +120,11 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         recyclerView.addItemDecoration(new VerticalGridSpacingItemDecoration(spanCount, spacing, includeEdge));
         smallUsersRv.setLayoutManager(new LinearLayoutManager(recyclerView.getContext(), RecyclerView.HORIZONTAL, false));
         smallUsersRv.setAdapter(new SmallUsersAdapter(plSmallToLarge));
+
+        searchEditText.setOnTouchListener(deleteSearchOnTouch);
+
+        startTranslation = searchHeight + invisibleMarginHeight;
+        searchContainer.setTranslationY(-startTranslation);
         return v;
     }
 
@@ -177,6 +210,49 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         return Collections.emptyList();
     }
 
+    @OnClick(R.id.btn_search)
+    void toggleSearch() {
+        boolean reverse = searchContainer.getTranslationY() == 0;
+
+        AnimatorListener addPaddingListener = new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                Log.i(TAG, "onAnimationStart + : " + recyclerView.getPaddingBottom());
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                recyclerView.setPadding(0, 0, 0, (int) startTranslation);
+                Log.i(TAG, "onAnimationEnd + : " + recyclerView.getPaddingBottom());
+            }
+        };
+
+        AnimatorListener removePaddingListener = new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                Log.i(TAG, "onAnimationStart - : " + recyclerView.getPaddingBottom());
+                recyclerView.setPadding(0, 0, 0, (int) invisibleMarginHeight);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                Log.i(TAG, "onAnimationEnd - : " + recyclerView.getPaddingBottom());
+            }
+        };
+
+        searchContainer.animate()
+                .translationY(reverse ? -startTranslation : 0)
+                .setStartDelay(reverse ? 150 : 0)
+                .start();
+
+        recyclerView
+                .animate()
+                .translationY(reverse ? 0 : startTranslation)
+                .setStartDelay(reverse ? 0 : 150)
+                .setListener(reverse ? removePaddingListener : addPaddingListener)
+                .start();
+    }
+
     private PositionListener plSmallToLarge = userId -> {
         UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
         int position = -1;
@@ -202,6 +278,26 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         }
     };
 
+    private OnTouchListener deleteSearchOnTouch = (v, event) -> {
+//        final int DRAWABLE_LEFT = 0;
+//        final int DRAWABLE_TOP = 1;
+//        final int DRAWABLE_BOTTOM = 3;
+        final int DRAWABLE_RIGHT = 2;
+        v.performClick();   // gaah
+        AppCompatEditText editText;
+        if (v instanceof AppCompatEditText) {
+            editText = (AppCompatEditText) v;
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getRawX() >= (
+                        editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                    editText.setText("");
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
     private int deepContains(List<UserData> list, UserData data) {
         for (int i = 0; i < list.size(); i++) {
             UserData userData = list.get(i);
@@ -211,5 +307,4 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         }
         return -1;
     }
-
 }

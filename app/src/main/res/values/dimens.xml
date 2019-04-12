@@ -37,5 +37,7 @@
     <dimen name="users_list_item_height">96dp</dimen>
     <dimen name="users_list_item_picture_margin_start">4dp</dimen>
     <dimen name="users_list_item_name_margin_start">@dimen/users_list_item_picture_margin_start</dimen>
+
+    <dimen name="users_list_search_height">48dp</dimen>
 </resources>
 

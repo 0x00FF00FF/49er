@@ -12,11 +12,11 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@drawable/background_date_picker_white"
             tools:layout_marginTop="24dp"
             tools:layout_marginBottom="24dp"
             tools:layout_height="match_parent"
             tools:layout_width="match_parent"
-            android:background="@drawable/background_date_picker_white"
     >
         <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tv_edit_users_title"
@@ -25,11 +25,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_edit_users"
-                tools:text="@string/title_edit_users"
                 android:textAllCaps="true"
                 android:gravity="center"
                 android:background="@color/indigo_100_blacked_transparent2"
+                android:textColor="@color/pureWhite"
                 android:paddingTop="@dimen/sv_margin"
                 android:paddingBottom="@dimen/sv_margin"
                 android:layout_marginTop="@dimen/_list_item_invisible_margin"
@@ -37,7 +36,19 @@
                 android:layout_marginRight="@dimen/_list_item_invisible_margin"
                 android:layout_marginStart="@dimen/_list_item_invisible_margin"
                 android:layout_marginEnd="@dimen/_list_item_invisible_margin"
-                android:textColor="@color/pureWhite"
+                android:text="@string/title_edit_users"
+                tools:text="@string/title_edit_users"
+        />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/icon_path_search"
+                app:layout_constraintTop_toTopOf="@id/tv_edit_users_title"
+                app:layout_constraintEnd_toEndOf="@id/tv_edit_users_title"
+                app:layout_constraintBottom_toBottomOf="@id/tv_edit_users_title"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         />
 
         <FrameLayout
@@ -52,13 +63,24 @@
                 android:layout_marginRight="@dimen/_list_item_invisible_margin"
                 android:layout_marginStart="@dimen/_list_item_invisible_margin"
                 android:layout_marginEnd="@dimen/_list_item_invisible_margin"
-                android:background="@drawable/background_user_list_item"
-        >
+                android:id="@+id/user_list_container">
+
             <include layout="@layout/fragment_user_list"
                      android:layout_gravity="center"
                      android:id="@+id/rv_users_list"
                      android:layout_height="match_parent"
                      android:layout_width="wrap_content"
+            />
+
+            <include layout="@layout/layout_search"
+                     android:id="@+id/search_container"
+                     android:layout_width="match_parent"
+                     android:layout_height="@dimen/users_list_search_height"
+                     android:layout_marginTop="2dp"
+                     android:layout_marginLeft="8dp"
+                     android:layout_marginRight="8dp"
+                     android:layout_marginStart="8dp"
+                     android:layout_marginEnd="8dp"
             />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -81,6 +103,17 @@
             />
         </FrameLayout>
 
+
+        <View android:layout_width="0dp"
+              android:layout_height="0dp"
+              android:id="@+id/background_edit_user_list"
+              app:layout_constraintStart_toStartOf="@id/user_list_container"
+              app:layout_constraintEnd_toEndOf="@id/user_list_container"
+              app:layout_constraintTop_toTopOf="@id/user_list_container"
+              app:layout_constraintBottom_toBottomOf="@id/user_list_container"
+              android:background="@drawable/background_simple_outline"
+        />
+
         <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tv_users_selection_helper"
                 android:layout_width="wrap_content"
@@ -99,10 +132,10 @@
                 android:text="@string/btn_cancel"
                 android:layout_marginRight="16dp"
                 android:layout_marginEnd="16dp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_marginBottom="32dp"/>
+                app:layout_constraintBottom_toBottomOf="@+id/btn_add_users"
+                app:layout_constraintTop_toTopOf="@+id/btn_add_users"/>
 
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_users"
@@ -117,7 +150,7 @@
                 app:strokeColor="@color/color_selector_outline"
                 app:strokeWidth="0dp"
                 style="@style/Widget.MaterialComponents.Button"
-                android:layout_marginBottom="32dp"/>
+                android:layout_marginBottom="16dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
