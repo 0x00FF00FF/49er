@@ -14,13 +14,13 @@ import android.text.TextUtils.TruncateAt;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import com.bumptech.glide.request.target.ImageViewTarget;
+import de.hdodenhof.circleimageview.CircleImageView;
 import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
@@ -55,10 +55,10 @@ public class ProjectsViewHolder
     RotationAwareTextView projectNameTextView;
 
     @BindView(R.id.project_logo)
-    ImageView projectLogoView;
+    CircleImageView projectLogoView;
 
     @BindView(R.id.project_image)
-    ImageView projectImage;
+    CircleImageView projectImage;
 
     private TextView infoLabel = null;
 
