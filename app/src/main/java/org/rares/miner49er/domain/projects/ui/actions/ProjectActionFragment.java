@@ -291,7 +291,7 @@ public abstract class ProjectActionFragment
                         Log.d(TAG, "onMenuItemClick() called with: item = [" + item + "]");
                         if (R.id.upload_local == item.getItemId()) {
                             if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
-                                disposables.add(rxPermissions.request(permission.READ_EXTERNAL_STORAGE)
+                                disposables.add(rxPermissions.request(permission.READ_EXTERNAL_STORAGE/*, permission.WRITE_EXTERNAL_STORAGE*/)
                                         .subscribe(granted -> {
                                             if (granted) {
                                                 startActivity();
@@ -316,7 +316,7 @@ public abstract class ProjectActionFragment
 //
 //                            Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
 //                            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickIntent});
-
+//
 //                            startActivityForResult(chooserIntent, PICK_IMAGE);
 
                         // faster (smaller selection of apps, may skip gallery selection app screen)
