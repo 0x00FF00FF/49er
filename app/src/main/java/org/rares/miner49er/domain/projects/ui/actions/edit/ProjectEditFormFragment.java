@@ -18,6 +18,7 @@ import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces;
 import org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
+import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
@@ -56,24 +57,20 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView() called ");
+
         createView(inflater, container);
+
         Object pid = getArguments().get(KEY_PROJECT_ID);
         if (pid == null) {
             throw new IllegalStateException("To edit a project you need an id.");
         }
-//        populateFields(getArguments().getLong(KEY_PROJECT_ID));
+        populateFields(getArguments().getLong(KEY_PROJECT_ID));
 
         btnApply.setIcon(getResources().getDrawable(R.drawable.icon_path_done));
         btnApply.setText(R.string.action_save);
 
         return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-//        UiUtil.sendViewToBack(getView());
-        populateFields(getArguments().getLong(KEY_PROJECT_ID));
     }
 
     @Override
@@ -180,7 +177,13 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         editTextProjectDescription.setText(projectData.getDescription());
         String iconUrl = projectData.getIcon();
         try {
-            iconUrl = URLDecoder.decode(projectData.getIcon(), UTFEnc);
+            if (!iconUrl.startsWith("/")) {
+                iconUrl = URLDecoder.decode(projectData.getIcon(), UTFEnc);
+            }
+            GlideApp
+                    .with(getContext())
+                    .load(iconUrl)
+                    .into(projectIconImage);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -192,5 +195,11 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             Log.i(TAG, "populateFields: OWNER NULL");
         }
         editTextProjectOwner.setText(ownerName);
+
+        Log.i(TAG, "populateFields: " + editTextProjectOwner.getEditableText() + " " +
+                editTextProjectName.getEditableText() + " " +
+                editTextProjectShortName.getEditableText() + " " +
+                editTextProjectDescription.getEditableText() + " " +
+                editTextProjectIcon.getEditableText());
     }
 }

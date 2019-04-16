@@ -10,6 +10,8 @@ import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
 
+import java.lang.ref.WeakReference;
+
 
 // favor composition over inheritance ?
 
@@ -17,13 +19,13 @@ public class ProjectEditActionListener implements
         ToolbarActionManager.MenuActionListener,
         ActionEnforcer.FragmentResultListener {
 
-    private ActionListenerManager actionManager;
+    private WeakReference<ActionListenerManager> actionManager;
 
     @Setter
     private ProjectAddActionListener addActionListener;
 
     public ProjectEditActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
-        this.actionManager = actionManager;
+        this.actionManager = new WeakReference<>(actionManager);
         addActionListener = new ProjectAddActionListener(fragment, actionManager);
         fragment.setResultListener(this);
     }
@@ -46,7 +48,10 @@ public class ProjectEditActionListener implements
 
     @Override
     public void onFragmentDismiss() {
-        actionManager.unregisterActionListener(this);
+        actionManager.get().unregisterActionListener(this);
+
+        actionManager.clear();
+        actionManager = null;
     }
 
     @Override

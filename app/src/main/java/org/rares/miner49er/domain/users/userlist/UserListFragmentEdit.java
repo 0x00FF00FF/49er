@@ -183,13 +183,13 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                                     // db.getMatching will only get matching results (probably 0 or 1)
                                     // db.getMatching will crash the app (when users are selected and user clicks on the small list). todo
                                     disposables.add(
-                                            usersDAO
+                                            usersDAO.get()
                                                     .getMatching(text.toString(), null, true)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe(consumer));
                                 } else {
                                     disposables.add(
-                                            usersDAO
+                                            usersDAO.get()
                                                     .getAll(true)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe(consumer));
@@ -234,7 +234,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         List<UserData> team = new ArrayList<>();
         if (userIds != null && userIds.length > 0) {
             for (long userId : userIds) {
-                team.add(usersDAO.get(userId, true).blockingGet().get());
+                team.add(usersDAO.get().get(userId, true).blockingGet().get());
                 // hopefully the users are already in the cache, but
                 // this should be one call: dao.getAllIn(long[] ids)
             }
@@ -243,7 +243,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
             UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
             SmallUsersAdapter smallAdapter = (SmallUsersAdapter) smallUsersRv.getAdapter();
             if (adapter != null) {
-                allUsers = usersDAO.getAll(true).blockingGet();
+                allUsers = usersDAO.get().getAll(true).blockingGet();
                 List<Long> selectedUsersIds = new ArrayList<>();
                 for (UserData ud : team) {
                     selectedUsersIds.add(ud.id);
@@ -264,7 +264,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
             if (adapter != null) {
                 List<UserData> users = new ArrayList<>();
                 for (Long l : adapter.getSelectedItems()) {
-                    users.add(usersDAO.get(l, true).blockingGet().get());
+                    users.add(usersDAO.get().get(l, true).blockingGet().get());
                 }
                 return users;
             }
@@ -318,7 +318,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         UserAdapter adapter = (UserAdapter) recyclerView.getAdapter();
         int position = -1;
         if (adapter != null) {
-            position = adapter.getData().indexOf(usersDAO.get(userId, true).blockingGet().get());
+            position = adapter.getData().indexOf(usersDAO.get().get(userId, true).blockingGet().get());
         }
         recyclerView.smoothScrollToPosition(position);
     };
@@ -326,7 +326,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
     private PositionListener plLargeToSmall = userId -> {
         SmallUsersAdapter adapter = (SmallUsersAdapter) smallUsersRv.getAdapter();
         if (adapter != null) {
-            UserData userData = usersDAO.get(userId, true).blockingGet().get();
+            UserData userData = usersDAO.get().get(userId, true).blockingGet().get();
             List<UserData> adapterData = adapter.getData();
             int position = deepContains(adapterData, userData);
             if (position > -1) {
@@ -353,9 +353,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                         editText.getRight() - editText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
                     if (editText.getEditableText().length() > 0) {
                         editText.setText("");
-                        editText.clearFocus();
                     } else {
-                        editText.clearFocus();
                         toggleSearch();
                     }
                     return true;

@@ -110,11 +110,29 @@
                     android:id="@+id/project_icon_input_layout_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingRight="64dp"
+                    android:paddingEnd="64dp"
                     android:hint="@string/hint_project_icon"
                     style="@style/Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/project_icon_image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="22dp"
+                app:layout_constraintTop_toTopOf="@+id/project_icon_input_layout"
+                app:layout_constraintBottom_toBottomOf="@+id/project_icon_input_layout"
+                app:layout_constraintEnd_toEndOf="@+id/project_icon_input_layout"
+                app:layout_constraintDimensionRatio="h,1:1"
+                app:civ_border_color="@color/pureWhite"
+                app:civ_border_width="1dp"
+                tools:src="@tools:sample/backgrounds/scenic"
+        />
 
         <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/project_owner_input_layout"

@@ -19,12 +19,6 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
     private FragmentManager fragmentManager;
     private ActionListenerManager actionManager;
 
-    private ActionFragment issueEditFormFragment;
-    private IssueEditActionListener issueEditActionListener;
-
-    private ActionFragment timeEntryAddFormFragment;
-    private TimeEntryAddActionListener timeEntryAddActionListener;
-
     public IssueMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager actionManager) {
         this.fragmentManager = fragmentManager;
         this.actionManager = actionManager;
@@ -33,16 +27,12 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
     @Override
     public boolean add(long id) {
         // show add time entry fragment
-        if (timeEntryAddFormFragment == null) {
-            timeEntryAddFormFragment = new TimeEntryAddFormFragment();
-        }
+        ActionFragment timeEntryAddFormFragment = new TimeEntryAddFormFragment();
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putLong(KEY_ISSUE_ID, id);
         timeEntryAddFormFragment.setArguments(fragmentArgs);
 
-        if (timeEntryAddActionListener == null) {
-            timeEntryAddActionListener = new TimeEntryAddActionListener(timeEntryAddFormFragment, actionManager);
-        }
+        TimeEntryAddActionListener timeEntryAddActionListener = new TimeEntryAddActionListener(timeEntryAddFormFragment, actionManager);
 
         showFragment(timeEntryAddFormFragment);
 
@@ -53,16 +43,12 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean edit(long id) {
-        if (issueEditFormFragment == null) {
-            issueEditFormFragment = IssueEditFormFragment.newInstance();
-        }
+        ActionFragment issueEditFormFragment = IssueEditFormFragment.newInstance();
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putLong(KEY_ISSUE_ID, id);
         issueEditFormFragment.setArguments(fragmentArgs);
 
-        if (issueEditActionListener == null) {
-            issueEditActionListener = new IssueEditActionListener(issueEditFormFragment, actionManager);
-        }
+        IssueEditActionListener issueEditActionListener = new IssueEditActionListener(issueEditFormFragment, actionManager);
 
         showFragment(issueEditFormFragment);
 
@@ -106,16 +92,13 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
 
     private void showFragment(ActionFragment fragment) {
         String tag = fragment.getActionTag();
-        if (fragmentManager.findFragmentByTag(tag) == null) {
 
             fragmentManager
                     .beginTransaction()
                     .setCustomAnimations(
                             R.anim.item_animation_from_left, R.anim.item_animation_to_left)
                     .replace(R.id.main_container, fragment, tag)
-                    .addToBackStack(tag)
                     .show(fragment)
                     .commit();
-        }
     }
 }

@@ -10,22 +10,27 @@ import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
 
+import java.lang.ref.WeakReference;
+
 public class IssueEditActionListener implements
         ToolbarActionManager.MenuActionListener,
         ActionEnforcer.FragmentResultListener {
 
-    private ActionListenerManager actionManager;
+    private WeakReference<ActionListenerManager> actionManager;
     private IssueAddActionListener addActionListener;
 
     public IssueEditActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
-        this.actionManager = actionManager;
+        this.actionManager = new WeakReference<>(actionManager);
         addActionListener = new IssueAddActionListener(fragment, actionManager);
         fragment.setResultListener(this);
     }
 
     @Override   // why unregister here and register somewhere else?
     public void onFragmentDismiss() {
-        actionManager.unregisterActionListener(this);
+        actionManager.get().unregisterActionListener(this);
+
+        actionManager.clear();
+        actionManager = null;
     }
 
     @Override

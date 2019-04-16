@@ -139,12 +139,10 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         InputFilter[] filters = new InputFilter[]{filter};
         InputFilter[] numberFilters = new InputFilter[]{numberFilter};
 
-//        issueNameEditText.setFilters(filters);
-//        ownerEditText.setFilters(filters);
+
         workDateEditText.setFilters(filters);
         hoursWorkedEditText.setFilters(numberFilters);
         commentsEditText.setFilters(filters);
-//        dateAddedEditText.setFilters(filters);
         workDateEditText.setInputType(TYPE_NULL);
 
         return rootView;
@@ -165,6 +163,24 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        container = null;
+        projectNameInputLayout = null;
+        issueNameInputLayout = null;
+        ownerInputLayout = null;
+        hoursWorkedInputLayout = null;
+        workDateInputLayout = null;
+        commentsInputLayout = null;
+        dateAddedInputLayout = null;
+        projectNameEditText = null;
+        issueNameEditText = null;
+        ownerEditText = null;
+        hoursWorkedEditText = null;
+        workDateEditText = null;
+        dateAddedEditText = null;
+        commentsEditText = null;
+        btnCancel = null;
+        btnApply = null;
+        unbinder = null;
     }
 
     @Override
@@ -184,7 +200,10 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
 
         actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         resultListener.onFragmentDismiss();
-        getFragmentManager().popBackStack();  //
+        FragmentManager fm = getFragmentManager();
+        if (fm != null) {
+            fm.beginTransaction().remove(this).commit();
+        }
     }
 
     @Override

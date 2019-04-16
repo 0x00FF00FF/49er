@@ -1,22 +1,39 @@
 package org.rares.miner49er.domain.projects.ui.actions;
 
+import android.Manifest.permission;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
+import android.widget.Toast;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.FragmentManager;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.tbruyelle.rxpermissions2.RxPermissions;
+import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -26,6 +43,8 @@ import org.rares.miner49er.domain.users.userlist.UserListFragmentEdit;
 import org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
+import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.util.FileUtils;
 import org.rares.miner49er.util.TextUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -33,6 +52,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
+import static android.text.InputType.TYPE_NULL;
 import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 
 public abstract class ProjectActionFragment
@@ -65,6 +86,15 @@ public abstract class ProjectActionFragment
     @BindView(R.id.project_owner_input_layout_edit)
     protected TextInputEditText editTextProjectOwner;
 
+    protected String TAG_NAME = String.valueOf(R.id.project_name_input_layout_edit);
+    protected String TAG_SHORT_NAME = String.valueOf(R.id.project_short_name_input_layout_edit);
+    protected String TAG_DESCRIPTION = String.valueOf(R.id.project_description_input_layout_edit);
+    protected String TAG_ICON = String.valueOf(R.id.project_icon_input_layout_edit);
+    protected String TAG_OWNER = String.valueOf(R.id.project_owner_input_layout_edit);
+
+    @BindView(R.id.project_icon_image)
+    protected CircleImageView projectIconImage;
+
     @BindView(R.id.btn_add_project)
     protected MaterialButton btnApply;
     @BindView(R.id.btn_cancel_add_project)
@@ -81,6 +111,11 @@ public abstract class ProjectActionFragment
 
     protected ProjectData projectData = null;
     protected List<UserData> team;
+
+    private int PICK_IMAGE = 14;
+
+    private RxPermissions rxPermissions;
+    private CompositeDisposable disposables;
 
     protected View createView(LayoutInflater inflater, ViewGroup container) {
 
@@ -111,6 +146,15 @@ public abstract class ProjectActionFragment
         editTextProjectDescription.setFilters(filters);
         editTextProjectIcon.setFilters(filters);
 
+        editTextProjectIcon.setInputType(TYPE_NULL);
+        editTextProjectIcon.setOnTouchListener(selectIconOnTouch);
+
+        editTextProjectIcon.setOnFocusChangeListener((view, focused) -> {
+            if (focused) {
+                TextUtils.hideKeyboardFrom(editTextProjectIcon);
+            }
+        });
+
         return rootView;
     }
 
@@ -119,12 +163,27 @@ public abstract class ProjectActionFragment
         super.onAttach(context);
         projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
         usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
+        disposables = new CompositeDisposable();
+        rxPermissions = new RxPermissions(this);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.dispose();
         unbinder.unbind();
+        editTextProjectOwner = null;
+        editTextProjectName = null;
+        editTextProjectShortName = null;
+        editTextProjectDescription = null;
+        editTextProjectIcon = null;
+        container = null;
+        inputLayoutProjectName = null;
+        inputLayoutProjectShortName = null;
+        inputLayoutProjectDescription = null;
+        inputLayoutProjectIcon = null;
+        inputLayoutProjectOwner = null;
+        selectIconOnTouch = null;
     }
 
     @Override
@@ -135,7 +194,6 @@ public abstract class ProjectActionFragment
 
     @Override
     public void prepareExit() {
-        resetFields();
 
         Context context = getContext();
         if (context != null) {
@@ -144,7 +202,10 @@ public abstract class ProjectActionFragment
 
         actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         resultListener.onFragmentDismiss();
-        getFragmentManager().popBackStack();  //
+        FragmentManager fm  = getFragmentManager();
+        if (fm != null) {
+            fm.beginTransaction().remove(this).commit();
+        }
     }
 
     @Override
@@ -154,7 +215,6 @@ public abstract class ProjectActionFragment
 
     @OnClick(R.id.btn_cancel_add_project)
     public void cancelAction() {
-        /*projectData = null;*/
         prepareExit();
     }
 
@@ -205,12 +265,89 @@ public abstract class ProjectActionFragment
             userListFragmentEdit.setArguments(args);
         }
         FragmentManager fragmentManager = getChildFragmentManager();
-//        fragmentManager.beginTransaction()
-//                .add(container.getId(), userListFragmentEdit, UserListFragmentEdit.TAG)
-//                .addToBackStack(userListFragment.getTag())
-//                .show(userListFragmentEdit)
-//                .commit();
         userListFragmentEdit.show(fragmentManager, UserListFragmentEdit.TAG);
+    }
+
+    private OnTouchListener selectIconOnTouch = (v, event) -> {
+//        final int DRAWABLE_LEFT = 0;
+//        final int DRAWABLE_TOP = 1;
+//        final int DRAWABLE_BOTTOM = 3;
+        final int DRAWABLE_RIGHT = 2;
+        v.performClick();   // gaah!
+        AppCompatEditText editText;
+        if (v instanceof AppCompatEditText) {
+            editText = (AppCompatEditText) v;
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+
+                PopupMenu popup = new PopupMenu(getContext(), v);
+
+                popup.getMenuInflater()
+                        .inflate(R.menu.context_menu_picture, popup.getMenu());
+                ToolbarActionManager.addIconToMenuItem(getContext(), popup.getMenu(), R.id.upload_local, R.drawable.icon_path_cloud_upload, 0, 0);
+                ToolbarActionManager.addIconToMenuItem(getContext(), popup.getMenu(), R.id.browse_existing, R.drawable.icon_path_cloud_download, 0, 0);
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Log.d(TAG, "onMenuItemClick() called with: item = [" + item + "]");
+                        if (R.id.upload_local == item.getItemId()) {
+                            if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
+                                disposables.add(rxPermissions.request(permission.READ_EXTERNAL_STORAGE)
+                                        .subscribe(granted -> {
+                                            if (granted) {
+                                                startActivity();
+                                            } else {
+                                                Toast.makeText(getContext(), "Access denied.", Toast.LENGTH_LONG).show();
+                                            }
+                                        }));
+                            } else {
+                                startActivity();
+                            }
+                        }
+                        return true;
+                    }
+
+                    private void startActivity() {
+                        // newer api (the user can choose between installed gallery apps)
+//                            Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+//                            getIntent.setType("image/*");
+//
+//                            Intent pickIntent = new Intent(Intent.ACTION_PICK);
+//                            pickIntent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+//
+//                            Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
+//                            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickIntent});
+
+//                            startActivityForResult(chooserIntent, PICK_IMAGE);
+
+                        // faster (smaller selection of apps, may skip gallery selection app screen)
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("image/*");
+                        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+                    }
+                });
+
+                popup.setGravity(GravityCompat.END);
+
+                popup.show();
+            }
+        }
+        return false;
+    };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Log.i(TAG, "onActivityResult: ");
+        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null) {
+            Context context = getContext();
+            String filePath = FileUtils.getPath(context, data.getData());
+            editTextProjectIcon.setText(filePath);
+            if (context != null) {
+                Glide.with(context)
+                        .load(filePath)
+                        .into(projectIconImage);
+            }
+        }
     }
 
     protected long[] getUsersIds(List<UserData> users) {
@@ -226,10 +363,11 @@ public abstract class ProjectActionFragment
 
     @Override
     public void UsersListFragmentClosed(String tag) {
-        if (tag != null && tag.equals(userListFragmentEdit.getTag())) {
+        if (tag != null && tag.equals(UserListFragmentEdit.TAG)) {
             if (btnEditUsers != null) {
                 btnEditUsers.setEnabled(true);
             }
+            userListFragmentEdit = null;
         }
     }
 

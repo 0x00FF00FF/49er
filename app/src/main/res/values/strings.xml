@@ -40,6 +40,12 @@
 
     <string name="btn_cancel">Cancel</string>
 
+
+    <!--context_menu-->
+    <string name="menu_title_upload_icon">Upload an image</string>
+    <string name="menu_title_browse_existing">Select from existing</string>
+
+
     <!--project form-->
     <string name="project_form_header_add">Adding a project</string>
     <string name="project_form_header_edit">Editing a project</string>

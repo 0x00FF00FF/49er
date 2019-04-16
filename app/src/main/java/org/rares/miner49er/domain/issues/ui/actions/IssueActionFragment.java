@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentManager;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -111,6 +112,19 @@ public abstract class IssueActionFragment extends ActionFragment {
         super.onDestroy();
         disposable.dispose();
         unbinder.unbind();
+        contentContainer = null;
+        projectNameInputLayout = null;
+        projectNameEditText = null;
+        issueNameInputLayout = null;
+        issueNameEditText = null;
+        issueOwnerInputLayout = null;
+        issueOwnerEditText = null;
+        dateAddedInputLayout = null;
+        dateAddedEditText = null;
+        cancelButton = null;
+        applyButton = null;
+        unbinder = null;
+        disposable = null;
     }
 
     @Override
@@ -131,8 +145,9 @@ public abstract class IssueActionFragment extends ActionFragment {
             actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         }
         resultListener.onFragmentDismiss();
-        if (getFragmentManager() != null) {
-            getFragmentManager().popBackStack();  //
+        FragmentManager fm  = getFragmentManager();
+        if (fm != null) {
+            fm.beginTransaction().remove(this).commit();
         }
     }
 

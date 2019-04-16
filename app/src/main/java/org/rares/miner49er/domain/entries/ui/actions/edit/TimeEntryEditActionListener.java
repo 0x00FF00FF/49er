@@ -10,17 +10,19 @@ import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
 
+import java.lang.ref.WeakReference;
+
 public class TimeEntryEditActionListener implements
         ToolbarActionManager.MenuActionListener,
         ActionEnforcer.FragmentResultListener {
 
-    private ActionListenerManager actionManager;
+    private WeakReference<ActionListenerManager> actionManager;
 
     @Setter
     private TimeEntryAddActionListener addActionListener;
 
     public TimeEntryEditActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
-        this.actionManager = actionManager;
+        this.actionManager = new WeakReference<>(actionManager);
         addActionListener = new TimeEntryAddActionListener(fragment, actionManager);
         fragment.setResultListener(this);
     }
@@ -43,7 +45,9 @@ public class TimeEntryEditActionListener implements
 
     @Override
     public void onFragmentDismiss() {
-        actionManager.unregisterActionListener(this);
+        actionManager.get().unregisterActionListener(this);
+        actionManager.clear();
+        actionManager = null;
     }
 
     @Override

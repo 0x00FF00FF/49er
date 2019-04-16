@@ -17,9 +17,6 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
     private FragmentManager fragmentManager;
     private ActionListenerManager actionManager;
 
-    private ActionFragment timeEntryEditFormFragment;
-    private TimeEntryEditActionListener timeEntryEditActionListener;
-
     public TimeEntryMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager actionManager) {
         this.fragmentManager = fragmentManager;
         this.actionManager = actionManager;
@@ -33,17 +30,14 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean edit(long id) {
-        // show edit time entry fragment
-        if (timeEntryEditFormFragment == null) {
-            timeEntryEditFormFragment = TimeEntryEditFormFragment.newInstance();
-        }
+
+        ActionFragment timeEntryEditFormFragment = TimeEntryEditFormFragment.newInstance();
+
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putLong(KEY_TIME_ENTRY_ID, id);
         timeEntryEditFormFragment.setArguments(fragmentArgs);
 
-        if (timeEntryEditActionListener == null) {
-            timeEntryEditActionListener = new TimeEntryEditActionListener(timeEntryEditFormFragment, actionManager);
-        }
+        TimeEntryEditActionListener timeEntryEditActionListener = new TimeEntryEditActionListener(timeEntryEditFormFragment, actionManager);
 
         showFragment(timeEntryEditFormFragment);
 
@@ -88,16 +82,13 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
 
     private void showFragment(ActionFragment fragment) {
         String tag = fragment.getActionTag();
-        if (fragmentManager.findFragmentByTag(tag) == null) {
 
             fragmentManager
                     .beginTransaction()
                     .setCustomAnimations(
                             R.anim.item_animation_from_left, R.anim.item_animation_to_left)
                     .replace(R.id.main_container, fragment, tag)
-                    .addToBackStack(tag)
                     .show(fragment)
                     .commit();
-        }
     }
 }

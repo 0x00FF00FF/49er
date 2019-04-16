@@ -38,6 +38,10 @@
         <item name="fontFamily">@font/futura_book_bt</item>
         <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
 
+        <!--popup theme:-->
+        <item name="android:popupMenuStyle">@style/Custom.PopupMenu</item>
+        <item name="popupMenuStyle">@style/Custom.PopupMenu</item>
+
         <!--material fonts override-->
 
         <item name="textAppearanceHeadline1">@style/Custom.TextAppearance.MaterialComponents.Headline1</item>
@@ -54,6 +58,10 @@
         <item name="textAppearanceButton">@style/Custom.TextAppearance.MaterialComponents.Button</item>
         <item name="textAppearanceOverline">@style/Custom.TextAppearance.MaterialComponents.Overline</item>
 
+    </style>
+
+    <style name="Custom.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/background_menu_drawable</item>
     </style>
 
     <style name="Custom.Widget.Toolbar" parent="Widget.AppCompat.Toolbar">

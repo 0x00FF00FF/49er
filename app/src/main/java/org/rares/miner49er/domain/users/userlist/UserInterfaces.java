@@ -2,8 +2,6 @@ package org.rares.miner49er.domain.users.userlist;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.Serializable;
-
 public interface UserInterfaces {
     String KEY_SELECTED_USERS = "selectedUsers";
 
@@ -15,7 +13,7 @@ public interface UserInterfaces {
         void onListItemClick(RecyclerView.ViewHolder holder);
     }
 
-    interface SelectedUsersListConsumer extends Serializable {
+    interface SelectedUsersListConsumer {
         void setSelectedList(long[] selectedUsersList);
         void UsersListFragmentClosed(String tag);
     }

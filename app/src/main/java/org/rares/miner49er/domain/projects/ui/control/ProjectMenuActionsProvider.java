@@ -22,15 +22,6 @@ public class ProjectMenuActionsProvider
     private FragmentManager fragmentManager;
     private ActionListenerManager actionManager;
 
-    private ActionFragment projectAddFormFragment;
-    private ProjectAddActionListener projectAddActionListener;
-
-    private ActionFragment projectEditFormFragment;
-    private ProjectEditActionListener projectEditActionListener;
-
-    private ActionFragment issueAddFormFragment;
-    private IssueAddActionListener issueAddActionListener;
-
     ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager) {
         this.fragmentManager = fragmentManager;
         actionManager = manager;
@@ -41,15 +32,11 @@ public class ProjectMenuActionsProvider
 
         // show add issue fragment
 
-        if (issueAddFormFragment == null) {
-            issueAddFormFragment = IssueAddFormFragment.newInstance();
-        }
+        ActionFragment issueAddFormFragment = IssueAddFormFragment.newInstance();
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putLong(KEY_PROJECT_ID, id);
         issueAddFormFragment.setArguments(fragmentArgs);
-        if (issueAddActionListener == null) {
-            issueAddActionListener = new IssueAddActionListener(issueAddFormFragment, actionManager);
-        }
+        IssueAddActionListener issueAddActionListener = new IssueAddActionListener(issueAddFormFragment, actionManager);
 
         showFragment(issueAddFormFragment);
 
@@ -60,16 +47,9 @@ public class ProjectMenuActionsProvider
 
     @Override
     public boolean edit(long id) {
-        if (projectEditFormFragment == null) {
-            projectEditFormFragment = ProjectEditFormFragment.newInstance(id);
-        } else {
-            Bundle args = new Bundle();
-            args.putLong(KEY_PROJECT_ID, id);
-            projectEditFormFragment.setArguments(args);
-        }
-        if (projectEditActionListener == null) {
-            projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
-        }
+        ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id);
+
+        ProjectEditActionListener projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
         showFragment(projectEditFormFragment);
 
         actionManager.registerActionListener(projectEditActionListener);
@@ -110,12 +90,8 @@ public class ProjectMenuActionsProvider
         }
 
         if (menuActionId == R.id.action_add_project) {
-            if (projectAddFormFragment == null) {
-                projectAddFormFragment = ProjectAddFormFragment.newInstance();
-            }
-            if (projectAddActionListener == null) {
-                projectAddActionListener = new ProjectAddActionListener(projectAddFormFragment, actionManager);
-            }
+            ActionFragment projectAddFormFragment = ProjectAddFormFragment.newInstance();
+            ProjectAddActionListener projectAddActionListener = new ProjectAddActionListener(projectAddFormFragment, actionManager);
 
             showFragment(projectAddFormFragment);
 
@@ -126,16 +102,12 @@ public class ProjectMenuActionsProvider
 
     private void showFragment(ActionFragment fragment) {
         String tag = fragment.getActionTag();
-        if (fragmentManager.findFragmentByTag(tag) == null) {
-
             fragmentManager
                     .beginTransaction()
                     .setCustomAnimations(
                             R.anim.item_animation_from_left, R.anim.item_animation_to_left)
                     .replace(R.id.main_container, fragment, tag)
-                    .addToBackStack(tag)
                     .show(fragment)
                     .commit();
-        }
     }
 }

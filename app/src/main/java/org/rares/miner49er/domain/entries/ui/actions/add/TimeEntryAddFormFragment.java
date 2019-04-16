@@ -70,11 +70,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         if (issueData != null) {
             bundle.putString(KEY_ISSUE_NAME, issueData.getName());
         }
-//        bundle.putString(KEY_OWNER_NAME, "");
-//        bundle.putString(KEY_WORK_DATE, "");
-//        bundle.putString(KEY_DATE_ADDED, "");
-//        bundle.putString(KEY_COMMENTS, "");
-//        bundle.putString(KEY_HOURS_WORKED, "");
+
         populateFields(bundle);
     }
 

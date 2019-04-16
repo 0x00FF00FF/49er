@@ -22,6 +22,7 @@ import org.rares.miner49er.domain.users.userlist.UserInterfaces.SelectedUsersLis
 import org.rares.miner49er.domain.users.userlist.itemdecorator.HorizontalGridSpacingItemDecoration;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,9 +34,9 @@ public class UserListFragmentPureRv extends DialogFragment {
     protected Unbinder unbinder;
 
     //    protected AsyncGenericDao<ProjectData> projectsDAO;
-    protected AsyncGenericDao<UserData> usersDAO;
+    protected WeakReference<AsyncGenericDao<UserData>> usersDAO;
 
-    protected SelectedUsersListConsumer usersListConsumer;
+    protected WeakReference<SelectedUsersListConsumer> usersListConsumer;
     protected long[] userIds;
 
     @BindView(R.id.rv_users_list)
@@ -67,14 +68,14 @@ public class UserListFragmentPureRv extends DialogFragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 //        projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
-        usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
+        usersDAO = new WeakReference<>(InMemoryCacheAdapterFactory.ofType(UserData.class));
 
         Fragment parentFragment = getParentFragment();
         if (parentFragment != null) {
-            usersListConsumer = (SelectedUsersListConsumer) parentFragment;
+            usersListConsumer = new WeakReference<>((SelectedUsersListConsumer) parentFragment);
         } else {
             if (context instanceof SelectedUsersListConsumer) {
-                usersListConsumer = (SelectedUsersListConsumer) context;
+                usersListConsumer = new WeakReference<>((SelectedUsersListConsumer) context);
             } else {
                 throw new UnsupportedOperationException("This fragment expects a SelectedUsersListConsumer parent.");
             }
@@ -113,9 +114,14 @@ public class UserListFragmentPureRv extends DialogFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if (usersListConsumer != null) {
-            usersListConsumer.UsersListFragmentClosed(getTag());
+        if (usersListConsumer != null && usersListConsumer.get() != null) {
+            usersListConsumer.get().UsersListFragmentClosed(getTag());
+            usersListConsumer.clear();
         }
+        if (usersDAO != null) {
+            usersDAO.clear();
+        }
+        usersDAO = null;
         usersListConsumer = null;
     }
 
@@ -130,7 +136,7 @@ public class UserListFragmentPureRv extends DialogFragment {
         List<UserData> team = new ArrayList<>();
         if (userIds != null) {
             for (long userId : userIds) {
-                team.add(usersDAO.get(userId, true).blockingGet().get());
+                team.add(usersDAO.get().get(userId, true).blockingGet().get());
                 // hopefully the users are already in the cache, but
                 // this should be one call: dao.getAllIn(long[] ids)
             }
@@ -150,10 +156,12 @@ public class UserListFragmentPureRv extends DialogFragment {
                 adapter.setData(team);
             }
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
-            if (adapter.getItemCount() > 2) {
-                glm.setSpanCount(2);
-            } else {
-                glm.setSpanCount(1);
+            if (glm != null) {
+                if (adapter.getItemCount() > 2) {
+                    glm.setSpanCount(2);
+                } else {
+                    glm.setSpanCount(1);
+                }
             }
         }
     }
@@ -173,7 +181,7 @@ public class UserListFragmentPureRv extends DialogFragment {
             selectedList = adapter.getSelectedItems();
         }
         if (usersListConsumer != null) {
-            usersListConsumer.setSelectedList(selectedList);
+            usersListConsumer.get().setSelectedList(selectedList);
             Log.i(TAG, "sendSelectedIds: just sent the list: " + Arrays.toString(selectedList));
         }
     }

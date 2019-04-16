@@ -11,6 +11,8 @@ import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuActionListener;
 
+import java.lang.ref.WeakReference;
+
 public class ProjectAddActionListener
         implements
         ToolbarActionManager.MenuActionListener,
@@ -18,22 +20,23 @@ public class ProjectAddActionListener
 
     private static final String TAG = ProjectAddActionListener.class.getSimpleName();
 
-    private ActionFragment fragment;
-    private ActionListenerManager actionManager;
+    private WeakReference<ActionFragment> fragment;
+    private WeakReference<ActionListenerManager> actionManager;
 
     @Getter
     @Setter
     private long menuActionEntityId;
 
     public ProjectAddActionListener(ActionFragment fragment, ActionListenerManager actionManager) {
-        this.fragment = fragment;
-        this.actionManager = actionManager;
-        this.fragment.setResultListener(this);
+        this.fragment = new WeakReference<>(fragment);
+        this.actionManager = new WeakReference<>(actionManager);
+        this.fragment.get().setResultListener(this);
     }
 
     @Override
     public boolean onToolbarBackPressed() {
-        fragment.prepareExit();
+        fragment.get().prepareExit();
+
         return false; // toolbar manager should not unregister this listener, as it unregisters itself
     }
 
@@ -52,13 +55,18 @@ public class ProjectAddActionListener
     private GenericMenuActions actionsProvider = new EmptyActionsProvider() {
         @Override
         public boolean add(long id) {
-            fragment.applyAction();
+            fragment.get().applyAction();
             return true;
         }
     };
 
     @Override
     public void onFragmentDismiss() {
-        actionManager.unregisterActionListener(this);
+        actionManager.get().unregisterActionListener(this);
+
+        fragment.clear();
+        actionManager.clear();
+        fragment = null;
+        actionManager = null;
     }
 }
