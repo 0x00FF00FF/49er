@@ -39,6 +39,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
                 workDate == otherTimeEntry.workDate &&
                 dateAdded == otherTimeEntry.dateAdded &&
                 color == otherTimeEntry.color &&
+                deleted == otherTimeEntry.deleted &&
                 (otherTimeEntry.comments == null ? "" : otherTimeEntry.comments).equals(comments == null ? "" : comments) &&
                 (otherTimeEntry.userPhoto == null ? "" : otherTimeEntry.userPhoto).equals(userPhoto == null ? "" : userPhoto) &&
                 (otherTimeEntry.userName == null ? "" : otherTimeEntry.userName).equals(userName == null ? "" : userName);
@@ -68,6 +69,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
         userPhoto = newData.userPhoto;
         color = newData.color;
         hours = newData.hours;
+        deleted = newData.deleted;
     }
 
     public TimeEntryData clone() {

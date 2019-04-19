@@ -13,6 +13,7 @@ public final class UserTable {
     public static final String PHOTO_COLUMN = "photo_path";
     public static final String API_KEY_COLUMN = "api_key";
     public static final String ROLE_COLUMN = "role";
+    public static final String ACTIVE_COLUMN = "active";
 
     private UserTable() {
     }
@@ -26,7 +27,9 @@ public final class UserTable {
                 + EMAIL_COLUMN + " TEXT,\n"
                 + PHOTO_COLUMN + " TEXT,\n"
                 + API_KEY_COLUMN + " TEXT,\n"
-                + ROLE_COLUMN + " INTEGER);");
+                + ROLE_COLUMN + " INTEGER,\n"
+                + ACTIVE_COLUMN + " INTEGER(1)" + " DEFAULT 1"
+                + ");");
     }
 
     public static void updateTable(SQLiteDatabase db, int oldVersion) {

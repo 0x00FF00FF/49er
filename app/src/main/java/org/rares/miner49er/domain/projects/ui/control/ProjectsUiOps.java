@@ -4,6 +4,7 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
@@ -16,7 +17,10 @@ import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
+import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
@@ -65,6 +69,8 @@ public class ProjectsUiOps
     @Getter
     @Setter
     private long menuActionEntityId;
+    private TouchHelperCallback<ProjectsViewHolder, ProjectData> touchHelperCallback = new TouchHelperCallback<>();
+    private ItemTouchHelper itemTouchHelper;
 
     public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
@@ -88,6 +94,10 @@ public class ProjectsUiOps
         RecyclerToListViewScrollListener scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
         getRv().addOnScrollListener(scrollListener);
 
+        itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(getRv());
+        touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(ProjectData.class));
+
         startDisposable = new CompositeDisposable();
     }
 
@@ -98,6 +108,7 @@ public class ProjectsUiOps
 //        Log.e(TAG, "setupRepository() called");
         projectsRepository.setup();
         projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
+        touchHelperCallback.setAdapter((ProjectsAdapter) getRv().getAdapter());
     }
 
     @Override

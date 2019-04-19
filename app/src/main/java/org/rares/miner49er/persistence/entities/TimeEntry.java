@@ -17,6 +17,7 @@ public class TimeEntry {
     /*@StorIOSQLiteColumn(name = "last_updated")          */        long lastUpdated;
     /*@StorIOSQLiteColumn(name = "hours")                 */        int hours;
     /*@StorIOSQLiteColumn(name = "comments")              */        String comments;
+    /*@StorIOSQLiteColumn(name = "deleted")               */        int deleted;
 
     Issue issue;
     User user;

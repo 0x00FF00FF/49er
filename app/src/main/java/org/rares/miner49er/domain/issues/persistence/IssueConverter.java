@@ -31,6 +31,7 @@ public class IssueConverter implements DaoConverter<Issue, IssueData> {
         issue.setDateAdded(viewModel.getDateAdded());
         issue.setDateDue(viewModel.getDateDue());
         issue.setOwnerId(viewModel.getOwnerId());
+        issue.setDeleted(viewModel.isDeleted() ? 1 : 0);
         if (viewModel.getOwner() != null) {
             issue.setOwnerId(viewModel.getOwner().id);
             issue.setOwner(usrConverter.vmToDm(viewModel.getOwner()));
@@ -55,6 +56,7 @@ public class IssueConverter implements DaoConverter<Issue, IssueData> {
         converted.setDateAdded(databaseModel.getDateAdded());
         converted.setParentId(databaseModel.getProjectId());
         converted.setOwnerId(databaseModel.getOwnerId());
+        converted.setDeleted(databaseModel.getDeleted() != 0);
         if (databaseModel.getTimeEntries() != null) {
             converted.setTimeEntries(teConverter.dmToVm(databaseModel.getTimeEntries()));
         }

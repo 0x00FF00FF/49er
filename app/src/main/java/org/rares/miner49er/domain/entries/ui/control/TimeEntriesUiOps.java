@@ -4,6 +4,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
@@ -11,7 +12,11 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
+import org.rares.miner49er.domain.entries.adapter.TimeEntriesViewHolder;
+import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 
@@ -32,9 +37,16 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     private TimeEntryMenuActionsProvider menuActionsProvider;
 
+    private TouchHelperCallback<TimeEntriesViewHolder, TimeEntryData> touchHelperCallback = new TouchHelperCallback<>();
+    private ItemTouchHelper itemTouchHelper;
+
     public TimeEntriesUiOps(RecyclerView rv) {
         teRepository.setup();
         repository = teRepository;
+
+        itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(getRv());
+        touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(TimeEntryData.class));
 
         setRv(rv);
     }
@@ -81,6 +93,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
             toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
         }
     }
+
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
 
@@ -94,6 +107,8 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
                 repository.shutdown();
                 getRv().setAdapter(null);
+                touchHelperCallback.setAdapter(null);
+                itemTouchHelper.attachToRecyclerView(null);
                 resetRv();
             } else if (adapter != null) {
                 adapter.clearData();
@@ -103,6 +118,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
                 onParentChanged(viewProperties);
             } else {
                 getRv().setAdapter(createNewAdapter(viewProperties));
+                itemTouchHelper.attachToRecyclerView(getRv());
             }
         }
     }
@@ -111,6 +127,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     public void onParentRemoved(ItemViewProperties viewProperties) {
         if (viewProperties != null) {
             getRv().setAdapter(createNewAdapter(viewProperties));
+            itemTouchHelper.attachToRecyclerView(getRv());
         }
     }
 
@@ -125,6 +142,9 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         teRepository.setup();
         teRepository.setParentProperties(viewProperties);
         teRepository.registerSubscriber(teAdapter);
+
+        touchHelperCallback.setAdapter(teAdapter);
+
         return teAdapter;
     }
 }

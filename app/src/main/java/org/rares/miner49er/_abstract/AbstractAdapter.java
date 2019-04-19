@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * @since 07.03.2018
  */
 
-public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemViewHolder>
+public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemViewHolder, T extends AbstractViewModel>
         extends RecyclerView.Adapter<ExtendedViewHolder>
         implements Consumer<List> {
 
@@ -91,5 +92,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 
     public abstract String resolveData(int position, boolean forceFullData);
 
-    public abstract Object getDisplayData(int adapterPosition);
+    public abstract T getDisplayData(int adapterPosition);
+
+    public abstract List<T> getData();
 }

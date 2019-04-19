@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 import org.rares.miner49er.R;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 
 public class ProjectsAdapter
-        extends AbstractAdapter<ProjectsViewHolder> {
+        extends AbstractAdapter<ProjectsViewHolder, ProjectData> {
 
     private static final String TAG = ProjectsAdapter.class.getSimpleName();
 
@@ -42,6 +43,7 @@ public class ProjectsAdapter
     // Lowest CPU usage is when you don't use any of them,
     // and just change the data and notify data set change,
     // but that is a very poor choice memory-wise.
+    @Getter
     private List<ProjectData> data = new ArrayList<>();
 
     public ProjectsAdapter(final ListItemEventListener listener) {
@@ -128,7 +130,7 @@ public class ProjectsAdapter
     }
 
     @Override
-    public Object getDisplayData(int adapterPosition) {
+    public ProjectData getDisplayData(int adapterPosition) {
         if (adapterPosition < 0 || adapterPosition >= data.size()) {
             return null;
         }

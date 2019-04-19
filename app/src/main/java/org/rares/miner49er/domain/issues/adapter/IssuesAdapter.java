@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -22,10 +23,11 @@ import java.util.List;
  * @since 10.10.2017
  */
 
-public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
+public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> {
 
     private static final String TAG = IssuesAdapter.class.getSimpleName();
 
+    @Getter
     private List<IssueData> data = new ArrayList<>();
 
     public IssuesAdapter(final BaseInterfaces.ListItemEventListener listener) {
@@ -94,7 +96,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     }
 
     @Override
-    public Object getDisplayData(int adapterPosition) {
+    public IssueData getDisplayData(int adapterPosition) {
         if (adapterPosition < 0 || adapterPosition >= data.size()) {
             return null;
         }

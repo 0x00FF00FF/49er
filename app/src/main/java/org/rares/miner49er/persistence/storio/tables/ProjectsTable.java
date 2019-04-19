@@ -14,6 +14,7 @@ public class ProjectsTable {
     public static final String COLUMN_PROJECT_DESCRIPTION =         "project_description";
     public static final String COLUMN_ICON_PATH =                   "icon_path";
     public static final String COLUMN_PICTURE_PATH =                "picture_path";
+    public static final String COLUMN_DELETED =                     "deleted";
 
     public static final String T_COLUMN_ID =                          TABLE_NAME + "." + COLUMN_ID;
     public static final String T_COLUMN_USER_ID =                     TABLE_NAME + "." + COLUMN_USER_ID;
@@ -23,6 +24,7 @@ public class ProjectsTable {
     public static final String T_COLUMN_PROJECT_DESCRIPTION =         TABLE_NAME + "." + COLUMN_PROJECT_DESCRIPTION;
     public static final String T_COLUMN_ICON_PATH =                   TABLE_NAME + "." + COLUMN_ICON_PATH;
     public static final String T_COLUMN_PICTURE_PATH =                TABLE_NAME + "." + COLUMN_PICTURE_PATH;
+    public static final String T_COLUMN_DELETED =                     TABLE_NAME + "." + COLUMN_DELETED;
 
     public static final String A_COLUMN_ID =                          TABLE_NAME + "_" + COLUMN_ID;
     public static final String A_COLUMN_USER_ID =                     TABLE_NAME + "_" + COLUMN_USER_ID;
@@ -32,8 +34,9 @@ public class ProjectsTable {
     public static final String A_COLUMN_PROJECT_DESCRIPTION =         TABLE_NAME + "_" + COLUMN_PROJECT_DESCRIPTION;
     public static final String A_COLUMN_ICON_PATH =                   TABLE_NAME + "_" + COLUMN_ICON_PATH;
     public static final String A_COLUMN_PICTURE_PATH =                TABLE_NAME + "_" + COLUMN_PICTURE_PATH;
+    public static final String A_COLUMN_DELETED =           TABLE_NAME + "_" + COLUMN_DELETED;
 
-    public static final String COL_ALIAS = String.format("%s, %s, %s, %s, %s, %s, %s, %s",
+    public static final String COL_ALIAS = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s",
             T_COLUMN_ID                     + " as " + A_COLUMN_ID,
             T_COLUMN_USER_ID                + " as " + A_COLUMN_USER_ID,
             T_COLUMN_DATE_ADDED             + " as " + A_COLUMN_DATE_ADDED,
@@ -41,7 +44,8 @@ public class ProjectsTable {
             T_COLUMN_PROJECT_NAME           + " as " + A_COLUMN_PROJECT_NAME,
             T_COLUMN_PROJECT_DESCRIPTION    + " as " + A_COLUMN_PROJECT_DESCRIPTION,
             T_COLUMN_ICON_PATH              + " as " + A_COLUMN_ICON_PATH,
-            T_COLUMN_PICTURE_PATH           + " as " + A_COLUMN_PICTURE_PATH);
+            T_COLUMN_PICTURE_PATH           + " as " + A_COLUMN_PICTURE_PATH,
+            T_COLUMN_DELETED           + " as " + A_COLUMN_DELETED);
 
     public static void createTable(SQLiteDatabase db) {
         db.execSQL(
@@ -54,8 +58,8 @@ public class ProjectsTable {
                     COLUMN_PROJECT_NAME                 + " TEXT NOT NULL, " +
                     COLUMN_PROJECT_DESCRIPTION          + " TEXT, " +
                     COLUMN_ICON_PATH                    + " TEXT NOT NULL, " +
-                    COLUMN_PICTURE_PATH                 + " TEXT NOT NULL" + ");"
-        );
+                    COLUMN_PICTURE_PATH                 + " TEXT NOT NULL,\n" +
+                    COLUMN_DELETED                      + " INTEGER);");
     }
 
     public static Query AllProjectsQuery = Query.builder().table(ProjectsTable.TABLE_NAME).build();

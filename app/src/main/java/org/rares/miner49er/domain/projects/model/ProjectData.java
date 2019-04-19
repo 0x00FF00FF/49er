@@ -41,6 +41,7 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
 
         return (lastUpdated == otherData.lastUpdated) &&
                 (color == otherData.color) &&
+                (deleted == otherData.deleted) &&
                 (dateAdded == otherData.dateAdded) &&
                 (description == null ? "" : description).equals(otherData.getDescription() == null ? "" : otherData.getDescription()) &&
                 (icon == null ? "" : icon).equals(otherData.getIcon() == null ? "" : otherData.getIcon()) &&
@@ -57,6 +58,7 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
         picture = projectData.picture;
         color = projectData.color;
         dateAdded = projectData.dateAdded;
+        deleted = projectData.deleted;
 
         owner = projectData.owner;
         team = projectData.team;

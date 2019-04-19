@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -21,8 +22,9 @@ import java.util.List;
  * @since 14.03.2018
  */
 
-public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
+public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, TimeEntryData> {
 
+    @Getter
     private List<TimeEntryData> data = new ArrayList<>();
 
     public TimeEntriesAdapter(BaseInterfaces.ListItemEventListener listener) {
@@ -78,7 +80,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     }
 
     @Override
-    public Object getDisplayData(int adapterPosition) {
+    public TimeEntryData getDisplayData(int adapterPosition) {
         if (adapterPosition < 0 || adapterPosition >= data.size()) {
             return null;
         }
@@ -96,7 +98,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder> {
     }
 
     @Override
-    public void accept(List list) throws Exception {
+    public void accept(List list) {
 //        Log.d(TAG, "accept! called with: list = [" + list + "]");
         updateList(list);
     }

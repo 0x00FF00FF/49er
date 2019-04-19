@@ -23,6 +23,7 @@ public class UserConverter implements DaoConverter<User, UserData> {
         user.setPhoto(viewModel.getPicture());
         user.setRole(viewModel.getRole());
         user.setLastUpdated(viewModel.getLastUpdated());
+        user.setActive(viewModel.isActive() ? 1 : 0);
         return user;
     }
 
@@ -40,6 +41,7 @@ public class UserConverter implements DaoConverter<User, UserData> {
         converted.setPicture(databaseModel.getPhoto());
         converted.setRole(databaseModel.getRole());
         converted.setLastUpdated(databaseModel.getLastUpdated());
+        converted.setActive(databaseModel.getActive() == 1);
 
         return converted;
     }

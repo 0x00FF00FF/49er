@@ -17,4 +17,5 @@ public class User {
     /*@StorIOSQLiteColumn(name = "photo_path")            */        String photo;
     /*@StorIOSQLiteColumn(name = "api_key")               */        String apiKey;
     /*@StorIOSQLiteColumn(name = "role")                  */        int role;
+    /*@StorIOSQLiteColumn(name = "active")                */        int active;
 }

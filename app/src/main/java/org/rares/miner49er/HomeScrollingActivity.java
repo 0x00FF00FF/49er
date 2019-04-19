@@ -24,7 +24,11 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
@@ -49,7 +53,8 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
-        ProjectsResizeListener {
+        ProjectsResizeListener,
+        Messenger {
 
     public static final String TAG = HomeScrollingActivity.class.getName();
     private float dp2px;
@@ -479,4 +484,39 @@ public class HomeScrollingActivity
         return new CompositeDisposable();
     }
 
+    @Override
+    public void showMessage(String message, int actionType, Completable action) {
+        View container = mainContainer;
+        int snackbarBackgroundColor = container.getContext().getResources().getColor(R.color.indigo_100_blacked);
+        int snackbarTextColor = container.getContext().getResources().getColor(R.color.pureWhite);
+        String snackbarText = container.getContext().getResources().getString(R.string.entry_removed);
+
+        Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
+//        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
+        View snackbarView = snackbar.getView();
+
+        snackbarView.setBackgroundColor(snackbarBackgroundColor);
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(snackbarTextColor);
+
+        snackbar.setAction(R.string.action_undo, v -> action.subscribe(
+                new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.i(TAG, "onComplete: Undid operation.");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: Could not undo the operation.");
+                    }
+                }));
+        snackbar.show();
+    }
 }

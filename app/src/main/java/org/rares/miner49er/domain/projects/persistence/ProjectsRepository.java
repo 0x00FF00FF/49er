@@ -27,19 +27,19 @@ public class ProjectsRepository extends Repository {
     private AsyncGenericDao<ProjectData> asyncDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
 
     public ProjectsRepository() {
-        if (asyncDao instanceof EventBroadcaster) {
-            disposables.add(
-                    ((EventBroadcaster) asyncDao).getBroadcaster()
-                            .onBackpressureLatest()
-                            .throttleLast(1000, TimeUnit.MILLISECONDS)
-                            .subscribe(o -> refreshData(true)));
-        }
     }
 
     @Override
     public void setup() {
-        if (disposables.isDisposed()) {
+        if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
+            if (asyncDao instanceof EventBroadcaster) {
+                disposables.add(
+                        ((EventBroadcaster) asyncDao).getBroadcaster()
+                                .onBackpressureLatest()
+                                .throttleLast(1000, TimeUnit.MILLISECONDS)
+                                .subscribe(o -> refreshData(true)));
+            }
         }
     }
 
@@ -106,10 +106,9 @@ public class ProjectsRepository extends Repository {
 
         List<ProjectData> clones = new ArrayList<>();
         for (ProjectData prd : toReturn) {
-            ProjectData clone = prd.clone();
-//            List<UserData> team = clone.getTeam();
-//            Log.v(TAG, "getData() clone link: " + (team==null?"null":team.size()));
-            clones.add(clone);
+            if (!prd.deleted) {
+                clones.add(prd.clone());
+            }
         }
         return clones;
 //        return toReturn;

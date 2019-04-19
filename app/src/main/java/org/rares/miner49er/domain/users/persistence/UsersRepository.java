@@ -39,23 +39,23 @@ public class UsersRepository extends Repository {
 //                storio
 //                        .observeChangesInTable(UserTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
-        if (asyncDao instanceof EventBroadcaster) {
-            disposables.add(
-                    ((EventBroadcaster) asyncDao).getBroadcaster()
-                            .onBackpressureLatest()
-                            .filter(e -> e.equals(CACHE_EVENT_UPDATE_USER) ||
-                                    e.equals(CACHE_EVENT_UPDATE_USERS) ||
-                                    e.equals(CACHE_EVENT_REMOVE_USER))
-                            .throttleLatest(1, TimeUnit.SECONDS)
-                            .subscribe(o -> refreshData(true)));
-        }
     }
 
     @Override
     public void setup() {
 
-        if (disposables.isDisposed()) {
+        if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
+            if (asyncDao instanceof EventBroadcaster) {
+                disposables.add(
+                        ((EventBroadcaster) asyncDao).getBroadcaster()
+                                .onBackpressureLatest()
+                                .filter(e -> e.equals(CACHE_EVENT_UPDATE_USER) ||
+                                        e.equals(CACHE_EVENT_UPDATE_USERS) ||
+                                        e.equals(CACHE_EVENT_REMOVE_USER))
+                                .throttleLatest(1, TimeUnit.SECONDS)
+                                .subscribe(o -> refreshData(true)));
+            }
         }
 
     }

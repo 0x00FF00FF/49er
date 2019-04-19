@@ -35,28 +35,27 @@ public class IssuesRepository extends Repository {
 //                storio
 //                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
-        if (asyncDao instanceof EventBroadcaster) {
-            disposables.add(
-                    ((EventBroadcaster) asyncDao).getBroadcaster()
-                            .onBackpressureLatest()
-                            .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
-                                    CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
-                                    CACHE_EVENT_REMOVE_ISSUE.equals(e) ||
-                                    CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
-                                    CACHE_EVENT_UPDATE_ENTRY.equals(e)
-                            )
-                            .throttleLatest(1, TimeUnit.SECONDS)
-                            .subscribe(o -> refreshData(true)));
-        }
     }
 
     @Override
     public void setup() {
 
-        if (disposables.isDisposed()) {
+        if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
+            if (asyncDao instanceof EventBroadcaster) {
+                disposables.add(
+                        ((EventBroadcaster) asyncDao).getBroadcaster()
+                                .onBackpressureLatest()
+                                .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
+                                        CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
+                                        CACHE_EVENT_REMOVE_ISSUE.equals(e) ||
+                                        CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
+                                        CACHE_EVENT_UPDATE_ENTRY.equals(e)
+                                )
+                                .throttleLatest(1, TimeUnit.SECONDS)
+                                .subscribe(o -> refreshData(true)));
+            }
         }
-
     }
 
     @Override
@@ -87,12 +86,9 @@ public class IssuesRepository extends Repository {
         List<IssueData> issueDataList = asyncDao.getAll(parentProperties.getId(), true).blockingGet();
         List<IssueData> clones = new ArrayList<>();
         for (IssueData issueData : issueDataList) {
-            IssueData clone = new IssueData();
-            clone.updateData(issueData);
-            clone.id = issueData.id;
-            clone.parentId = issueData.parentId;
-            clone.lastUpdated = issueData.lastUpdated;
-            clones.add(clone);
+            if (!issueData.deleted) {
+                clones.add(issueData.clone());
+            }
         }
 
         return clones;

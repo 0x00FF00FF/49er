@@ -30,43 +30,46 @@ public class TimeEntriesRepository extends Repository {
     private AsyncGenericDao<TimeEntryData> asyncDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
     public TimeEntriesRepository() {
-
-        if (asyncDao instanceof EventBroadcaster) {
-            disposables.add(
-                    ((EventBroadcaster) asyncDao).getBroadcaster()
-                            .onBackpressureLatest()
-                            .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
-                                    CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
-                                    CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
-                                    CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
-                                    CACHE_EVENT_REMOVE_PROJECT.equals(b)
-                            )
-                            .throttleLatest(1, TimeUnit.SECONDS)
-                            .subscribe(o -> refreshData(true)));
-        }
-
     }
 
     @Override
     public void setup() {
-        if (disposables.isDisposed()) {
+        if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
+            if (asyncDao instanceof EventBroadcaster) {
+                disposables.add(
+                        ((EventBroadcaster) asyncDao).getBroadcaster()
+                                .onBackpressureLatest()
+                                .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
+                                        CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
+                                        CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
+                                        CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
+                                        CACHE_EVENT_REMOVE_PROJECT.equals(b)
+                                )
+//                                .doOnNext(b -> {
+//                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_ENTRY");
+//                                    } else if (b.equals(CACHE_EVENT_UPDATE_ENTRIES)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_UPDATE_ENTRIES");
+//                                    } else if (b.equals(CACHE_EVENT_UPDATE_ENTRY)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_UPDATE_ENTRY");
+//                                    } else if (b.equals(CACHE_EVENT_REMOVE_ISSUE)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_ISSUE");
+//                                    } else if (b.equals(CACHE_EVENT_REMOVE_PROJECT)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_PROJECT");
+//                                    } else {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< OTHER....");
+//                                    }
+//                                })
+                                .throttleLatest(1, TimeUnit.SECONDS)
+                                .subscribe(o -> refreshData(true)));
+            }
         }
-
 
     }
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
-//        disposables.add(
-//                timeEntriesTableObservable
-//                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-//                        .map(list -> db2vm(list, false))
-//                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-//                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-//                        .observeOn(AndroidSchedulers.mainThread())
-//                        .subscribe(consumer));
-
         disposables.add(
                 userActionsObservable
 //                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
@@ -89,7 +92,6 @@ public class TimeEntriesRepository extends Repository {
     @Override
     public void shutdown() {
         disposables.dispose();
-
     }
 
     @Override
@@ -102,10 +104,10 @@ public class TimeEntriesRepository extends Repository {
         List<TimeEntryData> timeEntryDataList = asyncDao.getAll(parentProperties.getId(), true).blockingGet();
         List<TimeEntryData> clones = new ArrayList<>();
         for (TimeEntryData teData : timeEntryDataList) {
-//            Log.d(TAG, "getDbItems: " + teData.toLongString());
-            clones.add(teData.clone());
+            if (!teData.deleted) {
+                clones.add(teData.clone());
+            }
         }
-//        Log.d(TAG, "getDbItems: " + clones.size());
         return clones;
     }
 }

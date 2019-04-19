@@ -4,6 +4,7 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,8 +14,12 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
+import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
+import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -47,11 +52,17 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     @Getter @Setter
     private long menuActionEntityId;
 
+    private TouchHelperCallback<IssuesViewHolder, IssueData> touchHelperCallback = new TouchHelperCallback<>();
+    private ItemTouchHelper itemTouchHelper;
 
     public IssuesUiOps(RecyclerView rv) {
         setRv(rv);
         issuesRepository.setup();
         repository = issuesRepository;
+
+        itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(getRv());
+        touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(IssueData.class));
     }
 
     @Override
@@ -160,6 +171,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             if (unbinderList.size() > 40) {
                 repository.shutdown();
                 getRv().setAdapter(null);
+                touchHelperCallback.setAdapter(null);
+                itemTouchHelper.attachToRecyclerView(null);
                 resetRv();
             } else if (issuesAdapter != null) {
                 issuesAdapter.clearData();
@@ -169,6 +182,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
                 onParentChanged(projectProperties);
             } else {
                 getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+                itemTouchHelper.attachToRecyclerView(getRv());
             }
         }
         resizeRv(!parentWasEnlarged);
@@ -211,6 +225,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         issuesRepository.setup();
         issuesRepository.setParentProperties(projectViewProperties);
         issuesRepository.registerSubscriber(issuesAdapter);
+
+        touchHelperCallback.setAdapter(issuesAdapter);
         return issuesAdapter;
     }
 

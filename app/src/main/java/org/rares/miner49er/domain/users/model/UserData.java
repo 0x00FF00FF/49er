@@ -22,6 +22,7 @@ private static final String TAG = UserData.class.getSimpleName();
     private String email;
     private String picture;
     private String apiKey;
+    private boolean active;
 
     public boolean compareContents(UserData otherData) {
         return (id.equals(otherData.id)) &&
