@@ -120,10 +120,13 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/indigo.100"
                 android:textSize="@dimen/list_item_secondary_text_size"
-                app:layout_constraintBottom_toTopOf="@+id/btn_add_users"
                 android:text="@string/helper_users_selection"
-                android:layout_marginBottom="16dp" app:layout_constraintEnd_toEndOf="@+id/btn_cancel_users"
-                android:layout_marginEnd="8dp" android:layout_marginRight="8dp"/>
+                android:layout_marginBottom="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                app:layout_constraintBottom_toTopOf="@+id/btn_add_users"
+                app:layout_constraintEnd_toEndOf="@+id/btn_cancel_users"
+        />
 
         <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel_users"
@@ -132,8 +135,8 @@
                 android:text="@string/btn_cancel"
                 android:layout_marginRight="16dp"
                 android:layout_marginEnd="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="@+id/btn_add_users"
                 app:layout_constraintTop_toTopOf="@+id/btn_add_users"/>
 
