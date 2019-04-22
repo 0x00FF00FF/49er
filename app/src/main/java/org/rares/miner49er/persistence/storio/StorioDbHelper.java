@@ -14,8 +14,12 @@ public class StorioDbHelper extends SQLiteOpenHelper {
 
     private static final String TAG = StorioDbHelper.class.getSimpleName();
 
+    /*
+     * version 2 added UserProjectTable
+     * version 3 added pseudo-deletion columns
+     */
     public StorioDbHelper(Context context) {
-        super(context, "49er.db", null, 2);
+        super(context, "49er.db", null, 3);
     }
 
 
@@ -37,10 +41,6 @@ public class StorioDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*
-     * version 2 added UserProjectTable
-     * version 3 added pseudo-deletion columns
-     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion == 1) {
@@ -52,11 +52,11 @@ public class StorioDbHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 3) {
             // add deleted column
-            String alter = "ALTER TABLE %s ADD COLUMN %s %s;";
-            db.execSQL(String.format(alter, UserTable.NAME, UserTable.ACTIVE_COLUMN, "INTEGER(1) DEFAULT 1"));
-            db.execSQL(String.format(alter, TimeEntryTable.NAME, TimeEntryTable.DELETED_COLUMN, "INTEGER(1)"));
-            db.execSQL(String.format(alter, IssueTable.NAME, IssueTable.DELETED_COLUMN, "INTEGER(1)"));
-            db.execSQL(String.format(alter, ProjectsTable.TABLE_NAME, ProjectsTable.COLUMN_DELETED, "INTEGER(1)"));
+            String alter = "ALTER TABLE %s ADD COLUMN %s %s DEFAULT %s;";
+            db.execSQL(String.format(alter, UserTable.NAME, UserTable.ACTIVE_COLUMN, "INTEGER(1)", "1"));
+            db.execSQL(String.format(alter, TimeEntryTable.NAME, TimeEntryTable.DELETED_COLUMN, "INTEGER(1)", "0"));
+            db.execSQL(String.format(alter, IssueTable.NAME, IssueTable.DELETED_COLUMN, "INTEGER(1)", "0"));
+            db.execSQL(String.format(alter, ProjectsTable.TABLE_NAME, ProjectsTable.COLUMN_DELETED, "INTEGER(1)", "0"));
         }
     }
 }

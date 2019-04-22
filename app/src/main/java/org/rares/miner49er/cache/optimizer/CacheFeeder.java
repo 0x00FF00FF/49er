@@ -20,13 +20,15 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
 
 public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
 
-    private volatile boolean working = false;
+    //    private volatile boolean working = false;
     private NetworkingService ns = NetworkingService.INSTANCE;
 
     public CacheFeeder() {
@@ -43,7 +45,7 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
     public Disposable enqueueCacheFill() {
         final CompositeDisposable disposables = new CompositeDisposable();
 
-        if (working || projectDataCache.getSize() > 0) {
+        if (projectDataCache.getSize() > 0) {
             // skip request (for now)
             return null;
         }
@@ -87,131 +89,124 @@ public class CacheFeeder implements EntityOptimizer.DbUpdateFinishedListener {
 
     private Disposable linkData() {
         CompositeDisposable disposables = new CompositeDisposable();
-        try {
-            working = true;
 
-            Log.v(TAG, "linkData: ------------------------ start " + Thread.currentThread().getName());
-            cachedProjects.addAll(projectDataCache.getData(Optional.of(null)));
-            cachedIssues.addAll(issueDataCache.getData(Optional.of(null)));
-            cachedTimeEntries.addAll(timeEntryDataCache.getData(Optional.of(null)));
+        Log.v(TAG, "linkData: ------------------------ start " + Thread.currentThread().getName());
+        cachedProjects.addAll(projectDataCache.getData(Optional.of(null)));
+        cachedIssues.addAll(issueDataCache.getData(Optional.of(null)));
+        cachedTimeEntries.addAll(timeEntryDataCache.getData(Optional.of(null)));
 
-            if (cachedProjects.size() == 0) {
-                Log.v(TAG, "linkData: ------------------------ no data ");
-                ns.refreshData();
-                return disposables;
-            }
-
-            disposables.add(        // todo: also try the flatMap way, as parallel is "experimental"/unstable
-                    Flowable.fromIterable(cachedTimeEntries)
-//                            .subscribeOn(Schedulers.computation())
-                            .parallel(4)
-                            .runOn(Schedulers.computation())
-                            .map(timeEntryData -> {
-                                if (timeEntryData.getUserName() == null || timeEntryData.getUserPhoto() == null) {
-                                    UserData userData = userDataCache.getData(timeEntryData.getUserId());
-                                    if (userData != null) {
-                                        timeEntryData.setUserName(userData.getName());
-                                        timeEntryData.setUserPhoto(userData.getPicture());
-                                    }
-                                }
-
-                                synchronized (issueDataCache.getData(timeEntryData.parentId)) {
-                                    IssueData issueData = issueDataCache.getData(timeEntryData.parentId);
-                                    List<TimeEntryData> teList = issueData.getTimeEntries();
-                                    if (teList != null) {
-                                        boolean found = false;
-                                        for (TimeEntryData ted : teList) {
-                                            // if the data is already there and a cache update is called
-                                            // and this time entry was modified elsewhere, update the data
-                                            if (ted.id.equals(timeEntryData.id)) {
-                                                ted.updateData(timeEntryData);
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-                                        // only add the data if it is not found in the cache
-                                        if (!found) {
-                                            teList.add(timeEntryData);
-                                        }
-                                    } else {
-                                        teList = new ArrayList<>();
-                                        teList.add(timeEntryData);
-                                        issueData.setTimeEntries(teList);
-                                    }
-                                }
-                                return timeEntryData;
-                            })
-                            .sequential()
-                            .doOnComplete(() -> {
-                                Log.v(TAG, "linkData: start work on issues");
-                                Flowable.fromIterable(cachedIssues)
-//                                        .subscribeOn(Schedulers.computation())
-                                        .parallel(4)
-                                        .runOn(Schedulers.computation())
-                                        .map(issueData -> {
-                                            if (issueData.getOwner() == null) {
-                                                UserData owner = userDataCache.getData(issueData.getOwnerId());
-                                                issueData.setOwner(owner);
-                                            }
-                                            synchronized (projectDataCache.getData(issueData.parentId)) {
-                                                ProjectData projectData = projectDataCache.getData(issueData.parentId);
-                                                List<IssueData> idList = projectData.getIssues();
-                                                if (idList != null) {
-                                                    boolean found = false;
-                                                    for (IssueData iData : idList) {
-                                                        if (iData.id.equals(issueData.id)) {
-                                                            iData.updateData(issueData);
-                                                            found = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (!found) {
-                                                        idList.add(issueData);
-                                                    }
-                                                } else {
-                                                    idList = new ArrayList<>();
-                                                    idList.add(issueData);
-                                                    projectData.setIssues(idList);
-                                                }
-                                            }
-                                            return issueData;
-                                        })
-                                        .sequential()
-                                        .doOnComplete(() -> {
-                                            Log.v(TAG, "linkData: start work on projects");
-                                            Flowable.fromIterable(cachedProjects)
-//                                                    .subscribeOn(Schedulers.computation())
-                                                    .parallel(4)
-                                                    .runOn(Schedulers.computation())
-                                                    .map(
-                                                            projectData -> {
-                                                                uDao.getAll(projectData.getId(), true);
-                                                                UserData userData = userDataCache.getData(projectData.parentId);
-//                                                                Log.i(TAG, "linkData: " + userData);
-                                                                projectData.setOwner(userData);
-                                                                return projectData;
-                                                            })
-//                                                    .map(pd-> {Log.v(TAG, "linkData after map: " + pd.getOwner()); return pd;})
-                                                    .sequential()
-                                                    .doOnComplete(() -> {
-                                                        Log.v(TAG, "linkData: ------------------------ end adding teams ");
-
-//                                                        for (ProjectData pd: projectDataCache.getData(Optional.of(null))){
-//                                                            Log.i(TAG, "------- linkData: " + pd.getOwner());
-//                                                        }
-
-                                                        cache.lastUpdateTime = System.currentTimeMillis();
-                                                        cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
-                                                    })
-                                                    .subscribe();
-                                        })
-                                        .subscribe();
-                            })
-                            .subscribe()
-            );
-        } finally {
-            working = false;
+        if (cachedProjects.size() == 0) {
+            Log.v(TAG, "linkData: ------------------------ no data ");
+            ns.refreshData();
+            return disposables;
         }
+
+        disposables.add(
+                Flowable.fromIterable(cachedTimeEntries)
+//                            .subscribeOn(Schedulers.computation())
+                        .parallel(4)
+                        .runOn(Schedulers.computation())
+                        .map(timeEntryData -> {
+                            if (timeEntryData.getUserName() == null || timeEntryData.getUserPhoto() == null) {
+                                UserData userData = userDataCache.getData(timeEntryData.getUserId());
+                                if (userData != null) {
+                                    timeEntryData.setUserName(userData.getName());
+                                    timeEntryData.setUserPhoto(userData.getPicture());
+                                }
+                            }
+
+                            synchronized (issueDataCache.getData(timeEntryData.parentId)) {
+                                IssueData issueData = issueDataCache.getData(timeEntryData.parentId);
+                                List<TimeEntryData> teList = issueData.getTimeEntries();
+                                if (teList != null) {
+                                    boolean found = false;
+                                    for (TimeEntryData ted : teList) {
+                                        // if the data is already there and a cache update is called
+                                        // and this time entry was modified elsewhere, update the data
+                                        if (ted.id.equals(timeEntryData.id)) {
+                                            ted.updateData(timeEntryData);
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    // only add the data if it is not found in the cache
+                                    if (!found) {
+                                        teList.add(timeEntryData);
+                                    }
+                                } else {
+                                    teList = new ArrayList<>();
+                                    teList.add(timeEntryData);
+                                    issueData.setTimeEntries(teList);
+                                }
+                            }
+                            return timeEntryData;
+                        })
+                        .sequential()
+                        .doOnComplete(() -> {
+                            Log.v(TAG, "linkData: start work on issues");
+                            Flowable.fromIterable(cachedIssues)
+                                    .parallel(4)
+                                    .runOn(Schedulers.computation())
+                                    .map(issueData -> {
+                                        if (issueData.getOwner() == null) {
+                                            UserData owner = userDataCache.getData(issueData.getOwnerId());
+                                            issueData.setOwner(owner);
+                                        }
+                                        synchronized (projectDataCache.getData(issueData.parentId)) {
+                                            ProjectData projectData = projectDataCache.getData(issueData.parentId);
+                                            List<IssueData> idList = projectData.getIssues();
+                                            if (idList != null) {
+                                                boolean found = false;
+                                                for (IssueData iData : idList) {
+                                                    if (iData.id.equals(issueData.id)) {
+                                                        iData.updateData(issueData);
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!found) {
+                                                    idList.add(issueData);
+                                                }
+                                            } else {
+                                                idList = new ArrayList<>();
+                                                idList.add(issueData);
+                                                projectData.setIssues(idList);
+                                            }
+                                        }
+                                        return issueData;
+                                    })
+                                    .sequential()
+                                    .doOnComplete(() -> {
+                                        Log.v(TAG, "linkData: start work on projects");
+                                        Flowable.fromIterable(cachedProjects)
+                                                .parallel(4)
+                                                .runOn(Schedulers.computation())
+                                                .map(
+                                                        projectData -> {
+                                                            uDao.getAll(projectData.getId(), true);
+                                                            UserData userData = userDataCache.getData(projectData.parentId);
+                                                            projectData.setOwner(userData);
+                                                            if (projectData.getTeam() == null) {
+                                                                projectData.setTeam(Collections.emptyList());
+                                                            }
+                                                            if (projectData.getIssues() == null) {
+                                                                projectData.setIssues(Collections.emptyList());
+                                                            }
+                                                            return projectData;
+                                                        })
+                                                .sequential()
+                                                .delay(500, TimeUnit.MILLISECONDS)
+                                                .doOnComplete(() -> {
+                                                    Log.v(TAG, "linkData: ------------------------ end adding teams ");
+                                                    cache.lastUpdateTime = System.currentTimeMillis();
+                                                    cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
+                                                })
+                                                .subscribe();
+                                    })
+                                    .subscribe();
+                        })
+                        .subscribe()
+        );
 
         return disposables;
     }

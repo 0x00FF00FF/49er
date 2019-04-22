@@ -208,7 +208,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
                             () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
                             BackpressureOverflowStrategy.DROP_OLDEST)
                     .subscribeOn(Schedulers.computation())
-                    .onBackpressureLatest()
+                    .onBackpressureBuffer()
                     .share();
     private CompositeDisposable disposables = new CompositeDisposable();
 }

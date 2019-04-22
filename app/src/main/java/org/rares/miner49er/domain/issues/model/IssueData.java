@@ -8,7 +8,6 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,10 +31,18 @@ public class IssueData extends AbstractViewModel implements Cloneable {
     private int color;
 
     public boolean compareContents(IssueData other) {
+        boolean timeEntriesEqual = false;
+
+        if (timeEntries == null) {
+            timeEntriesEqual = other.timeEntries == null;
+        } else {
+            timeEntriesEqual = other.timeEntries != null;
+        }
+
         return
                 parentId.equals(other.getParentId()) &&
                         (name == null ? "" : name).equals((other.getName() == null ? "" : other.name)) &&
-                        (timeEntries == null ? Collections.emptyList() : timeEntries).equals(other.timeEntries == null ? Collections.emptyList() : other.timeEntries) &&
+                        timeEntriesEqual &&
                         color == other.color &&
                         deleted == other.deleted &&
                         dateAdded == other.dateAdded &&

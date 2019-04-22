@@ -26,6 +26,7 @@ public interface ProjectsInterfaces {
     String KEY_PICTURE = "picture";
     String KEY_OWNER_NAME = "ownerName";
     String KEY_ISSUES = "issues";
+    String KEY_USERS = "users";
 
     interface ProjectsResizeListener {
         void onProjectsListShrink();

@@ -36,8 +36,46 @@ public class ProjectsRepository extends Repository {
             if (asyncDao instanceof EventBroadcaster) {
                 disposables.add(
                         ((EventBroadcaster) asyncDao).getBroadcaster()
-                                .onBackpressureLatest()
-                                .throttleLast(1000, TimeUnit.MILLISECONDS)
+                                .onBackpressureBuffer()
+//                                .doOnNext(b -> {
+//                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECTS)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECTS");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUES)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUES  ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRIES)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRIES ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_USERS)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USERS   ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECT)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECT ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUE)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUE   ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRY)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRY   ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_UPDATE_USER)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USER    ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_REMOVE_PROJECT)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_PROJECT ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_REMOVE_ISSUE)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ISSUE   ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ENTRY   ");
+//                                    }
+//                                    if (b.equals(CACHE_EVENT_REMOVE_USER)) {
+//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_USER    ");
+//                                    }
+//                                })
+//                                .throttleLast(500, TimeUnit.MILLISECONDS)
                                 .subscribe(o -> refreshData(true)));
             }
         }
@@ -81,9 +119,9 @@ public class ProjectsRepository extends Repository {
                         })
 
 //                )
-                        .onBackpressureDrop()
+                        .onBackpressureBuffer()
                         // FIXME: 3/1/19 | comment next line out, do not use throttle in ViewModelCache events and fix the LayoutManager!
-                        .debounce(1, TimeUnit.SECONDS)
+//                        .debounce(100, TimeUnit.MILLISECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
 //                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: -> " + x.size()))
 //                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
@@ -95,14 +133,12 @@ public class ProjectsRepository extends Repository {
 
     private List<ProjectData> getData() {
         List<ProjectData> toReturn = asyncDao.getAll(true)
-                .timeout(1, TimeUnit.SECONDS)   // 1 second should be enough to get data (from cache)
+                .timeout(250, TimeUnit.MILLISECONDS)   // 1 second should be enough to get data (from cache)
                 .doOnError(e -> Log.e(TAG, "getData: timeout? ", e))
                 .onErrorReturnItem(Collections.emptyList())
                 // something gets stuck when there is no data in the db
                 // and data is being transferred
                 .blockingGet();
-
-//        Log.i(TAG, "getData: toReturn: " + toReturn.size());
 
         List<ProjectData> clones = new ArrayList<>();
         for (ProjectData prd : toReturn) {
@@ -111,7 +147,6 @@ public class ProjectsRepository extends Repository {
             }
         }
         return clones;
-//        return toReturn;
     }
 
     private final CacheFeeder cacheFeeder = new CacheFeeder();

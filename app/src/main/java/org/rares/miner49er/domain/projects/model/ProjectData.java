@@ -8,7 +8,6 @@ import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,6 +38,21 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
     public boolean compareContents(ProjectData otherData) {
 //        Log.i(TAG, "compareContents: " + this.toString() + " | " + otherData.toString());
 
+        boolean teamsEqual = false;
+        boolean issuesEqual = false;
+
+        if (team == null) {
+            teamsEqual = otherData.team == null;
+        } else {
+            teamsEqual = otherData.team != null;
+        }
+
+        if (issues == null) {
+            issuesEqual = otherData.issues == null;
+        } else {
+            issuesEqual = otherData.issues != null;
+        }
+
         return (lastUpdated == otherData.lastUpdated) &&
                 (color == otherData.color) &&
                 (deleted == otherData.deleted) &&
@@ -46,8 +60,8 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
                 (description == null ? "" : description).equals(otherData.getDescription() == null ? "" : otherData.getDescription()) &&
                 (icon == null ? "" : icon).equals(otherData.getIcon() == null ? "" : otherData.getIcon()) &&
                 (name == null ? "" : name).equals(otherData.getName() == null ? "" : otherData.getName()) &&
-                (issues == null ? Collections.emptyList() : issues).equals(otherData.issues == null ? Collections.emptyList() : otherData.issues) &&
-                (team == null ? Collections.emptyList() : team).equals(otherData.team == null ? Collections.emptyList() : otherData.team) &&
+                issuesEqual &&
+                teamsEqual &&
                 (picture == null ? "" : picture).equals(otherData.getPicture() == null ? "" : otherData.getPicture());
     }
 
@@ -76,6 +90,6 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
         }
         ProjectData clone = new ProjectData();
         clone.updateData(this);
-        return  clone;
+        return clone;
     }
 }
