@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
@@ -16,6 +17,7 @@ import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
@@ -38,7 +40,8 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 public class IssuesUiOps extends ResizeableItemsUiOps
         implements
         ToolbarActionManager.MenuActionListener,
-        DomainLink {
+        DomainLink,
+        SwipeDeletedListener {
 
     private static final String TAG = IssuesUiOps.class.getSimpleName();
     private IssuesRepository issuesRepository = new IssuesRepository();
@@ -49,7 +52,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     // this component always requires action mode
     private final boolean requiresActionMode = true;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private long menuActionEntityId;
 
     private TouchHelperCallback<IssuesViewHolder, IssueData> touchHelperCallback = new TouchHelperCallback<>();
@@ -63,6 +67,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
         itemTouchHelper.attachToRecyclerView(getRv());
         touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(IssueData.class));
+        touchHelperCallback.setDeletedListener(this);
     }
 
     @Override
@@ -76,9 +81,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
+            itemTouchHelper.attachToRecyclerView(getRv());
         } else {
             menuActionEntityId = holder.getItemProperties().getId();
             toolbarManager.registerActionListener(this);
+            itemTouchHelper.attachToRecyclerView(null);
         }
 
         return enlarge;
@@ -104,7 +111,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             config.subtitleRes = 0;
             config.titleRes = 0;
             config.subtitle = TextUtils.capitalize(
-                    ((AbstractAdapter)getRv().getAdapter()).resolveData(getSelectedItemId(), true));
+                    ((AbstractAdapter) getRv().getAdapter()).resolveData(getSelectedItemId(), true));
         }
 
         config.requireActionMode = requiresActionMode;
@@ -246,5 +253,15 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         } else {
             toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
         }
+    }
+
+    @Override
+    public void onItemDeleted(ViewHolder vh) {
+        toolbarManager.refreshActionMode();
+    }
+
+    @Override
+    public void onItemPseudoDeleted(ViewHolder vh) {
+        toolbarManager.refreshActionMode();
     }
 }

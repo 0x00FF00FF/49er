@@ -155,8 +155,8 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
         }
 
         timeEntryData = timeEntriesDAO.get(timeEntryId, true).blockingGet().get().clone();        ////
-        issueData = issuesDAO.get(timeEntryData.parentId, true).blockingGet().get().clone();
-        projectData = projectsDAO.get(issueData.parentId, true).blockingGet().get().clone();
+        issueData = issuesDAO.get(timeEntryData.parentId, true).blockingGet().get().clone(true);
+        projectData = projectsDAO.get(issueData.parentId, true).blockingGet().get().clone(true);
         userData = usersDAO.get(timeEntryData.getUserId(), true).blockingGet().get().clone();
 
         clearErrors();

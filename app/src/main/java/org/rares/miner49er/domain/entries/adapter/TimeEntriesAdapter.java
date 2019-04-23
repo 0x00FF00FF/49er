@@ -102,4 +102,9 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
 //        Log.d(TAG, "accept! called with: list = [" + list + "]");
         updateList(list);
     }
+
+    @Override
+    public String getToolbarData(Context context, int position) {
+        return "---";
+    }
 }

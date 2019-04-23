@@ -8,6 +8,9 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -31,12 +34,14 @@ public class IssueData extends AbstractViewModel implements Cloneable {
     private int color;
 
     public boolean compareContents(IssueData other) {
-        boolean timeEntriesEqual = false;
+        boolean timeEntriesEqual = deepEquals(timeEntries, other.timeEntries);
 
-        if (timeEntries == null) {
-            timeEntriesEqual = other.timeEntries == null;
-        } else {
-            timeEntriesEqual = other.timeEntries != null;
+        boolean ownerEqual = false;
+        if (owner == null && other.owner == null) {
+            ownerEqual = true;
+        }
+        if (owner != null && other.owner != null) {
+            ownerEqual = owner.equals(other.getOwner());
         }
 
         return
@@ -46,8 +51,8 @@ public class IssueData extends AbstractViewModel implements Cloneable {
                         color == other.color &&
                         deleted == other.deleted &&
                         dateAdded == other.dateAdded &&
-                        owner.equals(other.getOwner()) &&
-                        ownerId==other.ownerId &&
+                        ownerEqual &&
+                        ownerId == other.ownerId &&
                         dateDue == other.dateDue;
     }
 
@@ -64,9 +69,11 @@ public class IssueData extends AbstractViewModel implements Cloneable {
         deleted = newData.deleted;
     }
 
-    public IssueData clone()  {
-        // shallow copy should be enough
-        // if not, use update data
+    public IssueData clone(boolean shallow) {
+        return shallow ? shallowClone() : deepClone();
+    }
+
+    private IssueData shallowClone() {
         try {
             return (IssueData) super.clone();
         } catch (CloneNotSupportedException e) {
@@ -75,5 +82,40 @@ public class IssueData extends AbstractViewModel implements Cloneable {
         IssueData issueData = new IssueData();
         issueData.updateData(this);
         return issueData;
+    }
+
+    private IssueData deepClone() {
+        IssueData cloned = new IssueData();
+        cloned.updateData(this);
+        List<TimeEntryData> entries = cloned.timeEntries;
+        if (entries != null) {
+            List<TimeEntryData> clonedTimeEntries = new ArrayList<>();
+            for (int i = 0; i < entries.size(); i++) {
+                clonedTimeEntries.add(entries.get(i).clone());
+            }
+            cloned.timeEntries = clonedTimeEntries;
+        }
+        return cloned;
+    }
+
+    private boolean deepEquals(List<TimeEntryData> list1, List<TimeEntryData> list2) {
+        if (list1 == null && list2 != null || list1 != null && list2 == null) {
+            return false;
+        }
+        if (list1 == null && list2 == null) {
+            return true;
+        }
+        if (list1.size() == list2.size()) {
+            Comparator<TimeEntryData> c = (te1, te2) -> te1.id > te2.id ? 1 : te1.id.equals(te2.id) ? 0 : -1;
+            Collections.sort(list1, c);
+            Collections.sort(list2, c);
+            for (int i = 0; i < list1.size(); i++) {
+                if (!list1.get(i).compareContents(list2.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

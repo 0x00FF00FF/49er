@@ -12,6 +12,7 @@
     <string name="_projects_pictures_description">Project Picture</string>
 
     <string name="_projects_info_template" formatted="false">Issues: %s Users: %s Hours: %s</string>
+    <string name="_issues_info_template" formatted="false">Entries: %s User Hours: %s Total Hours: %s</string>
 
     <string name="_toolbar_back_button_description">Go back</string>
 

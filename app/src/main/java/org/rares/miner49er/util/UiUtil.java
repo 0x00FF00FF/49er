@@ -9,6 +9,12 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.view.View;
 import android.view.ViewGroup;
+import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.users.model.UserData;
+
+import java.util.List;
 
 /**
  * @author rares
@@ -74,10 +80,65 @@ public class UiUtil {
     }
 
     public static void sendViewToBack(final View child) {
-        final ViewGroup parent = (ViewGroup)child.getParent();
+        final ViewGroup parent = (ViewGroup) child.getParent();
         if (null != parent) {
             parent.removeView(child);
             parent.addView(child, 0);
         }
+    }
+
+    public static String populateInfoString(String template, ProjectData projectData) {
+        String in = "-", un = "-", hn = "-";
+        int issuesNumber = 0;
+        int usersNumber = 0;
+        int hoursNumber = 0;
+
+        if (projectData != null) {
+            List<IssueData> issues = projectData.getIssues();
+            if (issues != null) {
+                for (IssueData issueData : issues) {
+                    issuesNumber += issueData.deleted ? 0 : 1;
+                    List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
+                    if (timeEntryData != null) {
+                        for (TimeEntryData ted : timeEntryData) {
+                            hoursNumber += ted.deleted ? 0 : ted.getHours();
+                        }
+                    }
+                }
+                in = String.valueOf(issuesNumber);
+                hn = String.valueOf(hoursNumber);
+            }
+            List<UserData> users = projectData.getTeam();
+            if (users != null) {
+                usersNumber = users.size();
+                un = String.valueOf(usersNumber);
+            }
+        }
+
+        return String.format(template, in, un, hn);
+    }
+
+
+    public static String populateInfoString(String template, IssueData issueData) {
+        String en, uh, th;
+        int entriesNumber = 0;
+        int userHours = 0;
+        int totalHours = 0;
+
+        if (issueData != null) {
+            List<TimeEntryData> entries = issueData.getTimeEntries();
+            if (entries != null) {
+                for (TimeEntryData entry : entries) {
+                    userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
+                    totalHours += entry.deleted ? 0 : entry.getHours();
+                    entriesNumber += entry.deleted ? 0 : 1;
+                }
+            }
+        }
+        en = String.valueOf(entriesNumber);
+        uh = String.valueOf(userHours);
+        th = String.valueOf(totalHours);
+
+        return String.format(template, en, uh, th);
     }
 }

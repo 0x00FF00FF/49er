@@ -20,6 +20,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ENTRY;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_USER;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRIES;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUES;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECT;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_USER;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_USERS;
+
 public class ProjectsRepository extends Repository {
     private static final String TAG = ProjectsRepository.class.getSimpleName();
 
@@ -37,44 +50,45 @@ public class ProjectsRepository extends Repository {
                 disposables.add(
                         ((EventBroadcaster) asyncDao).getBroadcaster()
                                 .onBackpressureBuffer()
-//                                .doOnNext(b -> {
-//                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECTS)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECTS");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUES)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUES  ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRIES)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRIES ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_USERS)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USERS   ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECT)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECT ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUE)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUE   ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRY)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRY   ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_UPDATE_USER)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USER    ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_REMOVE_PROJECT)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_PROJECT ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_REMOVE_ISSUE)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ISSUE   ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ENTRY   ");
-//                                    }
-//                                    if (b.equals(CACHE_EVENT_REMOVE_USER)) {
-//                                        Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_USER    ");
-//                                    }
-//                                })
+                                .doOnNext(b -> {
+                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECTS)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECTS");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUES)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUES  ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRIES)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRIES ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_USERS)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USERS   ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_PROJECT)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_PROJECT ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_ISSUE)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ISSUE   ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_ENTRY)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_ENTRY   ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_UPDATE_USER)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_UPDATE_USER    ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_REMOVE_PROJECT)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_REMOVE_PROJECT ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_REMOVE_ISSUE)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ISSUE   ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_REMOVE_ENTRY   ");
+                                    }
+                                    if (b.equals(CACHE_EVENT_REMOVE_USER)) {
+                                        Log.v(TAG, "setup: <<<< CACHE_EVENT_REMOVE_USER    ");
+                                    }
+                                    Log.i(TAG, "setup: " + asyncDao.getAll(true).blockingGet().size());
+                                })
 //                                .throttleLast(500, TimeUnit.MILLISECONDS)
                                 .subscribe(o -> refreshData(true)));
             }
@@ -121,10 +135,10 @@ public class ProjectsRepository extends Repository {
 //                )
                         .onBackpressureBuffer()
                         // FIXME: 3/1/19 | comment next line out, do not use throttle in ViewModelCache events and fix the LayoutManager!
-//                        .debounce(100, TimeUnit.MILLISECONDS)
+//                        .debounce(50, TimeUnit.MILLISECONDS)
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
 //                        .doOnNext(x -> Log.i(TAG, "registerSubscriber: -> " + x.size()))
-//                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
 //                        .doOnComplete(() -> Log.d(TAG, "registerSubscriber: success"))
 //                        .doOnSubscribe(x -> Log.i(TAG, "registerSubscriber: on subscribe"))
                         .observeOn(AndroidSchedulers.mainThread())
@@ -139,11 +153,10 @@ public class ProjectsRepository extends Repository {
                 // something gets stuck when there is no data in the db
                 // and data is being transferred
                 .blockingGet();
-
         List<ProjectData> clones = new ArrayList<>();
         for (ProjectData prd : toReturn) {
             if (!prd.deleted) {
-                clones.add(prd.clone());
+                clones.add(prd.clone(false));
             }
         }
         return clones;

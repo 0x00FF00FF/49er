@@ -15,6 +15,7 @@ import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectDiff;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -159,4 +160,8 @@ public class ProjectsAdapter
         updateList(list);
     }
 
+    @Override
+    public String getToolbarData(Context context, int position) {
+        return UiUtil.populateInfoString(context.getResources().getString(R.string._projects_info_template), data.get(position));
+    }
 }

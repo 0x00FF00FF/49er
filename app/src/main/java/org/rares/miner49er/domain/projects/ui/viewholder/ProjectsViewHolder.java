@@ -25,11 +25,8 @@ import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
-import org.rares.miner49er.domain.entries.model.TimeEntryData;
-import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
-import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
@@ -40,7 +37,6 @@ import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.List;
 
 public class ProjectsViewHolder
         extends ResizeableItemViewHolder
@@ -62,12 +58,8 @@ public class ProjectsViewHolder
 
     private TextView infoLabel = null;
 
-    @BindString(R.string._projects_info_issues_label)
-    String issuesLabel;
-    @BindString(R.string._projects_info_users_label)
-    String usersLabel;
-    @BindString(R.string._projects_info_total_hours)
-    String hoursLabel;
+    @BindString(R.string._projects_info_template)
+    String infoTemplate;
 
     private int originalTextSize = 60;      /////
 
@@ -139,10 +131,10 @@ public class ProjectsViewHolder
                     }
                 });
 
-        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
-            toggleInfoContainerVisiblity(false);
-            infoLabel.setAlpha(0);
-        }
+//        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
+//            toggleInfoContainerVisiblity(false);
+//            infoLabel.setAlpha(0);
+//        }
 
         validateItem(shortVersion, selected);
     }
@@ -432,38 +424,10 @@ public class ProjectsViewHolder
 //    }
 
     public void populateInfoLabel() {
-        int issuesNumber = 0;
-        int usersNumber = 0;
-        int hoursNumber = 0;
 
-        List<IssueData> issues = itemData.getIssues();
-        if (issues != null) {
-            issuesNumber = issues.size();
-            for (IssueData issueData : issues) {
-                List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
-                if (timeEntryData != null) {
-                    for (TimeEntryData ted : timeEntryData) {
-                        hoursNumber += ted.getHours();
-                    }
-                }
-            }
-        }
-        List<UserData> users = itemData.getTeam();
-        if (users != null) {
-            usersNumber = users.size();
-        }
-
-        infoLabelString =
-                issuesLabel + " " + issuesNumber + " " +
-                        usersLabel + " " + usersNumber + " " +
-                        hoursLabel + " " + hoursNumber;
+        infoLabelString = UiUtil.populateInfoString(infoTemplate, itemData);
 
         projectViewProperties.setSecondaryData(infoLabelString);        /// ugly hack
-
-
-        if (itemData.getIssues() == null && itemData.getTeam() == null) {
-            infoLabelString = "Computing...";
-        }
 
         if (infoLabel != null) {
             infoLabel.setText(infoLabelString);

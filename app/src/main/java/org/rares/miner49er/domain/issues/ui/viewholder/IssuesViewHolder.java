@@ -18,7 +18,6 @@ import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
-import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
@@ -27,8 +26,6 @@ import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
 import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
-
-import java.util.List;
 
 /**
  * @author rares
@@ -45,14 +42,10 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     @Getter
     RotationAwareTextView issueName;
 
-    private int originalTextSize = 60;  ////////////
+    @BindString(R.string._issues_info_template)
+    String infoTemplate;
 
-    @BindString(R.string._issues_info_entries_label)
-    String entriesLabel;
-    @BindString(R.string._issues_info_user_hours_label)
-    String userHoursLabel;
-    @BindString(R.string._issues_info_total_hours_label)
-    String totalHoursLabel;
+    private int originalTextSize = 60;  ////////////
 
     private TextView infoLabel = null;
 
@@ -97,10 +90,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         getItemProperties().setId(holderData.getId());
 
 //        prepareIssueInfo();
-        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
-            toggleInfoContainerVisiblity(false);
-            infoLabel.setAlpha(0);
-        }
+//        if (shortVersion && infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
+//            if(holderData.getName().equals("20"))
+//            Log.i(TAG, "bindData: setting visibility false, alpha 0");
+//            toggleInfoContainerVisiblity(false);
+//            infoLabel.setAlpha(0);
+//        }
 
         validateItem(shortVersion, selected);
     }
@@ -492,7 +487,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private void prepareIssueInfo() {
 
-        infoLabelString = prepareSecondaryData(holderData);
+        infoLabelString = UiUtil.populateInfoString(infoTemplate, holderData);
 
         if (infoLabel != null) {
             infoLabel.setText(infoLabelString);
@@ -511,38 +506,9 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             issueName.getHandler().removeCallbacksAndMessages(null);
         }
         issueName = null;
-        entriesLabel = null;
-        userHoursLabel = null;
-        totalHoursLabel = null;
         infoLabel = null;
         infoLabelString = null;
 
         super.unbind();
-    }
-
-    public String prepareSecondaryData(IssueData issueData) {
-        List<TimeEntryData> entries = issueData.getTimeEntries();
-        int entriesNumber = 0;
-        int userHours = 0;
-        int totalHours = 0;
-        if (entries != null) {
-            entriesNumber = entries.size();
-            for (TimeEntryData entry : entries) {
-                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
-                totalHours += entry.getHours();
-            }
-        }
-
-        return entriesLabel +
-                " " +
-                entriesNumber +
-                " " +
-                userHoursLabel +
-                " " +
-                userHours +
-                " " +
-                totalHoursLabel +
-                " " +
-                totalHours;
     }
 }

@@ -1,5 +1,6 @@
 package org.rares.miner49er._abstract;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -95,4 +96,6 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
     public abstract T getDisplayData(int adapterPosition);
 
     public abstract List<T> getData();
+
+    public abstract String getToolbarData(Context context, int position);
 }

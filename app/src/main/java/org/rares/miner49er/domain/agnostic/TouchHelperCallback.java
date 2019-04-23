@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -34,6 +35,8 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
     private AbstractAdapter<VH, VM> adapter;
     @Setter
     private AsyncGenericDao<VM> dao;
+    @Setter
+    private SwipeDeletedListener deletedListener;
 
     public TouchHelperCallback() {
         super(0, RIGHT);
@@ -68,10 +71,24 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
         vm.setDeleted(true);
 
         final CompositeDisposable disposables = new CompositeDisposable();
-        final Disposable pseudoDeleteDisposable = dao.update(vm).subscribe(x-> Log.i(TAG, "onSwiped: pseudo-removed? " + x));
+        final Disposable pseudoDeleteDisposable = dao.update(vm)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(x -> {
+                    if (deletedListener != null) {
+                        deletedListener.onItemPseudoDeleted(viewHolder);
+                    }
+                    Log.i(TAG, "onSwiped: pseudo-removed? " + x);
+                });
         final Disposable disposable = Single.just(0)
                 .delay(3, TimeUnit.SECONDS)
-                .subscribe((s) -> disposables.add(dao.delete(vm).subscribe(x -> Log.i(TAG, "onSwiped: removed? " + x))));
+                .subscribe((s) -> disposables.add(dao.delete(vm)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(x -> {
+                            if (deletedListener != null) {
+                                deletedListener.onItemDeleted(viewHolder);
+                            }
+                            Log.i(TAG, "onSwiped: removed? " + x);
+                        })));
 
         disposables.add(pseudoDeleteDisposable);
         disposables.add(disposable);
@@ -85,5 +102,11 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
                 context.getResources().getString(R.string.entry_removed),
                 Messenger.UNDOABLE,
                 Completable.fromAction(action));
+    }
+
+    public interface SwipeDeletedListener {
+        void onItemPseudoDeleted(ViewHolder vh);
+
+        void onItemDeleted(ViewHolder vh);
     }
 }

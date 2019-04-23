@@ -30,7 +30,10 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean edit(long id) {
-
+        if (fragmentManager.findFragmentByTag(TimeEntryEditFormFragment.TAG) != null) {
+            // prevent multiple fragments and/or multiple action listeners being created
+            return true;
+        }
         ActionFragment timeEntryEditFormFragment = TimeEntryEditFormFragment.newInstance();
 
         Bundle fragmentArgs = new Bundle();

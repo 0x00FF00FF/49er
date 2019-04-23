@@ -144,6 +144,10 @@ public class ToolbarActionManager
     }
 
     public void refreshActionMode() {
+        if(!inActionMode){
+            Log.w(TAG, "refreshActionMode: not in action mode.");
+            return;
+        }
         ensureStackNotEmpty();
         actionListenerStack.peek().configureCustomActionMenu(config);
 

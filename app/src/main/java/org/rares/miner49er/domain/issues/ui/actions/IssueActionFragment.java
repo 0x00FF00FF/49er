@@ -185,7 +185,7 @@ public abstract class IssueActionFragment extends ActionFragment {
     protected void populateFields(long projectId) {
         disposable.add(projectsDAO.get(projectId, true).subscribe(
                 pdOpt -> {
-                    projectData = pdOpt.get().clone();
+                    projectData = pdOpt.get().clone(true);
                     projectNameEditText.setText(projectData.getName());
                     userData = pdOpt.get().getTeam().get(0).clone();                ////
                     issueOwnerEditText.setText(userData.getName());

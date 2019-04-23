@@ -156,7 +156,7 @@ public class IssueEditFormFragment extends IssueActionFragment {
         disposable.add(issuesDAO.get(issueId, true).subscribe(
                 optionalData -> {
                     if (optionalData.isPresent()) {
-                        issueData = optionalData.get().clone();
+                        issueData = optionalData.get().clone(true);
                         issueNameEditText.setText(issueData.getName());
                         dateAddedEditText.setText(new DateTime(issueData.getDateAdded()).toString("EE, d MMMM, y"));
                         if (issueData.getOwner() == null) {
@@ -176,7 +176,7 @@ public class IssueEditFormFragment extends IssueActionFragment {
                         disposable.add(projectsDAO.get(issueData.parentId, true).subscribe(
                                 optionalProject -> {
                                     if (optionalProject.isPresent()) {
-                                        projectData = optionalProject.get().clone();
+                                        projectData = optionalProject.get().clone(true);
                                         projectNameEditText.setText(projectData.getName());
                                     }
                                 }

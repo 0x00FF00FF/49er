@@ -155,7 +155,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             return;
         }
 
-        projectData = projectsDAO.get(projectId, true).blockingGet().get().clone();        ////
+        projectData = projectsDAO.get(projectId, true).blockingGet().get().clone(true);        ////
 
         long[] ids = getUsersIds(projectData.getTeam());
         if (userListFragment == null) {

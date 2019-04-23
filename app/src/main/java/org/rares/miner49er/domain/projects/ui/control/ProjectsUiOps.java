@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import lombok.Getter;
@@ -15,10 +16,9 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
-import org.rares.miner49er.cache.Cache;
-import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -51,7 +51,8 @@ public class ProjectsUiOps
         extends ResizeableItemsUiOps
         implements
         ToolbarActionManager.MenuActionListener,
-        ResizeableLayoutManager.PreloadSizeConsumer {
+        ResizeableLayoutManager.PreloadSizeConsumer,
+        SwipeDeletedListener {
 
     @Setter
     private ProjectsInterfaces.ProjectsResizeListener projectsListResizeListener;
@@ -97,6 +98,7 @@ public class ProjectsUiOps
         itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
         itemTouchHelper.attachToRecyclerView(getRv());
         touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(ProjectData.class));
+        touchHelperCallback.setDeletedListener(this);
 
         startDisposable = new CompositeDisposable();
     }
@@ -122,11 +124,13 @@ public class ProjectsUiOps
         if (enlarge) {
             requireActionMode = false;
             toolbarManager.unregisterActionListener(this);
+            itemTouchHelper.attachToRecyclerView(getRv());
         } else {
             requireActionMode = true;
             menuActionEntityId = holder.getItemProperties().getId();
 //            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
             toolbarManager.registerActionListener(this);
+            itemTouchHelper.attachToRecyclerView(null);
         }
 
         return enlarge;
@@ -136,8 +140,8 @@ public class ProjectsUiOps
     public void onListItemChanged(ItemViewProperties ivp) {
         super.onListItemChanged(ivp);
         // TODO: 01.04.2019 the data should be updated via the toolbar manager refresh action mode method
-//        toolbarManager.refreshActionMode();
-        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+        toolbarManager.refreshActionMode();
+        /*Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
         if (ivp.getName() != null) {
             // but the viewHolder doesn't get updated until after this gets called
             // this method of getting data out of a view holder is stupid and should replaced with some other way
@@ -145,8 +149,7 @@ public class ProjectsUiOps
             // for now, let's do it peasant-style.
             t.setTitle(ivp.getName());                  //
             t.setSubtitle(ivp.getSecondaryData());      //
-        }
-//        Log.i(TAG, "onListItemChanged: " + t.getTitle() + " " + t.getSubtitle());
+        }*/
     }
 
     @Override
@@ -161,6 +164,8 @@ public class ProjectsUiOps
     @Override
     public void configureCustomActionMenu(MenuConfig config) {
         ResizeableItemViewHolder selectedHolder = getSelectedViewHolder();  // TODO: get data (title, subtitle) from adapter for selected item
+        AbstractAdapter abstractAdapter = (AbstractAdapter) getRv().getAdapter();
+
 
         config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
         config.requireActionMode = requireActionMode;
@@ -190,7 +195,10 @@ public class ProjectsUiOps
 
             config.title = selectedHolder.getLongTitle();
             // refresh infoLabel
-            config.subtitle = selectedHolder.getInfoLabelString();
+//            config.subtitle = selectedHolder.getInfoLabelString();
+            if (abstractAdapter != null) {
+                config.subtitle = abstractAdapter.getToolbarData(getRv().getContext(), abstractAdapter.getLastSelectedPosition());
+            }
         }
     }
 
@@ -254,7 +262,16 @@ public class ProjectsUiOps
         return d;
     }
 
-    private final Cache<ProjectData> projectDataCache = ViewModelCache.getInstance().getCache(ProjectData.class);
+    @Override
+    public void onItemDeleted(ViewHolder vh) {
+//        toolbarManager.refreshActionMode();
+    }
+
+    @Override
+    public void onItemPseudoDeleted(ViewHolder vh) {
+        toolbarManager.refreshActionMode();
+    }
+
     private ProjectDataModelProvider glidePreloadModelProvider;
     private MultipleFixedSizeProvider<String> sizeProvider = new MultipleFixedSizeProvider<>();
     private CompositeDisposable startDisposable;

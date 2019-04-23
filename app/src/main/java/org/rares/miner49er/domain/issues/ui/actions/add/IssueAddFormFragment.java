@@ -105,7 +105,7 @@ public class IssueAddFormFragment extends IssueActionFragment {
 
     private boolean addIssue() {
         issueData.id = issuesDAO.insert(issueData).blockingGet();
-        IssueData toDelete = issueData.clone();
+        IssueData toDelete = issueData.clone(true);
         issueData = new IssueData();
 
         final String snackbarText = String.format(successfulAdd, issueNameEditText.getEditableText().toString());

@@ -63,7 +63,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         if (args != null) {
             Optional<IssueData> issueDataOptional = issuesDAO.get(args.getLong(KEY_ISSUE_ID, -1), true).blockingGet();
             if (issueDataOptional.isPresent()) {
-                issueData = issueDataOptional.get().clone();
+                issueData = issueDataOptional.get().clone(true);
             }
         }
         Bundle bundle = new Bundle();
@@ -160,7 +160,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
 
         Optional<ProjectData> optional = projectsDAO.get(issueData.parentId, true).blockingGet();
         if (optional.isPresent()) {
-            projectData = optional.get().clone();
+            projectData = optional.get().clone(true);
         }
         userData = projectData.getTeam().get(0).clone();    ///
 
