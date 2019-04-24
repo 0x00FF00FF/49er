@@ -101,7 +101,7 @@ public abstract class ResizeableItemsUiOps
 
         setupSelectedItemAnimation(holder);
 
-        int adapterPosition = holder.getAdapterPosition();
+        int adapterPosition = holder.getAdapterPosition();  /// if holder ==null ???
         boolean enlarge = selectItem(adapterPosition);
 
         domainLink.onParentSelected(holder.getItemProperties(), enlarge);

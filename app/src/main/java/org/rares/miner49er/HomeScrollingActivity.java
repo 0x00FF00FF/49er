@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import android.app.ActivityManager;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -32,6 +33,9 @@ import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.optimizer.CacheFeederService;
+import org.rares.miner49er.cache.optimizer.EntityOptimizer;
+import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -49,11 +53,14 @@ import org.rares.miner49er.util.UiUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
+
 public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
         ProjectsResizeListener,
+        DbUpdateFinishedListener,
         Messenger {
 
     public static final String TAG = HomeScrollingActivity.class.getName();
@@ -113,6 +120,12 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
+        if (ViewModelCache.getInstance().lastUpdateTime + 5000 <= System.currentTimeMillis()) {
+            startCacheUpdate();
+        }
+        EntityOptimizer entityOptimizer = new EntityOptimizer();
+        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
+        entityOptimizer.addDbUpdateFinishedListener(this);
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
@@ -246,7 +259,7 @@ public class HomeScrollingActivity
 
     @Override
     public void onProjectsListShrink() {
-        flingBarUp();
+//        flingBarUp();
     }
 
     @Override
@@ -357,20 +370,6 @@ public class HomeScrollingActivity
         setupResizeableManager(manager, itemElevation, itemCollapsedSelectedWidth, rvCollapsedWidth);
     }
 
-    /**
-     * Called when the project list is getting shrinked,
-     * as a follow-up to a project being selected.
-     */
-    private void flingBarUp() {
-/*        // fling the app bar up
-        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-        BehaviorFix behavior = (BehaviorFix) params.getBehavior();
-        if (behavior != null) {
-            behavior.onNestedFling(mainContainer, appBarLayout, null, 0, 7000, true);
-//            behavior.onNestedPreScroll(mainContainer, appBarLayout, appBarLayout, 0, 1000, new int[] {0, 0});
-        }*/
-    }
-
     @Override
     public void onBackPressed() {
         ToolbarActionManager toolbarManager = (ToolbarActionManager) toolbar.getTag(R.integer.tag_toolbar_action_manager);
@@ -381,19 +380,6 @@ public class HomeScrollingActivity
         }
         super.onBackPressed();
     }
-
-    //    @Override
-//    public void registerUnbinder(Unbinder unbinder) {
-//        unbinderList.add(unbinder);
-//    }
-//
-//    @Override
-//    public boolean deRegisterUnbinder(Unbinder unbinder) {
-//        return
-//                unbinderList != null
-//                        && unbinderList.size() > 0
-//                        && unbinderList.remove(unbinder);
-//    }
 
     @Override
     protected void onPause() {
@@ -414,6 +400,10 @@ public class HomeScrollingActivity
     protected void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+        // make sure we show some data
+        // if the user comes back to the app
+        // or changes orientation after the cache is filled
+        ViewModelCache.getInstance().sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
     }
 
     @Override
@@ -518,5 +508,15 @@ public class HomeScrollingActivity
                     }
                 }));
         snackbar.show();
+    }
+
+    @Override
+    public void onDbUpdateFinished() {
+        startCacheUpdate();
+    }
+
+    private void startCacheUpdate() {
+        Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
+        startService(cacheFeederServiceIntent);
     }
 }

@@ -93,7 +93,8 @@ public class IssueDataCache implements Cache<IssueData> {
             if (projectData != null) {
                 List<IssueData> issues = projectData.getIssues();
                 if (issues == null) {
-                    return Collections.emptyList();
+//                    return Collections.emptyList();
+                    return null;
                 }
                 Collections.sort(issues, (id1, id2) -> id1.id.compareTo(id2.id));
                 Collections.reverse(issues);
