@@ -390,7 +390,7 @@ public class StickyLinearLayoutManager
             RecyclerView.State state
     ) {
 
-        final boolean METHOD_DEBUG = false;
+        boolean METHOD_DEBUG = false;
         boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
@@ -670,7 +670,7 @@ public class StickyLinearLayoutManager
                 }
             }
         } finally {
-
+//            METHOD_DEBUG = true;
             if (selectedView != null) {
                 int l = 0;
                 int r = itemCollapsedSelectedWidth;
@@ -814,6 +814,7 @@ public class StickyLinearLayoutManager
      * @return an integer array containing new top (position 0) and bottom (position 1) coordinates
      */
     private int[] assureVisibilityInViewport(int top, int bottom) {
+        boolean METHOD_DEBUG = false;
         int t = top, b = bottom;
         int[] topAndBottom = new int[2];
         if (t < 0) {
@@ -827,8 +828,8 @@ public class StickyLinearLayoutManager
             virtualPosition = t;
         }
 
-        if (DEBUG) {
-            Log.e(TAG, "assureVisibilityInViewport: setting virtualPosition to: " + virtualPosition);
+        if (DEBUG && METHOD_DEBUG) {
+            Log.v(TAG, "assureVisibilityInViewport: setting virtualPosition to: " + virtualPosition);
         }
 
         topAndBottom[0] = t;

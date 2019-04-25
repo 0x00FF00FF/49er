@@ -22,7 +22,6 @@ import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
-import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.TextUtils;
@@ -197,15 +196,23 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void onParentChanged(ItemViewProperties itemViewProperties) {
-        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
+//        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
 //        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
 //        int lastSelectedPosition = adapter.getLastSelectedPosition();
 //        boolean somethingSelected = lastSelectedPosition > -1;
 //        getRv().scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
 
-        if (_tempLm instanceof ResizeableLayoutManager) {
-            ((ResizeableLayoutManager) _tempLm).resetState(true);
-        }
+//        if (_tempLm instanceof ResizeableLayoutManager) {
+//            ((ResizeableLayoutManager) _tempLm).resetState(true);
+//        }
+        // ^this is responsible for
+        // * edit issue, apply, go to issues list, repeat a few times until
+        //			item decoration is not shown anymore under the previously
+        //			selected issue, click that issue -> crash.
+        //			- selected view is kept/laid out in stickyLM after expansion
+        // /!\ in fact, the selected view is reset and then added again when it shouldn't
+        // this is a fix for network data refresh resetting the selected view
+        // // FIXME: 25.04.2019 ^^^ for network data refresh + collision detection and fixing
         issuesRepository.setParentProperties(itemViewProperties);
         issuesRepository.refreshData(true);
     }

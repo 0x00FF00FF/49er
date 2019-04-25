@@ -145,7 +145,7 @@ public abstract class IssueActionFragment extends ActionFragment {
             actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
         }
         resultListener.onFragmentDismiss();
-        FragmentManager fm  = getFragmentManager();
+        FragmentManager fm = getFragmentManager();
         if (fm != null) {
             fm.beginTransaction().remove(this).commit();
         }
@@ -163,7 +163,7 @@ public abstract class IssueActionFragment extends ActionFragment {
         issueData.setLastUpdated(System.currentTimeMillis());
         issueData.setParentId(projectData.id);
         issueData.setOwner(userData);
-        issueData.setOwnerId(userData.id);
+        issueData.setOwnerId(userData == null ? -1 : userData.id);
     }
 
     protected void resetFields() {

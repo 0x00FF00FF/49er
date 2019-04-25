@@ -100,6 +100,13 @@ public class ProjectsAdapter
         // holder is locked by the StickyLinearLayoutManager and at
         // times it needs to be refreshed
         final boolean newHolder = holder.getItemData() == null;
+        // ^this is linked to the following issue:
+        // * edit issue, apply, go to issues list, repeat a few times until
+        //			item decoration is not shown anymore under the previously
+        //			selected issue, click that issue -> crash.
+        //			- selected view is kept/laid out in stickyLM after expansion
+        // which is caused by resetting the sticky linear layout manager state
+        // when new network data/cache is brought/shown
         if (holder.isToBeRebound()) {
 //            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
             holder.bindData(
@@ -108,7 +115,7 @@ public class ProjectsAdapter
                     position == getLastSelectedPosition());
         }
         if (!newHolder && position == getLastSelectedPosition()) {
-            // todo: find a better way to achieve this ^
+//            // todo: find a better way to achieve this ^
             eventListener.onListItemChanged(holder.getItemProperties());
         }
 //        Log.v(TAG, "onBindViewHolder() called with: " +

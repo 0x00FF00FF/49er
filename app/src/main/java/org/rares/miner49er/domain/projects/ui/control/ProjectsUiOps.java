@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.projects.ui.control;
 
+import android.util.Log;
 import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -138,18 +139,9 @@ public class ProjectsUiOps
 
     @Override
     public void onListItemChanged(ItemViewProperties ivp) {
+        Log.d(TAG, "onListItemChanged() [1] 27141195 called with: ivp = [" + ivp + "]");
         super.onListItemChanged(ivp);
-        // TODO: 01.04.2019 the data should be updated via the toolbar manager refresh action mode method
         toolbarManager.refreshActionMode();
-        /*Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
-        if (ivp.getName() != null) {
-            // but the viewHolder doesn't get updated until after this gets called
-            // this method of getting data out of a view holder is stupid and should replaced with some other way
-            // of getting the title and subtitle data from the adapter.
-            // for now, let's do it peasant-style.
-            t.setTitle(ivp.getName());                  //
-            t.setSubtitle(ivp.getSecondaryData());      //
-        }*/
     }
 
     @Override
