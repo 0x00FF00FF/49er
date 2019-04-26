@@ -2,7 +2,6 @@ package org.rares.miner49er.domain.users.userlist;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,6 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -182,7 +180,6 @@ public class UserListFragmentPureRv extends DialogFragment {
         }
         if (usersListConsumer != null) {
             usersListConsumer.get().setSelectedList(selectedList);
-            Log.i(TAG, "sendSelectedIds: just sent the list: " + Arrays.toString(selectedList));
         }
     }
 

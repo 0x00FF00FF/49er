@@ -120,7 +120,7 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
-        if (ViewModelCache.getInstance().lastUpdateTime + 5000 <= System.currentTimeMillis()) {
+        if (ViewModelCache.getInstance().lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
         EntityOptimizer entityOptimizer = new EntityOptimizer();
@@ -236,10 +236,11 @@ public class HomeScrollingActivity
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem removeItem = menu.findItem(R.id.action_remove);
-        if (removeItem != null) {
-            removeItem.setEnabled(false);
-        }
+        super.onPrepareOptionsMenu(menu);
+//        MenuItem removeItem = menu.findItem(R.id.action_remove);
+//        if (removeItem != null) {
+//            removeItem.setEnabled(false);
+//        }
         return true;
     }
 

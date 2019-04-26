@@ -80,6 +80,7 @@ public class IssueAddFormFragment extends IssueActionFragment {
         FormValidator<IssueData> validator = FormValidator.of(issueData);
         try {
             validator
+                    .validate(IssueData::getOwner, o-> o!=null, issueOwnerInputLayout, errRequired)
                     .validate(IssueData::getName, n -> !n.isEmpty(), issueNameInputLayout, errRequired)
                     .validate(IssueData::getName, n -> !n.contains("#"), issueNameInputLayout, errCharacters)
                     .validate(IssueData::getName, n -> {

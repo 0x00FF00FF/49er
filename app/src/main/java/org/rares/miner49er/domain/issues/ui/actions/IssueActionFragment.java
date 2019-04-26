@@ -19,6 +19,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import io.reactivex.disposables.CompositeDisposable;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -187,8 +188,10 @@ public abstract class IssueActionFragment extends ActionFragment {
                 pdOpt -> {
                     projectData = pdOpt.get().clone(true);
                     projectNameEditText.setText(projectData.getName());
-                    userData = pdOpt.get().getTeam().get(0).clone();                ////
-                    issueOwnerEditText.setText(userData.getName());
+                    userData = ViewModelCache.getInstance().loggedInUser;
+                    if (userData != null) {
+                        issueOwnerEditText.setText(userData.getName());
+                    }
                 }
         ));
         dateAddedEditText.setText(DateTime.now().toString("EE, d MMMM, y"));

@@ -12,6 +12,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.domain.users.model.UserData;
@@ -21,6 +22,7 @@ import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +56,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
     @Override
     public void onStart() {
         super.onStart();
+        editTextProjectOwner.setText(ViewModelCache.getInstance().loggedInUser.getName());
 //        UiUtil.sendViewToBack(getView());
     }
 
@@ -177,34 +180,15 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         projectData.id = null;
 
         if (projectData.getOwner() == null) {
-            Optional<UserData> opt = usersDAO.get(1, true).blockingGet();
-            UserData userData = null;
-            if (opt.isPresent()) {
-                userData = opt.get();
-            }
+            UserData userData = ViewModelCache.getInstance().loggedInUser;
             projectData.setOwner(userData); //
             projectData.parentId = projectData.getOwner().id;
         }
 
-        if (userListFragment != null) {
-            userListFragment.sendSelectedIds(); ///
+        if (projectData.getTeam() == null) {
+            projectData.setTeam(Collections.emptyList());
         }
 
-        // add a team by default, to be deleted when a team can be manually added.
-        if (projectData.getTeam() == null || projectData.getTeam().size() == 0) {
-//            List<UserData> users = usersDAO.getAll(true).blockingGet();         //
-//            List<UserData> team = new ArrayList<>();
-//            for (UserData u : users) {
-//                if (u.getRole() != 12) {
-//                    team.add(u);
-//                }
-//                if (team.size() > 6) {
-//                    break;
-//                }
-//            }
-            if (team != null) {
-                projectData.setTeam(team);
-            }
-        }
+        projectData.setIssues(Collections.emptyList());
     }
 }

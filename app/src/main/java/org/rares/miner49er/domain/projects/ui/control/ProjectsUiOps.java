@@ -1,6 +1,5 @@
 package org.rares.miner49er.domain.projects.ui.control;
 
-import android.util.Log;
 import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -34,9 +33,11 @@ import org.rares.miner49er.ui.custom.glide.preload.MultipleFixedSizeProvider;
 import org.rares.miner49er.ui.custom.glide.preload.MultipleListPreloader;
 import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
 import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
+import org.rares.miner49er.util.PermissionsUtil;
 
 import java.util.List;
 
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
@@ -139,7 +140,6 @@ public class ProjectsUiOps
 
     @Override
     public void onListItemChanged(ItemViewProperties ivp) {
-        Log.d(TAG, "onListItemChanged() [1] 27141195 called with: ivp = [" + ivp + "]");
         super.onListItemChanged(ivp);
         toolbarManager.refreshActionMode();
     }
@@ -155,43 +155,51 @@ public class ProjectsUiOps
 
     @Override
     public void configureCustomActionMenu(MenuConfig config) {
-        ResizeableItemViewHolder selectedHolder = getSelectedViewHolder();  // TODO: get data (title, subtitle) from adapter for selected item
-        AbstractAdapter abstractAdapter = (AbstractAdapter) getRv().getAdapter();
-
+        ProjectsAdapter adapter = (ProjectsAdapter) getRv().getAdapter();
 
         config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
         config.requireActionMode = requireActionMode;
 
-        if (selectedHolder != null) {
-
-            ProjectsViewHolder pvh = (ProjectsViewHolder) selectedHolder;   ///
-            pvh.populateInfoLabel();
-
-            config.menuId = R.menu.menu_generic_actions;
-            config.additionalMenuId = R.menu.menu_additional_projects;
-            config.additionalResources = new int[1][4];
-            config.createGenericMenu = true;
-            config.titleRes = 0;
-            config.subtitleRes = 0;
-
-            config.overrideGenericMenuResources = new int[1][4];
-            config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
-            config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
-            config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-            config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
-
-            config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
-            config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
-            config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-            config.additionalResources[0][ITEM_NAME] = 0;
-
-            config.title = selectedHolder.getLongTitle();
-            // refresh infoLabel
-//            config.subtitle = selectedHolder.getInfoLabelString();
-            if (abstractAdapter != null) {
-                config.subtitle = abstractAdapter.getToolbarData(getRv().getContext(), abstractAdapter.getLastSelectedPosition());
-            }
+        if (adapter == null || adapter.getLastSelectedPosition() == -1) {
+            return;
         }
+
+        ProjectData projectData = adapter.getData().get(adapter.getLastSelectedPosition());
+
+        config.menuId = R.menu.menu_generic_actions;
+        config.additionalMenuId = R.menu.menu_additional_projects;
+        config.createGenericMenu = true;
+        config.titleRes = 0;
+        config.subtitleRes = 0;
+
+        config.overrideGenericMenuResources = new int[3][5];
+        config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
+        config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
+        config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
+        config.overrideGenericMenuResources[0][ENABLED] = PermissionsUtil.canAddIssue(projectData) ? 1 : 0;
+
+        config.overrideGenericMenuResources[1][ITEM_ID] = R.id.action_edit;
+        config.overrideGenericMenuResources[1][ICON_ID] = R.drawable.icon_path_edit;
+        config.overrideGenericMenuResources[1][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[1][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[1][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
+
+        config.overrideGenericMenuResources[2][ITEM_ID] = R.id.action_remove;
+        config.overrideGenericMenuResources[2][ICON_ID] = R.drawable.icon_path_remove;
+        config.overrideGenericMenuResources[2][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[2][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[2][ENABLED] = PermissionsUtil.canRemoveProject(projectData) ? 1 : 0;
+
+        config.additionalResources = new int[1][5];
+        config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
+        config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
+        config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.additionalResources[0][ITEM_NAME] = 0;
+        config.additionalResources[0][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
+
+        config.title = projectData.getName();
+        config.subtitle = adapter.getToolbarData(getRv().getContext(), adapter.getLastSelectedPosition());
     }
 
 

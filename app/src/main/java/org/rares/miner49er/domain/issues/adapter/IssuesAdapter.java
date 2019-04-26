@@ -13,6 +13,7 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.model.IssuesDiff;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
+import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -111,27 +112,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
     }
 
     private void updateData(List<IssueData> newData) {
-       /* for (IssueData id : data) {
-            if (id.getName().equals("18")) {
-                Log.w(TAG, "updateData: " + id.getTimeEntries().size());
-            }
-            if(id.getTimeEntries()!=null)
-            for (TimeEntryData ted : id.getTimeEntries()) {
-                Log.w(TAG, "updateData: " + ted.hashCode() + " " + ted.deleted);
-            }
-        }
-        for (IssueData id : newData) {
-            if (id.getName().equals("18")) {
-                Log.w(TAG, "updateData: " + id.getTimeEntries().size());
-            }
-            if(id.getTimeEntries()!=null)
-            for (TimeEntryData ted : id.getTimeEntries()) {
-                Log.w(TAG, "updateData: " + ted.hashCode() + " " + ted.deleted);
-            }
-        }*/
-
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
-        data = Collections.unmodifiableList(newData);
+        data = newData;
         diffResult.dispatchUpdatesTo(this);
 //        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {});
     }
@@ -150,5 +132,13 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
     @Override
     public String getToolbarData(Context context, int position) {
         return UiUtil.populateInfoString(context.getResources().getString(R.string._issues_info_template), data.get(position));
+    }
+
+    @Override
+    public boolean canRemoveItem(int position) {
+        if (data != null && position > -1 && position < data.size()) {
+            return PermissionsUtil.canRemoveIssue(data.get(position));
+        }
+        return false;
     }
 }

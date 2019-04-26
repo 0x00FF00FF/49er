@@ -24,6 +24,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
@@ -155,7 +156,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
         issuesDAO = InMemoryCacheAdapterFactory.ofType(IssueData.class);
         timeEntriesDAO = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
         usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
-        loggedInUser = usersDAO.get(12, true).blockingGet().get();   ///
+        loggedInUser = ViewModelCache.getInstance().loggedInUser;
         Log.i(TAG, "onAttach: currently 'logged in user' is " + loggedInUser.getName());
     }
 

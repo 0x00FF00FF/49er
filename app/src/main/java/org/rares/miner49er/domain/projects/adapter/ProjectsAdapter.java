@@ -14,6 +14,7 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectDiff;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
+import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
@@ -99,25 +100,17 @@ public class ProjectsAdapter
         // holder for the selected position because the selected position
         // holder is locked by the StickyLinearLayoutManager and at
         // times it needs to be refreshed
-        final boolean newHolder = holder.getItemData() == null;
-        // ^this is linked to the following issue:
-        // * edit issue, apply, go to issues list, repeat a few times until
-        //			item decoration is not shown anymore under the previously
-        //			selected issue, click that issue -> crash.
-        //			- selected view is kept/laid out in stickyLM after expansion
-        // which is caused by resetting the sticky linear layout manager state
-        // when new network data/cache is brought/shown
-        if (holder.isToBeRebound()) {
-//            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
-            holder.bindData(
-                    data.get(position),
-                    getLastSelectedPosition() != -1,
-                    position == getLastSelectedPosition());
-        }
-        if (!newHolder && position == getLastSelectedPosition()) {
-//            // todo: find a better way to achieve this ^
+//        final boolean newHolder = holder.getItemData() == null;
+
+        holder.bindData(
+                data.get(position),
+                getLastSelectedPosition() != -1,
+                position == getLastSelectedPosition());
+
+        if (position == getLastSelectedPosition()) {
             eventListener.onListItemChanged(holder.getItemProperties());
         }
+
 //        Log.v(TAG, "onBindViewHolder() called with: " +
 //                "holder = [" + holder.hashCode() + "], " +
 //                "position = [" + position + "], " +
@@ -170,5 +163,13 @@ public class ProjectsAdapter
     @Override
     public String getToolbarData(Context context, int position) {
         return UiUtil.populateInfoString(context.getResources().getString(R.string._projects_info_template), data.get(position));
+    }
+
+    @Override
+    public boolean canRemoveItem(int position) {
+        if (data != null && position > -1 && position < data.size()) {
+            return PermissionsUtil.canRemoveProject(data.get(position));
+        }
+        return false;
     }
 }

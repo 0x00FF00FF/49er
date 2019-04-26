@@ -72,7 +72,7 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
 
         final CompositeDisposable disposables = new CompositeDisposable();
         final Disposable pseudoDeleteDisposable = dao.update(vm)
-                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(x -> {
                     if (deletedListener != null) {
                         deletedListener.onItemPseudoDeleted(viewHolder);
@@ -102,6 +102,16 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
                 context.getResources().getString(R.string.entry_removed),
                 Messenger.UNDOABLE,
                 Completable.fromAction(action));
+    }
+
+    @Override
+    public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull ViewHolder viewHolder) {
+        boolean canSwipe = false;
+        AbstractAdapter adapter = (AbstractAdapter) recyclerView.getAdapter();
+        if (adapter != null) {
+            canSwipe = adapter.canRemoveItem(viewHolder.getAdapterPosition());
+        }
+        return canSwipe ? RIGHT : 0;
     }
 
     public interface SwipeDeletedListener {

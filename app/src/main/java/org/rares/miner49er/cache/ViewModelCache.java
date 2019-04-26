@@ -24,6 +24,8 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     public long lastUpdateTime = -1;
 
+    public UserData loggedInUser;
+
     private ViewModelCache() {
     }
 

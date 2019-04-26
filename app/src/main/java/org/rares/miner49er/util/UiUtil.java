@@ -9,6 +9,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.view.View;
 import android.view.ViewGroup;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -97,11 +98,13 @@ public class UiUtil {
             List<IssueData> issues = projectData.getIssues();
             if (issues != null) {
                 for (IssueData issueData : issues) {
-                    issuesNumber += issueData.deleted ? 0 : 1;
-                    List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
-                    if (timeEntryData != null) {
-                        for (TimeEntryData ted : timeEntryData) {
-                            hoursNumber += ted.deleted ? 0 : ted.getHours();
+                    if(!issueData.deleted) {
+                        ++issuesNumber;
+                        List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
+                        if (timeEntryData != null) {
+                            for (TimeEntryData ted : timeEntryData) {
+                                hoursNumber += ted.deleted ? 0 : ted.getHours();
+                            }
                         }
                     }
                 }
@@ -129,7 +132,7 @@ public class UiUtil {
             List<TimeEntryData> entries = issueData.getTimeEntries();
             if (entries != null) {
                 for (TimeEntryData entry : entries) {
-                    userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
+                    userHours += entry.getUserId().equals(ViewModelCache.getInstance().loggedInUser.id) ? entry.getHours() : 0;
                     totalHours += entry.deleted ? 0 : entry.getHours();
                     entriesNumber += entry.deleted ? 0 : 1;
                 }

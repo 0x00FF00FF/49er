@@ -12,6 +12,7 @@ import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.model.TimeEntryDiff;
+import org.rares.miner49er.util.PermissionsUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +88,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
         return this.data.get(adapterPosition);
     }
 
-    public String getData(int position){
+    public String getData(int position) {
         return data.get(position).toLongString();
     }
 
@@ -106,5 +107,13 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
     @Override
     public String getToolbarData(Context context, int position) {
         return "---";
+    }
+
+    @Override
+    public boolean canRemoveItem(int position) {
+        if (data != null && position > -1 && position < data.size()) {
+            return PermissionsUtil.canRemoveTimeEntry(data.get(position));
+        }
+        return false;
     }
 }

@@ -150,6 +150,7 @@
                     android:id="@+id/project_owner_input_layout_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:enabled="false"
                     android:hint="@string/hint_project_owner"
                     style="@style/Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             />

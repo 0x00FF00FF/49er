@@ -98,4 +98,6 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
     public abstract List<T> getData();
 
     public abstract String getToolbarData(Context context, int position);
+
+    public abstract boolean canRemoveItem(int position);
 }

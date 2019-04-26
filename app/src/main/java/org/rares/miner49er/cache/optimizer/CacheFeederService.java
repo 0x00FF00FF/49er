@@ -91,6 +91,10 @@ public class CacheFeederService extends IntentService /*implements EntityOptimiz
                 .limit(daoList.size())
                 .count()
                 .subscribe(x -> {
+                    Optional<UserData> userDataOptional = uDao.get(12, true).blockingGet();
+                    if (userDataOptional.isPresent()) {
+                        cache.loggedInUser = userDataOptional.get();   ///
+                    }
                     cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
                     linkData();
                 })
@@ -145,7 +149,7 @@ public class CacheFeederService extends IntentService /*implements EntityOptimiz
                                         Flowable.fromIterable(cachedProjects)
                                                 .parallel(4)
                                                 .runOn(Schedulers.computation())
-                                                .map(mapTeamToProjectData)
+                                                .map(mapToProjectData)
                                                 .sequential()
                                                 .delay(51, TimeUnit.MILLISECONDS)
                                                 .doOnComplete(projectsLinkedAction)
@@ -163,7 +167,7 @@ public class CacheFeederService extends IntentService /*implements EntityOptimiz
         cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
     };
 
-    private Function<ProjectData, ProjectData> mapTeamToProjectData =
+    private Function<ProjectData, ProjectData> mapToProjectData =
             projectData -> {
                 uDao.getAll(projectData.getId(), true);
                 UserData userData = userDataCache.getData(projectData.parentId);

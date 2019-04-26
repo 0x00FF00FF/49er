@@ -386,7 +386,6 @@ public abstract class ProjectActionFragment
         }
         args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, selectedUsersList);
         userListFragment.setArguments(args);
-
         userListFragment.refreshData();
     }
 }

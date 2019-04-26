@@ -12,6 +12,8 @@ import java.util.List;
 
 public class IssueDataCache implements Cache<IssueData> {
 
+    private static final String TAG = IssueDataCache.class.getSimpleName();
+
     private ViewModelCache cache = ViewModelCache.getInstance();
     private LruCache<Long, IssueData> issuesCache = cache.getIssuesLruCache();
     private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
@@ -46,7 +48,11 @@ public class IssueDataCache implements Cache<IssueData> {
                             }
                         }
                         if (!found) {
+                            if(issues.equals(Collections.emptyList())){
+                                issues = new ArrayList<>();
+                            }
                             issues.add(issue);
+                            projectData.setIssues(issues);
                         }
                     } else {
                         issues = new ArrayList<>();

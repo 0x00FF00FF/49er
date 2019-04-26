@@ -24,8 +24,9 @@ import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
-import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.PermissionsUtil;
 
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
@@ -101,35 +102,50 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
-        // for now, re-use the generic one configured in the projects
-        ResizeableItemViewHolder holder = getSelectedViewHolder();
-
-        if (holder != null) {
-//            config.title = holder.getLongTitle();
-//            config.subtitle = holder.getInfoLabelString();
-            config.subtitleRes = 0;
-            config.titleRes = 0;
-            config.subtitle = TextUtils.capitalize(
-                    ((AbstractAdapter) getRv().getAdapter()).resolveData(getSelectedItemId(), true));
-        }
 
         config.requireActionMode = requiresActionMode;
 
-        config.overrideGenericMenuResources = new int[1][4];
+        IssuesAdapter adapter = (IssuesAdapter) getRv().getAdapter();
+
+        if (adapter == null || adapter.getLastSelectedPosition() == -1) {
+            return;
+        }
+
+        IssueData issueData = adapter.getData().get(adapter.getLastSelectedPosition());
+
+        config.overrideGenericMenuResources = new int[3][5];
         config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
         config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
         config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
         config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_time_entry;
+        config.overrideGenericMenuResources[0][ENABLED] = PermissionsUtil.canAddIssue(issueData.parentId) ? 1 : 0;
+
+        config.overrideGenericMenuResources[1][ITEM_ID] = R.id.action_edit;
+        config.overrideGenericMenuResources[1][ICON_ID] = R.drawable.icon_path_edit;
+        config.overrideGenericMenuResources[1][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[1][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[1][ENABLED] = PermissionsUtil.canEditIssue(issueData) ? 1 : 0;
+
+        config.overrideGenericMenuResources[2][ITEM_ID] = R.id.action_remove;
+        config.overrideGenericMenuResources[2][ICON_ID] = R.drawable.icon_path_remove;
+        config.overrideGenericMenuResources[2][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[2][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[2][ENABLED] = PermissionsUtil.canRemoveIssue(issueData) ? 1 : 0;
 
         config.createGenericMenu = true;
-
         config.additionalMenuId = R.menu.menu_additional_issues;
-        config.additionalResources = new int[1][4];
+        config.additionalResources = new int[1][5];
 
         config.additionalResources[0][ITEM_ID] = R.id.action_set_auto_add_hours;
         config.additionalResources[0][ICON_ID] = R.drawable.icon_path_auto_add_time_2;
         config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
         config.additionalResources[0][ITEM_NAME] = 0;
+        config.additionalResources[0][ENABLED] = PermissionsUtil.canAddTimeEntry(issueData) ? 1 : 0;
+
+        config.subtitleRes = 0;
+        config.titleRes = 0;
+
+        config.subtitle = issueData.getName();
     }
 
     @Override

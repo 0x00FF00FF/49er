@@ -44,10 +44,6 @@ public abstract class ResizeableItemViewHolder
     @Setter
     ItemViewProperties itemProperties;
 
-    @Getter
-    @Setter
-    private boolean toBeRebound = true;
-
     protected AbstractViewModel viewModel;
 
     private Unbinder unbinder;
