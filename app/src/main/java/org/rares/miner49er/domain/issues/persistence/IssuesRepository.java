@@ -91,6 +91,7 @@ public class IssuesRepository extends Repository {
 
     @Override
     public void shutdown() {
+        userActionProcessor.onComplete();
         disposables.dispose();
     }
 

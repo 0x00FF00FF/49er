@@ -91,6 +91,7 @@ public class TimeEntriesRepository extends Repository {
 
     @Override
     public void shutdown() {
+        userActionProcessor.onComplete();
         disposables.dispose();
     }
 

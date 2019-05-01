@@ -97,10 +97,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
 
-        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
 
         if (parentWasEnlarged) {
-            if (unbinderList.size() > 40) {
+//            if (unbinderList.size() > 40) {
                 // + clear the viewHolders if
                 // they reach a certain number;
                 // so there are no leaks
@@ -110,16 +110,16 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
                 touchHelperCallback.setAdapter(null);
                 itemTouchHelper.attachToRecyclerView(null);
                 resetRv();
-            } else if (adapter != null) {
-                adapter.clearData();
-            }
+//            } else if (adapter != null) {
+//                adapter.clearData();
+//            }
         } else {
-            if (adapter != null) {
-                onParentChanged(viewProperties);
-            } else {
+//            if (adapter != null) {
+//                onParentChanged(viewProperties);
+//            } else {
                 getRv().setAdapter(createNewAdapter(viewProperties));
                 itemTouchHelper.attachToRecyclerView(getRv());
-            }
+//            }
         }
     }
 

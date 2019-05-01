@@ -190,23 +190,24 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             // so that the chance of leaked
             // context or views will be
             // minimal.
-            if (unbinderList.size() > 40) {
-                repository.shutdown();
-                getRv().setAdapter(null);
-                touchHelperCallback.setAdapter(null);
-                itemTouchHelper.attachToRecyclerView(null);
-                resetRv();
-            } else if (issuesAdapter != null) {
-                issuesAdapter.clearData();
-            }
+//            if (unbinderList.size() > 40) {
+            repository.shutdown();
+            getRv().setAdapter(null);
+            touchHelperCallback.setAdapter(null);
+            itemTouchHelper.attachToRecyclerView(null);
+            resetRv();
+//            } else if (issuesAdapter != null) {
+//                issuesAdapter.clearData();
+//            }
         } else {
-            if (issuesAdapter != null) {
-                onParentChanged(projectProperties);
-            } else {
-                getRv().setAdapter(createNewIssuesAdapter(projectProperties));
-                itemTouchHelper.attachToRecyclerView(getRv());
-            }
+//            if (issuesAdapter != null) {
+//                onParentChanged(projectProperties);
+//            } else {
+            getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+            itemTouchHelper.attachToRecyclerView(getRv());
+//            }
         }
+        getRv().scrollToPosition(0);
         resizeRv(!parentWasEnlarged);
     }
 
