@@ -11,8 +11,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.model.UserDiff;
+import org.rares.miner49er.domain.users.persistence.AsyncUserDataCacheAdapter;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces.PositionListener;
 
 import java.util.List;
@@ -44,7 +46,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> implements
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         UserData userData = data.get(position);
 //            int otherProjects = projectsDAO.getProjectsForUser(userData);
-        int otherProjects = userData.id % 2 == 0 ? 1 : userData.id % 3 == 0 ? 0 : 2;
+        int otherProjects = ((AsyncUserDataCacheAdapter) InMemoryCacheAdapterFactory.ofType(UserData.class))    //
+                .getUserMemberProjects(userData).size();
         String userRole = userData.id % 2 == 0 ? roleDeveloper : userData.id % 3 == 0 ? roleProjectManager : roleDesigner;
         holder.bindData(userData, otherProjects, userRole, selectedData.contains(data.get(position).id));
     }

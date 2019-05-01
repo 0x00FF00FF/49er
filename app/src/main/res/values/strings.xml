@@ -13,6 +13,9 @@
 
     <string name="_projects_info_template" formatted="false">Issues: %s Users: %s Hours: %s</string>
     <string name="_issues_info_template" formatted="false">Entries: %s User Hours: %s Total Hours: %s</string>
+    <string name="_users_info_template" formatted="false">Currently working on %s other project%s.</string>
+    <string name="_users_info_template_zero">no</string>
+    <string name="_users_info_template_plural_suffix">s</string>
 
     <string name="_toolbar_back_button_description">Go back</string>
 

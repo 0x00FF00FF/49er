@@ -28,6 +28,10 @@ public class UserViewHolder extends RecyclerView.ViewHolder {
     @Setter
     private UserInterfaces.UserItemClickListener eventListener;
 
+    private String userInfoTemplate;
+    private String userInfoTemplateZeroProjects;
+    private String userInfoTemplatePluralSuffix;
+
     public UserViewHolder(@NonNull View itemView, boolean clickable) {
         super(itemView);
         tvUserName = itemView.findViewById(R.id.tv_user_name);
@@ -41,17 +45,19 @@ public class UserViewHolder extends RecyclerView.ViewHolder {
                 toggleStatusIconVisibility();
             });
         }
+        userInfoTemplate = itemView.getContext().getResources().getString(R.string._users_info_template);
+        userInfoTemplateZeroProjects = itemView.getContext().getResources().getString(R.string._users_info_template_zero);
+        userInfoTemplatePluralSuffix = itemView.getContext().getResources().getString(R.string._users_info_template_plural_suffix);
     }
 
     public void bindData(UserData userData, int otherProjects, String userRole, boolean member) {
-
         tvUserName.setText(
                 TextUtils.clearNamePrefix(userData.getName()).replace(" ", "\n"));
         tvUserRole.setText(userRole);
         tvOtherProjects.setText(
-                String.format("Currently working on %s other project%s.",
-                        otherProjects == 0 ? "no" : otherProjects,
-                        otherProjects > 1 ? "s" : ""));
+                String.format(userInfoTemplate,
+                        otherProjects == 0 ? userInfoTemplateZeroProjects : otherProjects,
+                        otherProjects > 1 ? userInfoTemplatePluralSuffix : ""));
         GlideApp.with(itemView)
                 .load(userData.getPicture())
                 .error(R.drawable.skull)
