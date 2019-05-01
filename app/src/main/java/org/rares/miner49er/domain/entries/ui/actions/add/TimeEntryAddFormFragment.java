@@ -12,6 +12,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.ui.actions.HoursPerDayValidation;
 import org.rares.miner49er.domain.entries.ui.actions.TimeEntryActionFragment;
@@ -162,7 +163,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         if (optional.isPresent()) {
             projectData = optional.get().clone(true);
         }
-        userData = projectData.getTeam().get(0).clone();    ///
+        userData = ViewModelCache.getInstance().loggedInUser;
 
         String projectName = bundle.getString(KEY_PROJECT_NAME, projectData.getName());
         String issueName = bundle.getString(KEY_ISSUE_NAME, "");

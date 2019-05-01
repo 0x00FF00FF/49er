@@ -47,7 +47,12 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         View v = viewHolder.itemView;
         float alpha = 2 * v.getTranslationX() / v.getWidth();
-        Drawable remove = recyclerView.getContext().getResources().getDrawable(R.drawable.icon_path_delete);
+        Drawable remove;
+        if (alpha > 1) {
+            remove = recyclerView.getContext().getResources().getDrawable(R.drawable.icon_path_delete_swipe);
+        } else {
+            remove = recyclerView.getContext().getResources().getDrawable(R.drawable.icon_path_delete);
+        }
         remove.setBounds(
                 48,
                 v.getTop() + v.getHeight() / 2 - remove.getIntrinsicHeight() / 2,
