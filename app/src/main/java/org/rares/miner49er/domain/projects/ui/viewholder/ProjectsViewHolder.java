@@ -21,6 +21,8 @@ import butterknife.BindString;
 import butterknife.BindView;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
@@ -37,6 +39,7 @@ import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.concurrent.TimeUnit;
 
 public class ProjectsViewHolder
         extends ResizeableItemViewHolder
@@ -215,11 +218,18 @@ public class ProjectsViewHolder
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
-                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+                disposables.add(Single.just(1)
+                        .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(one -> startInfoContainerFade(currentAlpha))
+                );
             }
         } else {
-            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
-            // FIXME: 22.03.2019 at times info label remains null and is not added to the container when scrolling while expanded
+            disposables.add(Single.just(1)
+                    .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(one -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed))
+            );
         }
 
         if (projectImage != null) {

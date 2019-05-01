@@ -14,6 +14,8 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
@@ -26,6 +28,8 @@ import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
 import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author rares
@@ -180,11 +184,21 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
-                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+                disposables.add(Single.just(1)
+                        .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(one -> startInfoContainerFade(currentAlpha))
+                );
+//                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
 //                startInfoContainerFade(currentAlpha);
             }
         } else {
-            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+            disposables.add(Single.just(1)
+                    .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(one -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed))
+            );
+//            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
 //            addInfoLabelToContainer(itemView.getContext().getResources(), collapsed);
         }
     }

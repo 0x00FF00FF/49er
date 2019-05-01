@@ -65,6 +65,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
         if (holder.getAnimator() != null && holder.getAnimator().isRunning()) {
             holder.getAnimator().end();
         }
+        holder.disposables.clear();
     }
 
     @Override
@@ -74,6 +75,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 //            projectsViewHolder.clearImages();
 //        }
 //        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
+        holder.disposables.clear();
     }
 
     @Override

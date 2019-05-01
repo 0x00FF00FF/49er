@@ -7,6 +7,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.disposables.CompositeDisposable;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
@@ -43,6 +44,8 @@ public abstract class ResizeableItemViewHolder
     @Getter
     @Setter
     ItemViewProperties itemProperties;
+
+    protected CompositeDisposable disposables = new CompositeDisposable();
 
     protected AbstractViewModel viewModel;
 
