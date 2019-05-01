@@ -5,6 +5,8 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
@@ -32,6 +34,10 @@ public class IssuesRepository extends Repository {
 
     @Override
     public void setup() {
+        if (userActionProcessor.hasComplete()) {
+            userActionProcessor = PublishProcessor.create();
+            userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
+        }
 
         if (disposables == null || disposables.isDisposed()) {
             disposables = new CompositeDisposable();
@@ -129,7 +135,6 @@ public class IssuesRepository extends Repository {
 
     @Override
     public void refreshData(boolean onlyLocal) {
-//        Log.i(TAG, "refreshData: >>>>");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 }
