@@ -23,6 +23,7 @@ import org.rares.miner49er.domain.projects.ProjectsInterfaces;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
+import org.rares.miner49er.domain.projects.ui.actions.remove.ProjectRemoveAction;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
@@ -214,7 +215,7 @@ public class ProjectsUiOps
             provideToolbarActionManager();
         }
         if (menuActionsProvider == null) {
-            menuActionsProvider = new ProjectMenuActionsProvider(fragmentManager, toolbarManager);
+            menuActionsProvider = new ProjectMenuActionsProvider(fragmentManager, toolbarManager, new ProjectRemoveAction(this));
         }
         toolbarManager.registerActionListener(this);
     }

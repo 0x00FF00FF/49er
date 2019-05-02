@@ -169,6 +169,12 @@ public abstract class ResizeableItemsUiOps
         return (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(getSelectedItemId());
     }
 
+    public void expandList() {
+        if (rvState == ListState.SMALL) {
+            onListItemClick(getSelectedViewHolder());
+        }
+    }
+
     private void dispatchResizeEvents(boolean enlarge) {
         for (BaseInterfaces.RvResizeListener resizeListener : resizeListeners) {
             if (enlarge) {
@@ -217,7 +223,7 @@ public abstract class ResizeableItemsUiOps
     }
 
     private void prepareWidthAnimation
-    (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
+            (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
 
         final View v = animationData.getAnimatedView();
         final float endElevation = animationData.getElevation();
@@ -630,7 +636,6 @@ public abstract class ResizeableItemsUiOps
      *           actions providers
      */
     protected abstract void configureMenuActionsProvider(FragmentManager fm);
-
 
 
     /**

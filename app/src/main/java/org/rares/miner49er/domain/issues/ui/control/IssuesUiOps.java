@@ -21,6 +21,7 @@ import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListe
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
+import org.rares.miner49er.domain.issues.ui.actions.remove.IssueRemoveAction;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -159,7 +160,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             provideToolbarActionManager();
         }
         if (menuActionsProvider == null) {
-            menuActionsProvider = new IssueMenuActionsProvider(fragmentManager, toolbarManager);
+            menuActionsProvider = new IssueMenuActionsProvider(fragmentManager, toolbarManager, new IssueRemoveAction(this));
         }
     }
 

@@ -480,9 +480,8 @@ public class HomeScrollingActivity
         View container = mainContainer;
         int snackbarBackgroundColor = container.getContext().getResources().getColor(R.color.indigo_100_blacked);
         int snackbarTextColor = container.getContext().getResources().getColor(R.color.pureWhite);
-        String snackbarText = container.getContext().getResources().getString(R.string.entry_removed);
 
-        Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(container, message, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
         View snackbarView = snackbar.getView();
 
@@ -491,23 +490,28 @@ public class HomeScrollingActivity
         TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
         textView.setTextColor(snackbarTextColor);
 
-        snackbar.setAction(R.string.action_undo, v -> action.subscribe(
-                new CompletableObserver() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+        if (UNDOABLE == actionType) {
+            snackbar.setAction(R.string.action_undo, v -> action.subscribe(
+                    new CompletableObserver() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
-                    }
+                        }
 
-                    @Override
-                    public void onComplete() {
-                        Log.i(TAG, "onComplete: Undid operation.");
-                    }
+                        @Override
+                        public void onComplete() {
+                            Log.i(TAG, "onComplete: Undid operation.");
+                        }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "onError: Could not undo the operation.");
-                    }
-                }));
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: Could not undo the operation.");
+                        }
+                    }));
+        }
+        if (DISMISSIBLE == actionType) {
+            snackbar.setAction(R.string.action_dismiss, clicklistener -> snackbar.dismiss());
+        }
         snackbar.show();
     }
 

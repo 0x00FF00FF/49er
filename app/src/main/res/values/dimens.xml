@@ -39,5 +39,7 @@
     <dimen name="users_list_item_name_margin_start">@dimen/users_list_item_picture_margin_start</dimen>
 
     <dimen name="users_list_search_height">48dp</dimen>
+    <dimen name="list_item_spacing">16dp</dimen>
+    <dimen name="list_item_spacing_half">8dp</dimen>
 </resources>
 

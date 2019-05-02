@@ -191,7 +191,9 @@
                     android:focusable="true"
                     android:paddingLeft="48dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"/>
+                    android:layout_marginRight="8dp"
+                    android:background="?attr/selectableItemBackground"
+            />
 
             <fragment
                     android:name="org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv"
