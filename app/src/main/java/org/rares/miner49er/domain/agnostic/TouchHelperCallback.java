@@ -84,7 +84,7 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
                     }
                     Log.i(TAG, "onSwiped: pseudo-removed? " + x);
                 });
-        final Disposable disposable = Single.just(0)
+        final Disposable deleteDisposable = Single.just(0)
                 .delay(3, TimeUnit.SECONDS)
                 .subscribe((s) -> disposables.add(dao.delete(vm)
                         .observeOn(AndroidSchedulers.mainThread())
@@ -96,11 +96,11 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
                         })));
 
         disposables.add(pseudoDeleteDisposable);
-        disposables.add(disposable);
+        disposables.add(deleteDisposable);
 
         Action action = () -> {
             vm.setDeleted(false);
-            disposables.add(dao.update(vm).subscribe((updated) -> disposable.dispose()));   ////
+            disposables.add(dao.update(vm).subscribe((updated) -> deleteDisposable.dispose()));   ////
         };
 
         ((Messenger) context).showMessage(
