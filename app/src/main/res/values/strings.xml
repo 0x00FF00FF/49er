@@ -53,6 +53,7 @@
     <!--project form-->
     <string name="project_form_header_add">Adding a project</string>
     <string name="project_form_header_edit">Editing a project</string>
+    <string name="project_form_header_details">Viewing project details</string>
 
     <string name="hint_project_name">Project name *</string>
     <string name="helper_project_name">Insert the project name.</string>
@@ -86,6 +87,7 @@
     <!--issue form-->
     <string name="issue_form_header_add">Adding an issue</string>
     <string name="issue_form_header_edit">Editing an issue</string>
+    <string name="issue_form_header_details">Viewing issue details</string>
 
     <string name="hint_issue_project_name">Project name</string>
     <string name="helper_issue_project_name">Insert the project name.</string>

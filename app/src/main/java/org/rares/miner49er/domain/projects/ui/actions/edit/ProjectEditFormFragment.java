@@ -149,8 +149,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         return true;
     }
 
-    private void populateFields(long projectId) {
-        Log.d(TAG, "populateFields() called with: projectId = [" + projectId + "]");
+    protected void populateFields(long projectId) {
         if (projectId <= 0) {
             return;
         }

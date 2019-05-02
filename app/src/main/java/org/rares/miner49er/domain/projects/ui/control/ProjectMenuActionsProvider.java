@@ -7,6 +7,8 @@ import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddActionListener;
 import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddFormFragment;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddFormFragment;
+import org.rares.miner49er.domain.projects.ui.actions.details.ProjectDetailsActionListener;
+import org.rares.miner49er.domain.projects.ui.actions.details.ProjectDetailsFragment;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditFormFragment;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
@@ -64,7 +66,14 @@ public class ProjectMenuActionsProvider
 
     @Override
     public boolean details(long id) {
-        return false;
+        ActionFragment projectDetailsFragment = ProjectDetailsFragment.newInstance(id);
+
+        ProjectDetailsActionListener projectDetailsActionListener = new ProjectDetailsActionListener(projectDetailsFragment, actionManager);
+        showFragment(projectDetailsFragment);
+
+        actionManager.registerActionListener(projectDetailsActionListener);
+
+        return true;
     }
 
     @Override

@@ -5,6 +5,8 @@ import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.entries.ui.actions.add.TimeEntryAddActionListener;
 import org.rares.miner49er.domain.entries.ui.actions.add.TimeEntryAddFormFragment;
+import org.rares.miner49er.domain.issues.ui.actions.details.IssueDetailsActionListener;
+import org.rares.miner49er.domain.issues.ui.actions.details.IssueDetailsFragment;
 import org.rares.miner49er.domain.issues.ui.actions.edit.IssueEditActionListener;
 import org.rares.miner49er.domain.issues.ui.actions.edit.IssueEditFormFragment;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
@@ -64,7 +66,18 @@ public class IssueMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean details(long id) {
-        return false;
+        ActionFragment issueDetailsFragment = IssueDetailsFragment.newInstance();
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putLong(KEY_ISSUE_ID, id);
+        issueDetailsFragment.setArguments(fragmentArgs);
+
+        IssueDetailsActionListener issueDetailsActionListener = new IssueDetailsActionListener(issueDetailsFragment, actionManager);
+
+        showFragment(issueDetailsFragment);
+
+        actionManager.registerActionListener(issueDetailsActionListener);
+
+        return true;
     }
 
     @Override
