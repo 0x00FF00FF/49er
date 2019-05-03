@@ -55,7 +55,7 @@ public class ProjectMenuActionsProvider
 
     @Override
     public boolean edit(long id) {
-        ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id);
+        ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id, false);
 
         ProjectEditActionListener projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
         showFragment(projectEditFormFragment);
@@ -109,7 +109,14 @@ public class ProjectMenuActionsProvider
     public boolean menuAction(int menuActionId, long id) {
 
         if (menuActionId == R.id.action_add_user) {
-            // show add user fragment
+            ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id, true);
+
+            ProjectEditActionListener projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
+            showFragment(projectEditFormFragment);
+
+            actionManager.registerActionListener(projectEditActionListener);
+
+            return true;
         }
 
         if (menuActionId == R.id.action_add_project) {

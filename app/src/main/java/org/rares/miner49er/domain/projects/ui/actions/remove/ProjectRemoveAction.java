@@ -37,8 +37,6 @@ public class ProjectRemoveAction implements YesNoDialogFragment.Listener {
 
     @Override
     public void onNo() {
-        ops.clear();
-        ops = null;
-        projectId = 0;
+        // no action
     }
 }

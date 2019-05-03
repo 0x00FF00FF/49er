@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
@@ -35,11 +36,14 @@ import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT
 public class ProjectEditFormFragment extends ProjectActionFragment {
 
     public static final String TAG = ProjectEditFormFragment.class.getSimpleName();
+    private static final String KEY_EDIT_TEAM = "go2edit";
 
-
-    public static ProjectEditFormFragment newInstance(long projectId) {
+    public static ProjectEditFormFragment newInstance(long projectId, boolean editTeam) {
         Bundle args = new Bundle();
         args.putLong(KEY_PROJECT_ID, projectId);
+        if (editTeam) {
+            args.putBoolean(KEY_EDIT_TEAM, true);
+        }
 
         ProjectEditFormFragment fragment = new ProjectEditFormFragment();
         fragment.setArguments(args);
@@ -71,6 +75,14 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         btnApply.setText(R.string.action_save);
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null && getArguments().getBoolean(KEY_EDIT_TEAM)) {
+            showUsersEditFragment();
+        }
     }
 
     @Override

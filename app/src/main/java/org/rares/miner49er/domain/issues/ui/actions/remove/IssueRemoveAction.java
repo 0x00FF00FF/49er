@@ -37,8 +37,5 @@ public class IssueRemoveAction implements YesNoDialogFragment.Listener {
 
     @Override
     public void onNo() {
-        iops.clear();
-        iops = null;
-        issueId = 0;
     }
 }
