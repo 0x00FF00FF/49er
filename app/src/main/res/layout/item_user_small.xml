@@ -10,6 +10,7 @@
              android:layout_marginLeft="@dimen/sv_margin"
              android:layout_marginRight="@dimen/sv_margin"
              android:layout_gravity="center"
+             android:foreground="?selectableItemBackground"
 >
     <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/img_user_photo_small"

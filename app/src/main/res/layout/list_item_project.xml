@@ -8,6 +8,7 @@
         android:layout_height="@dimen/projects_list_item_height"
         android:gravity="center|start"
         android:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+        android:foreground="?selectableItemBackground"
         tools:background="@drawable/transient_semitransparent_rectangle_tr_bl"
         tools:layout_height="64dp"
 >

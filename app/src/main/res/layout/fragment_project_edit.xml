@@ -162,6 +162,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/background_simple_outline"
                 android:layout_margin="@dimen/sv_margin"
+                android:foreground="?selectableItemBackground"
                 app:layout_constraintTop_toBottomOf="@+id/project_owner_input_layout"
         >
 
