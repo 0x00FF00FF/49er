@@ -11,25 +11,24 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
 import com.bumptech.glide.request.target.ImageViewTarget;
+import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
-import org.rares.miner49er.domain.entries.model.TimeEntryData;
-import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
-import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
@@ -40,7 +39,7 @@ import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ProjectsViewHolder
         extends ResizeableItemViewHolder
@@ -55,19 +54,15 @@ public class ProjectsViewHolder
     RotationAwareTextView projectNameTextView;
 
     @BindView(R.id.project_logo)
-    ImageView projectLogoView;
+    CircleImageView projectLogoView;
 
     @BindView(R.id.project_image)
-    ImageView projectImage;
+    CircleImageView projectImage;
 
     private TextView infoLabel = null;
 
-    @BindString(R.string._projects_info_issues_label)
-    String issuesLabel;
-    @BindString(R.string._projects_info_users_label)
-    String usersLabel;
-    @BindString(R.string._projects_info_total_hours)
-    String hoursLabel;
+    @BindString(R.string._projects_info_template)
+    String infoTemplate;
 
     private int originalTextSize = 60;      /////
 
@@ -75,6 +70,7 @@ public class ProjectsViewHolder
 
     private int infoLabelId = -1;
 
+    @Getter
     private ProjectData itemData;
 
     public ProjectsViewHolder(View itemView) {
@@ -82,6 +78,7 @@ public class ProjectsViewHolder
         setItemProperties(projectViewProperties);
         animationUpdateListener = new NoWidthUpdateListener(projectNameTextView);
         animatorHost = new DefaultRotationAnimatorHost(projectNameTextView.gatherAnimationData());
+        projectNameTextView.getTextPaint().setTypeface(customTypeface);
     }
 
     @Override
@@ -94,6 +91,7 @@ public class ProjectsViewHolder
         shortTitle = selected ? ""/*TextUtils.extractVowels(itemData.getName())*/ : shortTitle;
 
         longTitle = itemData.getName();
+        projectViewProperties.setName(longTitle);
 
         Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
@@ -136,10 +134,10 @@ public class ProjectsViewHolder
                     }
                 });
 
-        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
-            toggleInfoContainerVisiblity(false);
-            infoLabel.setAlpha(0);
-        }
+//        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
+//            toggleInfoContainerVisiblity(false);
+//            infoLabel.setAlpha(0);
+//        }
 
         validateItem(shortVersion, selected);
     }
@@ -220,10 +218,18 @@ public class ProjectsViewHolder
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
-                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+                disposables.add(Single.just(1)
+                        .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(one -> startInfoContainerFade(currentAlpha))
+                );
             }
         } else {
-            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+            disposables.add(Single.just(1)
+                    .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(one -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed))
+            );
         }
 
         if (projectImage != null) {
@@ -427,37 +433,11 @@ public class ProjectsViewHolder
 //        }
 //    }
 
-    private void populateInfoLabel() {
-        int issuesNumber = 0;
-        int usersNumber = 0;
-        int hoursNumber = 0;
+    public void populateInfoLabel() {
 
-        List<IssueData> issues = itemData.getIssues();
-        if (issues != null) {
-            issuesNumber = issues.size();
-            for (IssueData issueData : issues) {
-                List<TimeEntryData> timeEntryData = issueData.getTimeEntries();
-                if (timeEntryData != null) {
-                    for (TimeEntryData ted : timeEntryData) {
-                        hoursNumber += ted.getHours();
-                    }
-                }
-            }
-        }
-        List<UserData> users = itemData.getTeam();
-        if (users != null) {
-            usersNumber = users.size();
-        }
+        infoLabelString = UiUtil.populateInfoString(infoTemplate, itemData);
 
-        infoLabelString =
-                issuesLabel + " " + issuesNumber + " " +
-                        usersLabel + " " + usersNumber + " " +
-                        hoursLabel + " " + hoursNumber;
-
-
-        if (itemData.getIssues() == null && itemData.getTeam() == null) {
-            infoLabelString = "Computing...";
-        }
+        projectViewProperties.setSecondaryData(infoLabelString);        /// ugly hack
 
         if (infoLabel != null) {
             infoLabel.setText(infoLabelString);
@@ -499,7 +479,7 @@ public class ProjectsViewHolder
      */
     private void addInfoLabelToContainer(Resources res, boolean collapsed) {
         if (res == null || projectNameTextView == null || topContainer == null || infoLabelId != -1) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
+//            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
             return;
         }
         int textColor = 0xAA999999;
@@ -509,6 +489,7 @@ public class ProjectsViewHolder
         infoLabelId = NumberUtils.generateViewId();
         infoLabel.setId(infoLabelId);
 
+        infoLabel.setTypeface(customTypeface);
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);

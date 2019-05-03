@@ -1,22 +1,21 @@
 package org.rares.miner49er.domain.issues.adapter;
 
-import android.os.Bundle;
-import android.util.Log;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListUpdateCallback;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.model.IssuesDiff;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
-import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
+import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,10 +26,11 @@ import java.util.List;
  * @since 10.10.2017
  */
 
-public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
+public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> {
 
     private static final String TAG = IssuesAdapter.class.getSimpleName();
 
+    @Getter
     private List<IssueData> data = new ArrayList<>();
 
     public IssuesAdapter(final BaseInterfaces.ListItemEventListener listener) {
@@ -79,6 +79,9 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
 //                + tedata.size() + "]" + " hours: "
 //                + hourCount
 //        );
+        if (position == getLastSelectedPosition()) {
+            eventListener.onListItemChanged(holder.getItemProperties());
+        }
     }
 
     @Override
@@ -87,16 +90,16 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
     }
 
     @Override
-    public String resolveData(int position) {
+    public String resolveData(int position, boolean forceFullData) {
         if (position < 0 || position >= data.size()) {
             return null;
         }
         String issueName = this.data.get(position).getName();
-        return getLastSelectedPosition() != -1 ? TextUtils.extractInitials(issueName) : issueName;
+        return getLastSelectedPosition() != -1 ? forceFullData ? issueName : TextUtils.extractInitials(issueName) : issueName;
     }
 
     @Override
-    public Object getDisplayData(int adapterPosition) {
+    public IssueData getDisplayData(int adapterPosition) {
         if (adapterPosition < 0 || adapterPosition >= data.size()) {
             return null;
         }
@@ -112,55 +115,30 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder> {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
         data = newData;
         diffResult.dispatchUpdatesTo(this);
-        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
-            @Override
-            public void onInserted(int position, int count) {
-//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
-            }
-
-            @Override
-            public void onRemoved(int position, int count) {
-//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
-            }
-
-            @Override
-            public void onMoved(int fromPosition, int toPosition) {
-//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-                // dispatch towards layout manager?
-            }
-
-            @Override
-            public void onChanged(int position, int count, Object payload) {
-                int sp = getLastSelectedPosition();
-                ItemViewProperties vp = new ProjectViewProperties();
-//                Log.v(TAG, "onChanged() called with: " +
-//                        "selectedPos = [" + sp + "], " +
-//                        "position = [" + position + "], " +
-//                        "count = [" + count + "], " +
-//                        "payload = [" + payload + "]");
-                if (position == sp) {
-                    if (payload instanceof Bundle) {
-                        Bundle p = (Bundle) payload;
-                        int id = p.getInt("id");
-                        int color = p.getInt("Color", 0);
-                        Log.d(TAG, "onChanged: >>>>> TRIGGERED >> new color >> " + color);
-                        if (color != 0) {
-                            vp.setItemBgColor(color);
-                        }
-                        if (id != 0) {
-                            vp.setId(id);
-                        }
-                        eventListener.onListItemChanged(vp);
-                    }
-                }
-            }
-        });
+//        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {});
     }
 
 
     @Override
     public void accept(List list) throws Exception {
 //        Log.d(TAG, "accept() called with: list = [" + list + "]");
+//        for (int i = 0; i < list.size(); i++) {
+//            IssueData issueData = (IssueData) list.get(i);
+//            Log.d(TAG, "accept: " + issueData.getName());
+//        }
         updateData(list);
+    }
+
+    @Override
+    public String getToolbarData(Context context, int position) {
+        return UiUtil.populateInfoString(context.getResources().getString(R.string._issues_info_template), data.get(position));
+    }
+
+    @Override
+    public boolean canRemoveItem(int position) {
+        if (data != null && position > -1 && position < data.size()) {
+            return PermissionsUtil.canRemoveIssue(data.get(position));
+        }
+        return false;
     }
 }

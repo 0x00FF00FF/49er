@@ -3,12 +3,15 @@ package org.rares.miner49er._abstract;
 import android.animation.ValueAnimator;
 import android.graphics.Typeface;
 import android.view.View;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.disposables.CompositeDisposable;
 import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
+import org.rares.miner49er.R;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.ratv.rotationaware.animation.RotationAnimatorHost;
 import org.rares.ratv.rotationaware.animation.RotationAwareUpdateListener;
@@ -42,16 +45,15 @@ public abstract class ResizeableItemViewHolder
     @Setter
     ItemViewProperties itemProperties;
 
-    @Getter
-    @Setter
-    private boolean toBeRebound = true;
+    protected CompositeDisposable disposables = new CompositeDisposable();
 
     protected AbstractViewModel viewModel;
 
     private Unbinder unbinder;
 
-    protected Typeface typefaceLight = Typeface.create("sans-serif-light", Typeface.NORMAL);
-    protected Typeface typefaceRegular = Typeface.create("sans-serif", Typeface.NORMAL);
+//    protected Typeface typefaceLight = Typeface.create("sans-serif-light", Typeface.NORMAL);
+//    protected Typeface typefaceRegular = Typeface.create("sans-serif", Typeface.NORMAL);
+    protected Typeface customTypeface = ResourcesCompat.getFont(itemView.getContext(), R.font.futura_book_bt);
 
     protected RotationAwareUpdateListener animationUpdateListener;
     protected RotationAnimatorHost animatorHost;

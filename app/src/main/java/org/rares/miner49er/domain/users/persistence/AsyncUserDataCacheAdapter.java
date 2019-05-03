@@ -12,7 +12,9 @@ import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.AsyncGenericDaoFactory;
+import org.rares.miner49er.util.ModelUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AsyncUserDataCacheAdapter
@@ -69,8 +71,10 @@ public class AsyncUserDataCacheAdapter
     }
 
     @Override
-    public Single<List<UserData>> getMatching(String term, boolean lazy) {
-        return dao.getMatching(term, lazy).subscribeOn(Schedulers.io());
+    public Single<List<UserData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        return lazy ?
+                Single.just(ModelUtil.getMatching(userDataCache.getData(Optional.of(null)), term)) :
+                dao.getMatching(term, parentId, false).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -139,4 +143,25 @@ public class AsyncUserDataCacheAdapter
     public Flowable<Changes> getDbChangesFlowable() {
         return dao.getDbChangesFlowable();
     }
+
+    public List<ProjectData> getUserMemberProjects(UserData userData){
+        List<ProjectData> projects = new ArrayList<>();
+        List<ProjectData> allProjects = projectDataCache.getData(Optional.of(null));
+        projects_loop:
+        for (ProjectData pd : allProjects) {
+            List<UserData> team = pd.getTeam();
+            if (team != null) {
+                for (UserData ud: team) {
+                    if (ud.id.equals(userData.id)) {
+                        projects.add(pd);
+                        continue projects_loop;
+                    }
+                }
+            }
+        }
+        return  projects;
+    }
+
+
+
 }

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="@dimen/users_list_item_width"
+        android:layout_height="@dimen/users_list_item_height"
+        android:layout_marginBottom="@dimen/sv_margin"
+        style="@style/TempCardViewStyle"
+>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent" android:layout_height="match_parent"
+    >
+
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_status"
+                android:layout_width="@dimen/users_status_icon"
+                android:layout_height="@dimen/users_status_icon"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                app:srcCompat="@drawable/icon_path_star"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+        />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/img_user_photo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="@dimen/users_list_item_picture_margin_start"
+                android:layout_marginStart="@dimen/users_list_item_picture_margin_start"
+                android:layout_marginTop="@dimen/users_list_item_picture_margin_start"
+                android:layout_marginBottom="@dimen/users_list_item_picture_margin_start"
+                app:srcCompat="@drawable/skull"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintDimensionRatio="w, 1:1"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/indigo_100_grayed"
+                tools:src="@tools:sample/avatars"
+        />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_name"
+                android:textColor="@color/pureWhite"
+                android:textSize="12sp"
+                android:textAllCaps="true"
+                android:maxLines="3"
+                android:layout_marginLeft="@dimen/users_list_item_name_margin_start"
+                android:layout_marginStart="@dimen/users_list_item_name_margin_start"
+                android:fontFamily="@font/futura_book_bt"
+                app:layout_constraintStart_toEndOf="@+id/img_user_photo"
+                app:layout_constraintTop_toTopOf="@+id/img_user_photo"
+                tools:lines="2"
+                tools:text="@tools:sample/first_names"
+        />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_role"
+                android:textColor="@color/indigo_100_grayed"
+                android:textAllCaps="true"
+                android:textSize="10sp"
+                android:fontFamily="@font/futura_book_bt"
+                app:layout_constraintTop_toBottomOf="@+id/tv_user_name"
+                app:layout_constraintStart_toStartOf="@+id/tv_user_name"
+                tools:text="developer"
+        />
+
+        <!--<com.google.android.material.switchmaterial.SwitchMaterial-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:checked="false"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/tv_user_name"-->
+        <!--app:useMaterialThemeColors="false"-->
+        <!--app:showText="false"-->
+        <!--app:splitTrack="false"-->
+        <!--android:text=""-->
+        <!--app:layout_constraintStart_toEndOf="@+id/img_user_photo"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--/>-->
+
+        <!--<androidx.appcompat.widget.AppCompatTextView-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/tv_user_email"-->
+        <!--android:textColor="@color/indigo.200"-->
+        <!--android:textSize="10sp"-->
+        <!--android:text="marktwain@ourcompany.com"-->
+        <!--android:layout_marginStart="8dp"-->
+        <!--app:layout_constraintStart_toStartOf="parent" android:layout_marginLeft="8dp"-->
+        <!--android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"-->
+        <!--android:layout_marginRight="8dp" android:layout_marginBottom="8dp"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"/>-->
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_projects"
+                android:textColor="#FF9999AA"
+                android:background="@color/semitransparent_black_right"
+                android:textSize="10sp"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="Member of 2 other projects"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

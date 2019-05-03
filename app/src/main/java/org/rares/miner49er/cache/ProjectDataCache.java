@@ -11,6 +11,7 @@ import java.util.List;
 
 public class ProjectDataCache implements Cache<ProjectData> {
 
+    private static final String TAG = ProjectDataCache.class.getSimpleName();
     private final ViewModelCache cache = ViewModelCache.getInstance();
     private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
 
@@ -52,6 +53,7 @@ public class ProjectDataCache implements Cache<ProjectData> {
     public List<ProjectData> getData(Optional<Long> parentId) {
         List<ProjectData> projectDataList = new ArrayList<>(projectsCache.snapshot().values());
         Collections.sort(projectDataList, (pd1, pd2) -> pd1.id.compareTo(pd2.id));
+        Collections.reverse(projectDataList);
         return projectDataList;
     }
 

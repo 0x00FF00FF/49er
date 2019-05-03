@@ -88,7 +88,13 @@ public class UserDataCache implements Cache<UserData> {
             ProjectData projectData = projectCache.get(parentId.get());
             if (projectData != null) {
                 List<UserData> team = projectData.getTeam();
-                return team == null ? Collections.emptyList() : team;
+                if (team == null) {
+                    return Collections.emptyList();
+                }
+//                Collections.sort(team, (u1, u2) -> u1.id.compareTo(u2.id));
+                Collections.sort(team, (u1, u2) -> u1.getName().compareTo(u2.getName()));
+                Collections.reverse(team);
+                return team;
             }
         }
         return new ArrayList<>(usersCache.snapshot().values());

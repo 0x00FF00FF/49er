@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="168dp"
+        android:layout_height="96dp"
+        android:layout_margin="@dimen/sv_margin"
+        style="@style/TempCardViewStyle"
+>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent" android:layout_height="match_parent"
+    >
+        <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/img_user_photo"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_user_name"
+                android:layout_marginTop="4dp"
+                app:layout_constraintDimensionRatio="w,1:1"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/indigo_100_grayed"
+                android:elevation="4dp"
+        />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_user_role"
+                android:textColor="@color/pureWhite"
+                android:textSize="12sp"
+                android:textAllCaps="true"
+                android:gravity="center"
+                tools:text="Elizabeth Macintosh-Nueves"
+        />
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_role"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_user_projects"
+                android:textColor="@color/indigo_100_grayed"
+                android:textAllCaps="true"
+                android:textSize="10sp"
+                tools:text="designer"
+        />
+
+        <!--    <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_user_email"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_user_role"
+                    android:textColor="@color/indigo.200"
+                    android:textSize="10sp"
+                    tools:text="jdenver@ourcompany.com"
+            />-->
+
+        <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_user_projects"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="#FF9999AA"
+                android:background="@color/semitransparent_black_right"
+                android:gravity="center"
+                android:textSize="10sp"
+                tools:text="Member of 2 other projects"
+                android:visibility="visible"
+        />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

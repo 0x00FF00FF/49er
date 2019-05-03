@@ -72,8 +72,8 @@ public class AsyncProjectDataCacheAdapter
     }
 
     @Override
-    public Single<List<ProjectData>> getMatching(String term, boolean lazy) {
-        return dao.getMatching(term, lazy);
+    public Single<List<ProjectData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        return dao.getMatching(term, parentId, lazy);
     }
 
     @Override
@@ -119,8 +119,7 @@ public class AsyncProjectDataCacheAdapter
         SingleSubject<Boolean> singleSubject = SingleSubject.create();
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
-                        .subscribe(updated ->
-                        {
+                        .subscribe(updated -> {
                             projectDataCache.putData(toUpdate, false);
                             singleSubject.onSuccess(updated);
                         })

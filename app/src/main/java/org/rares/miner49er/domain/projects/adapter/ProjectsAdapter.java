@@ -1,23 +1,22 @@
 package org.rares.miner49er.domain.projects.adapter;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListUpdateCallback;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectDiff;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
+import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.List;
  */
 
 public class ProjectsAdapter
-        extends AbstractAdapter<ProjectsViewHolder> {
+        extends AbstractAdapter<ProjectsViewHolder, ProjectData> {
 
     private static final String TAG = ProjectsAdapter.class.getSimpleName();
 
@@ -46,6 +45,7 @@ public class ProjectsAdapter
     // Lowest CPU usage is when you don't use any of them,
     // and just change the data and notify data set change,
     // but that is a very poor choice memory-wise.
+    @Getter
     private List<ProjectData> data = new ArrayList<>();
 
     public ProjectsAdapter(final ListItemEventListener listener) {
@@ -83,7 +83,7 @@ public class ProjectsAdapter
             throw new IllegalStateException("Unbinder host is needed for memory management!");
         }
 
-        Log.w(TAG, "onCreateViewHolder: " + pvh.hashCode());
+//        Log.w(TAG, "onCreateViewHolder: " + pvh.hashCode());
         return pvh;
     }
 
@@ -91,17 +91,30 @@ public class ProjectsAdapter
     @Override
     public void onBindViewHolder(@NonNull ProjectsViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (holder.isToBeRebound()) {
-//            holder.bindData(data.get(position), getLastSelectedPosition() != -1);
-            holder.bindData(
-                    data.get(position),
-                    getLastSelectedPosition() != -1,
-                    position == getLastSelectedPosition());
+        // newHolder variable to be used for checking if the event
+        // listener should be made aware of the changes that happen
+        // in the view holder. the issue behind this is not to change
+        // the toolbar/action bar title/subtitle when not needed.
+        // this may be happening when the sticky layout manager needs
+        // information about the selected view: rv needs to create a
+        // holder for the selected position because the selected position
+        // holder is locked by the StickyLinearLayoutManager and at
+        // times it needs to be refreshed
+//        final boolean newHolder = holder.getItemData() == null;
+
+        holder.bindData(
+                data.get(position),
+                getLastSelectedPosition() != -1,
+                position == getLastSelectedPosition());
+
+        if (position == getLastSelectedPosition()) {
+            eventListener.onListItemChanged(holder.getItemProperties());
         }
-        Log.v(TAG, "onBindViewHolder() called with: " +
-                "holder = [" + holder.hashCode() + "], " +
-                "position = [" + position + "], " +
-                "data = [" + data.get(position).getName() + "]");
+
+//        Log.v(TAG, "onBindViewHolder() called with: " +
+//                "holder = [" + holder.hashCode() + "], " +
+//                "position = [" + position + "], " +
+//                "data = [" + data.get(position).getName() + "]");
     }
 
     @Override
@@ -110,15 +123,15 @@ public class ProjectsAdapter
     }
 
     @Override
-    public String resolveData(int position) {
+    public String resolveData(int position, boolean forceFullData) {
         ProjectData projectData = data.get(position);
         String name = projectData.getName();
         String minified = TextUtils.extractInitials(name);
-        return getLastSelectedPosition() != -1 ? minified : name;
+        return getLastSelectedPosition() != -1 ? forceFullData ? name : minified : name;
     }
 
     @Override
-    public Object getDisplayData(int adapterPosition) {
+    public ProjectData getDisplayData(int adapterPosition) {
         if (adapterPosition < 0 || adapterPosition >= data.size()) {
             return null;
         }
@@ -137,28 +150,9 @@ public class ProjectsAdapter
 //    }
 
     private void updateList(List<ProjectData> newData) {
-        Log.i(TAG, "updateList: ------------------------------------------------------------");
-        ProjectListUpdateListener updateListener = new ProjectListUpdateListener();
-        /*-
-        TODO
-        when data is refreshed
-        and the rv is small,
-        the new data is not
-        in short format.
-        -*/
-
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ProjectDiff(data, newData));
-
         data = newData;
-
-        diffResult.dispatchUpdatesTo(updateListener);
-
-        if (!updateListener.changed) {
-            Log.e(TAG, "should updateList ::::::");
-//            notifyDataSetChanged();
-        } else {
-            diffResult.dispatchUpdatesTo(this);
-        }
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @Override
@@ -166,54 +160,16 @@ public class ProjectsAdapter
         updateList(list);
     }
 
-    private class ProjectListUpdateListener implements ListUpdateCallback {
-
-        boolean changed;
-
-        @Override
-        public void onInserted(int position, int count) {
-            changed = true;
-//                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
-        }
-
-        @Override
-        public void onRemoved(int position, int count) {
-            changed = true;
-//                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
-        }
-
-        @Override
-        public void onMoved(int fromPosition, int toPosition) {
-            changed = true;
-//                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-        }
-
-        @Override
-        public void onChanged(int position, int count, Object payload) {
-            changed = true;
-            int sp = getLastSelectedPosition();
-            ItemViewProperties vp = new ProjectViewProperties();
-            if (position == sp) {
-                if (payload instanceof Bundle) {
-                    Bundle p = (Bundle) payload;
-                    long id = p.getLong("id");
-                    int color = p.getInt("color", 0);
-                    String name = p.getString("name");
-                    String iss = p.getString("issues");
-                    Log.w(TAG, "onChanged: " + iss);
-                    if (color != 0) {
-                        vp.setItemBgColor(color);
-                    }
-                    if (id != 0) {
-                        vp.setId(id);
-                    }
-                    if (name != null) {
-                        vp.setName(name);
-                    }
-                    eventListener.onListItemChanged(vp);        //
-                }
-            }
-        }
+    @Override
+    public String getToolbarData(Context context, int position) {
+        return UiUtil.populateInfoString(context.getResources().getString(R.string._projects_info_template), data.get(position));
     }
 
+    @Override
+    public boolean canRemoveItem(int position) {
+        if (data != null && position > -1 && position < data.size()) {
+            return PermissionsUtil.canRemoveProject(data.get(position));
+        }
+        return false;
+    }
 }

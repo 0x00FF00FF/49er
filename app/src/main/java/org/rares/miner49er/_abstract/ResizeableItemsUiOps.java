@@ -101,7 +101,7 @@ public abstract class ResizeableItemsUiOps
 
         setupSelectedItemAnimation(holder);
 
-        int adapterPosition = holder.getAdapterPosition();
+        int adapterPosition = holder.getAdapterPosition();  /// if holder ==null ???
         boolean enlarge = selectItem(adapterPosition);
 
         domainLink.onParentSelected(holder.getItemProperties(), enlarge);
@@ -142,7 +142,7 @@ public abstract class ResizeableItemsUiOps
 
         dispatchResizeEvents(enlarge);
 
-        Log.d(TAG, "selectItem: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
+//        Log.d(TAG, "selectItem: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
         if (enlarge) {
             resetLastSelectedId();
             return true;
@@ -167,6 +167,12 @@ public abstract class ResizeableItemsUiOps
     @Override
     public ResizeableItemViewHolder getSelectedViewHolder() {
         return (ResizeableItemViewHolder) getRv().findViewHolderForAdapterPosition(getSelectedItemId());
+    }
+
+    public void expandList() {
+        if (rvState == ListState.SMALL) {
+            onListItemClick(getSelectedViewHolder());
+        }
     }
 
     private void dispatchResizeEvents(boolean enlarge) {
@@ -217,7 +223,7 @@ public abstract class ResizeableItemsUiOps
     }
 
     private void prepareWidthAnimation
-    (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
+            (@NonNull ItemAnimationDto animationData, @NonNull ArrayList<PropertyValuesHolder> valuesHolderList) {
 
         final View v = animationData.getAnimatedView();
         final float endElevation = animationData.getElevation();
@@ -532,7 +538,7 @@ public abstract class ResizeableItemsUiOps
     }
 
     private int getParentWidth(View v) {
-        Log.e(TAG, "getParentWidth: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
+//        Log.e(TAG, "getParentWidth: rvState " + (rvState == ListState.LARGE ? "LARGE" : "SMALL"));
         int containerWidth = ((View) getRv().getParent()).getMeasuredWidth();
         if (v instanceof ViewGroup) {
             return rvState == ListState.SMALL ? rvCollapsedWidth : containerWidth;
@@ -568,7 +574,7 @@ public abstract class ResizeableItemsUiOps
                 return new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        Log.i(TAG, "onAnimationEnd: DISABLED");
+//                        Log.i(TAG, "onAnimationEnd: DISABLED");
                         if (animated != null && animated.getLayoutParams().width == -1) {
                             animated.setBackgroundDrawable(null);
                             animated.requestLayout();
@@ -580,7 +586,7 @@ public abstract class ResizeableItemsUiOps
                 return new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        Log.i(TAG, "onAnimationEnd: NOT SET");
+//                        Log.i(TAG, "onAnimationEnd: NOT SET");
                         if (animated != null && animated.getLayoutParams().width == -1) {
                             animated.setBackgroundDrawable(rvState == ListState.LARGE ? expandedDrawable : collapsedDrawable);
                             animated.requestLayout();
@@ -630,7 +636,6 @@ public abstract class ResizeableItemsUiOps
      *           actions providers
      */
     protected abstract void configureMenuActionsProvider(FragmentManager fm);
-
 
 
     /**

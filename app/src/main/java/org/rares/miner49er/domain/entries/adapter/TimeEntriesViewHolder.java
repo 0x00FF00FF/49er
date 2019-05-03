@@ -32,8 +32,8 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
     public TimeEntriesViewHolder(View itemView) {
         super(itemView);
         setItemProperties(new TimeEntryViewProperties());
-        userInitials.setTypeface(typefaceLight);
-        day.setTypeface(typefaceLight);
+//        userInitials.setTypeface(typefaceLight);
+//        day.setTypeface(typefaceLight);
     }
 
     @Override
@@ -59,6 +59,7 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
         String entryDate = dateTime.toString(pattern);
 
         day.setText(entryDate);
+        getItemProperties().setId(entryData.id);
     }
 
 }

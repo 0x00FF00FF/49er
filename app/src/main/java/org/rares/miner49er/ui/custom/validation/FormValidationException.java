@@ -1,4 +1,4 @@
-package org.rares.miner49er.ui.custom;
+package org.rares.miner49er.ui.custom.validation;
 
 import lombok.Getter;
 

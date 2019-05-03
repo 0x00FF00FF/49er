@@ -51,8 +51,8 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
                 .asRxSingle();
     }
 
-    public Single<List<Issue>> getMatchingNameAsync(StorIOSQLite storIOSQLite, String term) {
-        return _getMatchingName(storIOSQLite, term)
+    public Single<List<Issue>> getMatchingNameAsync(StorIOSQLite storIOSQLite, String term, long parentId) {
+        return _getMatchingName(storIOSQLite, term, parentId)
                 .asRxSingle();
     }
 
@@ -75,8 +75,8 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
                 .executeAsBlocking();
     }
 
-    public List<Issue> getMatchingName(StorIOSQLite storIOSQLite, String term) {
-        return _getMatchingName(storIOSQLite, term)
+    public List<Issue> getMatchingName(StorIOSQLite storIOSQLite, String term, long parentId) {
+        return _getMatchingName(storIOSQLite, term, parentId)
                 .executeAsBlocking();
     }
 
@@ -106,16 +106,25 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
                 .prepare();
     }
 
-    private PreparedGetListOfObjects<Issue> _getMatchingName(StorIOSQLite storIOSQLite, String term) {
+    private PreparedGetListOfObjects<Issue> _getMatchingName(StorIOSQLite storIOSQLite, String term, long parentId) {
+        Query query;
+        if (parentId == -1) {
+            query = Query.builder()
+                    .table(IssueTable.NAME)
+                    .where(IssueTable.NAME_COLUMN + " = ? ")
+                    .whereArgs(term)
+                    .build();
+        } else {
+            query = Query.builder()
+                    .table(IssueTable.NAME)
+                    .where(IssueTable.NAME_COLUMN + " = ? AND " + IssueTable.PROJECT_ID_COLUMN + " = ?")
+                    .whereArgs(term, parentId)
+                    .build();
+        }
         return storIOSQLite
                 .get()
                 .listOfObjects(Issue.class)
-                .withQuery(
-                        Query.builder()
-                                .table(IssueTable.NAME)
-                                .where(IssueTable.NAME_COLUMN + " = ? ")
-                                .whereArgs(term)
-                                .build())
+                .withQuery(query)
                 .withGetResolver(getInstance())
                 .prepare();
     }

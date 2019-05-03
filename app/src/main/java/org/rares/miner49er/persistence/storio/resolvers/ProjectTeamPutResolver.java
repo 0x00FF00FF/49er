@@ -13,6 +13,7 @@ import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
@@ -39,7 +40,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
 //            Log.i(TAG, "performPut: inserted? " + projectWasInserted);
 
             List<User> team = project.getTeam();
-            List<ContentValues> userProjectList = new ArrayList<>(team.size());
+            List<ContentValues> userProjectList = team == null ? Collections.emptyList() : new ArrayList<>(team.size());
 
             for (User i : team) { // "there is no i in team"
                 final ContentValues cv = new ContentValues(2);
@@ -68,7 +69,7 @@ public class ProjectTeamPutResolver extends ProjectStorIOSQLitePutResolver {
                         .prepare()
                         .executeAsBlocking();
 //                Log.i(TAG, "performPut: added new u-t-p (" + upResult.numberOfInserts() + "/" + upResult.numberOfUpdates() + ")");
-            }else {
+            } else {
                 Log.i(TAG, "performPut users size: " + userProjectList.size());
             }
 

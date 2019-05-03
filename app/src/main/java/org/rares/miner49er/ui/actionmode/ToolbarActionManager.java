@@ -13,13 +13,15 @@ import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.internal.view.SupportMenuItem;
-import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.ui.custom.spannable.CenteredImageSpan;
 
 import java.util.Stack;
 
+import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_ALWAYS;
 import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_NEVER;
+import static androidx.core.internal.view.SupportMenuItem.SHOW_AS_ACTION_WITH_TEXT;
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
@@ -47,8 +49,8 @@ public class ToolbarActionManager
         toolbar.setOnMenuItemClickListener(this);
     }
 
-    @Setter
-    private long entityId;
+//    @Setter
+//    private long entityId;
 
     /**
      * Adds the listener to the action stack, if necessary.
@@ -66,7 +68,7 @@ public class ToolbarActionManager
 
             actionListenerStack.push(listener);
 
-            dumpStack();
+//            dumpStack();
 
         }
         configureNextListener();
@@ -143,6 +145,10 @@ public class ToolbarActionManager
     }
 
     public void refreshActionMode() {
+        if (!inActionMode) {
+            Log.w(TAG, "refreshActionMode: not in action mode.");
+            return;
+        }
         ensureStackNotEmpty();
         actionListenerStack.peek().configureCustomActionMenu(config);
 
@@ -184,6 +190,9 @@ public class ToolbarActionManager
 
         if (config.menuResources != null) {
             for (int i = 0; i < config.menuResources.length; i++) {
+                menu
+                        .findItem(config.menuResources[i][ITEM_ID])
+                        .setEnabled(1 == config.menuResources[i][ENABLED]);
                 addIconToMenuItem(
                         context,
                         menu,
@@ -201,6 +210,9 @@ public class ToolbarActionManager
 
         if (config.additionalResources != null) {
             for (int i = 0; i < config.additionalResources.length; i++) {
+                menu
+                        .findItem(config.additionalResources[i][ITEM_ID])
+                        .setEnabled(1 == config.additionalResources[i][ENABLED]);
                 addIconToMenuItem(
                         context,
                         menu,
@@ -221,10 +233,13 @@ public class ToolbarActionManager
     }
 
     private void configureNextListener() {
+//        Log.i(TAG, "configureNextListener: title : " + config.title + " " + config.titleRes);
         MenuActionListener listener;
         if (!actionListenerStack.isEmpty()) {
             listener = actionListenerStack.peek();
             if (listener != null) {
+                // TODO: 01.04.2019 this gets called twice when unregisterActionListener is called
+                // once here and once in refreshActionMode
                 listener.configureCustomActionMenu(config);
                 if (config.requireActionMode) {
                     if (inActionMode) {
@@ -257,6 +272,10 @@ public class ToolbarActionManager
          */
         public static final int ITEM_NAME = 3;
         /**
+         * enable/disable the menu item
+         */
+        public static final int ENABLED = 4;
+        /**
          * indicates that the component needs
          * action mode
          */
@@ -281,7 +300,8 @@ public class ToolbarActionManager
          * <code>[x][0]</code> - <code>ITEM_ID</code>  - menuItemId - used to search for the item in the menu <br />
          * <code>[x][1]</code> - <code>ICON_ID</code>  - iconId - icon that should appear next to the item <br />
          * <code>[x][2]</code> - <code>FLAG   </code>  - show as action flags - describe where to show the menu item <br />
-         * <code>[x][3]</code> - <code>ITEM_NAME</code>  - override default item name with this string resource
+         * <code>[x][3]</code> - <code>ITEM_NAME</code>  - override default item name with this string resource <br />
+         * <code>[x][4]</code> - <code>ENABLED</code>  - override default item state (0 = disabled) <br />
          * (see
          * {@link SupportMenuItem#SHOW_AS_ACTION_NEVER},
          * {@link SupportMenuItem#SHOW_AS_ACTION_IF_ROOM},
@@ -324,54 +344,62 @@ public class ToolbarActionManager
 
     private void configureGenericMenu() {
         config.menuId = R.menu.menu_generic_actions;
-        config.menuResources = new int[8][4];
+        config.menuResources = new int[8][5];
 
         config.menuResources[0][ITEM_ID] = R.id.action_add;
         config.menuResources[0][ICON_ID] = R.drawable.icon_path_add;
         config.menuResources[0][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[0][ITEM_NAME] = 0;
+        config.menuResources[0][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_add: " + R.drawable.icon_path_add);
 
         config.menuResources[1][ITEM_ID] = R.id.action_details;
         config.menuResources[1][ICON_ID] = R.drawable.icon_path_details;
         config.menuResources[1][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[1][ITEM_NAME] = 0;
+        config.menuResources[1][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_details: " + R.drawable.icon_path_details);
 
         config.menuResources[2][ITEM_ID] = R.id.action_edit;
         config.menuResources[2][ICON_ID] = R.drawable.icon_path_edit;
         config.menuResources[2][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[2][ITEM_NAME] = 0;
+        config.menuResources[2][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_edit: " + R.drawable.icon_path_edit);
 
         config.menuResources[3][ITEM_ID] = R.id.action_remove;
         config.menuResources[3][ICON_ID] = R.drawable.icon_path_remove;
         config.menuResources[3][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[3][ITEM_NAME] = 0;
+        config.menuResources[3][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_remove: " + R.drawable.icon_path_remove);
 
         config.menuResources[4][ITEM_ID] = R.id.action_favorite;
         config.menuResources[4][ICON_ID] = R.drawable.icon_path_star_empty;
         config.menuResources[4][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[4][ITEM_NAME] = 0;
+        config.menuResources[4][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_star_empty: " + R.drawable.icon_path_star_empty);
 
         config.menuResources[5][ITEM_ID] = R.id.action_search;
         config.menuResources[5][ICON_ID] = R.drawable.icon_path_search;
         config.menuResources[5][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[5][ITEM_NAME] = 0;
+        config.menuResources[5][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_search: " + R.drawable.icon_path_search);
 
         config.menuResources[6][ITEM_ID] = R.id.action_filter;
         config.menuResources[6][ICON_ID] = R.drawable.icon_path_filter;
         config.menuResources[6][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[6][ITEM_NAME] = 0;
+        config.menuResources[6][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_filter: " + R.drawable.icon_path_filter);
 
         config.menuResources[7][ITEM_ID] = R.id.action_sort;
         config.menuResources[7][ICON_ID] = R.drawable.icon_path_sort;
         config.menuResources[7][FLAGS] = SHOW_AS_ACTION_NEVER;
         config.menuResources[7][ITEM_NAME] = 0;
+        config.menuResources[7][ENABLED] = 1;
 //        Log.i(TAG, "configureCustomActionMenu: R.drawable.icon_path_filter: " + R.drawable.icon_path_filter);
         overrideGenericMenuResources();
     }
@@ -392,6 +420,7 @@ public class ToolbarActionManager
                     config.menuResources[i][ICON_ID] = config.overrideGenericMenuResources[j][ICON_ID];
                     config.menuResources[i][FLAGS] = config.overrideGenericMenuResources[j][FLAGS];
                     config.menuResources[i][ITEM_NAME] = config.overrideGenericMenuResources[j][ITEM_NAME];
+                    config.menuResources[i][ENABLED] = config.overrideGenericMenuResources[j][ENABLED];
                     overridden[j] = true;
                     overriddenNumber++;
                 }
@@ -435,12 +464,30 @@ public class ToolbarActionManager
          */
         boolean onToolbarBackPressed();
 
-        void configureCustomActionMenu(MenuConfig config);
+        default void configureCustomActionMenu(MenuConfig config) {
+            config.subtitle = "";
+            config.createGenericMenu = false;
+            config.menuId = R.menu.menu_action_done;
+            config.overrideGenericMenuResources = null;
+
+            config.menuResources = new int[1][5];
+            config.menuResources[0][ITEM_ID] = R.id.action_add;
+            config.menuResources[0][ICON_ID] = 0;
+            config.menuResources[0][ITEM_NAME] = 0;
+            config.menuResources[0][ENABLED] = 1;
+            config.menuResources[0][FLAGS] = SHOW_AS_ACTION_WITH_TEXT | SHOW_AS_ACTION_ALWAYS;
+
+            config.additionalMenuId = 0;
+            config.additionalResources = null;
+            config.requireActionMode = true;
+        }
 
         GenericMenuActions getMenuActionsProvider();
 
-    }
+        long getMenuActionEntityId();
 
+        void setMenuActionEntityId(long entityId);
+    }
 
 
     @Override
@@ -448,7 +495,8 @@ public class ToolbarActionManager
         ensureStackNotEmpty();
 
         int itemId = item.getItemId();
-        GenericMenuActions listener = actionListenerStack.peek().getMenuActionsProvider();
+        MenuActionListener menuActionListener = actionListenerStack.peek();
+        GenericMenuActions listener = menuActionListener.getMenuActionsProvider();
 
         if (listener == null) {
             return true;
@@ -457,24 +505,24 @@ public class ToolbarActionManager
         switch (itemId) {
             // generic list (applicable to any selected domain):
             case R.id.action_add:
-                return listener.add(entityId);
+                return listener.add(menuActionListener.getMenuActionEntityId());
             case R.id.action_remove:
-                return listener.remove(entityId);
+                return listener.remove(menuActionListener.getMenuActionEntityId());
             case R.id.action_details:
-                return listener.details(entityId);
+                return listener.details(menuActionListener.getMenuActionEntityId());
             case R.id.action_edit:
-                return listener.edit(entityId);
+                return listener.edit(menuActionListener.getMenuActionEntityId());
             case R.id.action_favorite:
-                return listener.favorite(entityId);
+                return listener.favorite(menuActionListener.getMenuActionEntityId());
             case R.id.action_search:
-                return listener.search(entityId);
+                return listener.search(menuActionListener.getMenuActionEntityId());
             case R.id.action_filter:
-                return listener.filter(entityId);
+                return listener.filter(menuActionListener.getMenuActionEntityId());
             // the menu that appears on the projects list:
             case R.id.action_add_project:
             case R.id.action_settings:
             default: {
-                return listener.menuAction(itemId, entityId);
+                return listener.menuAction(itemId, menuActionListener.getMenuActionEntityId());
             }
         }
     }

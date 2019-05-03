@@ -5,6 +5,8 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
@@ -30,43 +32,51 @@ public class TimeEntriesRepository extends Repository {
     private AsyncGenericDao<TimeEntryData> asyncDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
     public TimeEntriesRepository() {
-
-        if (asyncDao instanceof EventBroadcaster) {
-            disposables.add(
-                    ((EventBroadcaster) asyncDao).getBroadcaster()
-                            .onBackpressureLatest()
-                            .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
-                                    CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
-                                    CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
-                                    CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
-                                    CACHE_EVENT_REMOVE_PROJECT.equals(b)
-                            )
-                            .throttleLatest(1, TimeUnit.SECONDS)
-                            .subscribe(o -> refreshData(true)));
-        }
-
     }
 
     @Override
     public void setup() {
-        if (disposables.isDisposed()) {
-            disposables = new CompositeDisposable();
+        if (userActionProcessor.hasComplete()) {
+            userActionProcessor = PublishProcessor.create();
+            userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
         }
 
+        if (disposables == null || disposables.isDisposed()) {
+            disposables = new CompositeDisposable();
+            if (asyncDao instanceof EventBroadcaster) {
+                disposables.add(
+                        ((EventBroadcaster) asyncDao).getBroadcaster()
+                                .onBackpressureLatest()
+                                .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
+                                        CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
+                                        CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
+                                        CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
+                                        CACHE_EVENT_REMOVE_PROJECT.equals(b)
+                                )
+//                                .doOnNext(b -> {
+//                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_ENTRY");
+//                                    } else if (b.equals(CACHE_EVENT_UPDATE_ENTRIES)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_UPDATE_ENTRIES");
+//                                    } else if (b.equals(CACHE_EVENT_UPDATE_ENTRY)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_UPDATE_ENTRY");
+//                                    } else if (b.equals(CACHE_EVENT_REMOVE_ISSUE)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_ISSUE");
+//                                    } else if (b.equals(CACHE_EVENT_REMOVE_PROJECT)) {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_PROJECT");
+//                                    } else {
+//                                        Log.v(TAG, "TimeEntriesRepository: <<<< OTHER....");
+//                                    }
+//                                })
+                                .throttleLatest(1, TimeUnit.SECONDS)
+                                .subscribe(o -> refreshData(true)));
+            }
+        }
 
     }
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
-//        disposables.add(
-//                timeEntriesTableObservable
-//                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-//                        .map(list -> db2vm(list, false))
-//                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-//                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-//                        .observeOn(AndroidSchedulers.mainThread())
-//                        .subscribe(consumer));
-
         disposables.add(
                 userActionsObservable
 //                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
@@ -88,13 +98,12 @@ public class TimeEntriesRepository extends Repository {
 
     @Override
     public void shutdown() {
+        userActionProcessor.onComplete();
         disposables.dispose();
-
     }
 
     @Override
     public void refreshData(boolean onlyLocal) {
-        Log.d(TAG, "refreshData() called with: onlyLocal = [" + onlyLocal + "]");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 
@@ -102,14 +111,10 @@ public class TimeEntriesRepository extends Repository {
         List<TimeEntryData> timeEntryDataList = asyncDao.getAll(parentProperties.getId(), true).blockingGet();
         List<TimeEntryData> clones = new ArrayList<>();
         for (TimeEntryData teData : timeEntryDataList) {
-            TimeEntryData clone = new TimeEntryData();
-            clone.updateData(teData);
-            clone.id = teData.id;
-            clone.parentId = teData.parentId;
-            clone.lastUpdated = teData.lastUpdated;
-            clones.add(clone);
+            if (!teData.deleted) {
+                clones.add(teData.clone());
+            }
         }
-
         return clones;
     }
 }

@@ -20,6 +20,7 @@ public class Issue {
     /*@StorIOSQLiteColumn(name = "date_due")            */          long dateDue;
     /*@StorIOSQLiteColumn(name = "last_updated")        */          long lastUpdated;
     /*@StorIOSQLiteColumn(name = "issue_name")          */          String name;
+    /*@StorIOSQLiteColumn(name = "deleted")             */          int deleted;
 
     User owner;
     Project project;

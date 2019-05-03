@@ -39,6 +39,7 @@ public class ProjectConverter implements DaoConverter<Project, ProjectData> {
         project.setLastUpdated(viewModel.getLastUpdated());
         project.setOwnerId(viewModel.parentId);
         project.setTeam(userConverter.vmToDm(viewModel.getTeam()));
+        project.setDeleted(viewModel.isDeleted() ? 1 : 0);
 
         return project;
     }
@@ -59,6 +60,7 @@ public class ProjectConverter implements DaoConverter<Project, ProjectData> {
         converted.setIcon(databaseModel.getIcon());
         converted.setLastUpdated(databaseModel.getLastUpdated());
         converted.parentId = databaseModel.getOwnerId();
+        converted.setDeleted(databaseModel.getDeleted() != 0);
         if (databaseModel.getOwner() != null) {
             converted.setOwner(userConverter.dmToVm(databaseModel.getOwner()));
         }

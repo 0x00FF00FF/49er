@@ -140,8 +140,10 @@ public class StickyLinearLayoutManager
         }
 
         if ((state.willRunSimpleAnimations() || scrolling) && selectedView != null) {
-            Log.i(TAG, "onLayoutChildren: detach with for. " +
-                    "[simple animations: " + state.willRunSimpleAnimations() + "][scrolling: " + scrolling + "]");
+            if (DEBUG && METHOD_DEBUG) {
+                Log.i(TAG, "onLayoutChildren: detach with for. " +
+                        "[simple animations: " + state.willRunSimpleAnimations() + "][scrolling: " + scrolling + "]");
+            }
             final int childCount = getChildCount();
             for (int i = childCount - 1; i >= 0; i--) {
                 final View v = getChildAt(i);
@@ -177,7 +179,6 @@ public class StickyLinearLayoutManager
 
             decoratedChildWidth = getDecoratedMeasuredWidth(labRatView);
             decoratedChildHeight = getDecoratedMeasuredHeight(labRatView);
-            itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
 //            removeAndRecycleView(labRatView, recycler);
 
             View pl = labRatView.findViewById(R.id.project_logo);
@@ -194,8 +195,17 @@ public class StickyLinearLayoutManager
             recycler.recycleView(labRatView);
         }
 
+        itemsNumber = Math.min(getItemCount(), getHeight() / decoratedChildHeight);
+
         if (!state.isMeasuring()) {
             drawChildren(NONE, recycler, state);
+            if (DEBUG && METHOD_DEBUG) {
+                Log.d(TAG, "onLayoutChildren: " +
+                        "height: " + getHeight() + "/" + decoratedChildHeight + "=" + getHeight() / decoratedChildHeight +
+                        " cc(" + getChildCount() + ")*ch(" + decoratedChildHeight + "): " + getChildCount() * decoratedChildHeight +
+                        " total items: " + itemsNumber + "/" + getItemCount()
+                );
+            }
         }
 
         if (DEBUG && METHOD_DEBUG) {
@@ -380,7 +390,7 @@ public class StickyLinearLayoutManager
             RecyclerView.State state
     ) {
 
-        final boolean METHOD_DEBUG = false;
+        boolean METHOD_DEBUG = false;
         boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
@@ -645,19 +655,22 @@ public class StickyLinearLayoutManager
 //                    Log.d(TAG, "drawChildren: newly added view: " + TextUtils.getItemText(item) +
 //                            "; position: " + (reversePosition + newItemPosition == TOP ? -1 : 0) +
 //                            "; children: " + getChildCount());
-//                    Log.i(TAG, "drawChildren: " + TextUtils.getItemText(item) +
-//                            " adapter position: " + i +
-//                            (i == selectedPosition ? " [selected] " : "") +
-//                            " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
-//                            "; lastTopY: " + lastTopY +
-//                            "; rv height: " + getHeight());
+//                Log.i(TAG, "drawChildren: " + TextUtils.getItemText(item) +
+//                        " adapter position: " + i +
+//                        (i == selectedPosition ? " [selected] " : "") +
+//                        " l: " + 0 + "; r: " + r + "; t: " + t + "; b: " + b +
+//                        "; lastTopY: " + lastTopY +
+//                        "; rv height: " + getHeight() +
+//                        "; sp: " + selectedPosition +
+//                        "; sv null: " + (selectedView == null)
+//                );
 //                }
                 if (DEBUG && METHOD_DEBUG) {
                     Log.e(TAG, "drawChildren: PER ITEM: " + (System.currentTimeMillis() - cs));
                 }
             }
         } finally {
-
+//            METHOD_DEBUG = true;
             if (selectedView != null) {
                 int l = 0;
                 int r = itemCollapsedSelectedWidth;
@@ -801,6 +814,7 @@ public class StickyLinearLayoutManager
      * @return an integer array containing new top (position 0) and bottom (position 1) coordinates
      */
     private int[] assureVisibilityInViewport(int top, int bottom) {
+        boolean METHOD_DEBUG = false;
         int t = top, b = bottom;
         int[] topAndBottom = new int[2];
         if (t < 0) {
@@ -814,8 +828,8 @@ public class StickyLinearLayoutManager
             virtualPosition = t;
         }
 
-        if (DEBUG) {
-            Log.e(TAG, "assureVisibilityInViewport: setting virtualPosition to: " + virtualPosition);
+        if (DEBUG && METHOD_DEBUG) {
+            Log.v(TAG, "assureVisibilityInViewport: setting virtualPosition to: " + virtualPosition);
         }
 
         topAndBottom[0] = t;
@@ -995,6 +1009,8 @@ public class StickyLinearLayoutManager
             View vv = v.findViewById(R.id.project_image);
             if (vv != null) {
                 vv.setRotation(vv.getRotation() + 3 * Math.signum(dy));
+//                vv.setRotation(vv.getRotation() + virtualBottom*.005F * Math.signum(dy));
+//                vv.setPivotY(v.getY() * .45F);
             }
 
             if (v != selectedView) {

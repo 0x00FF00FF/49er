@@ -16,18 +16,6 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:popupTheme="@style/Custom.Widget.ActionButton.Overflow.Menu"
     >
-<!--        <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Custom_TextAppearance_Widget_AppCompat_Toolbar_Title"
-        />
-        <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/toolbar_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Custom_TextAppearance_Widget_AppCompat_Toolbar_Subtitle"
-        />-->
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.constraintlayout.widget.Guideline

@@ -11,7 +11,11 @@ import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @SuppressLint("UseSparseArrays")
 public class EntityOptimizer implements Consumer<List<Project>> {
@@ -29,6 +33,9 @@ public class EntityOptimizer implements Consumer<List<Project>> {
     private GenericEntityDao<User> userDao = GenericEntityDao.Factory.of(User.class);
 
     private List<DbUpdateFinishedListener> listenerList = new ArrayList<>();
+
+    public EntityOptimizer() {
+    }
 
     public void addDbUpdateFinishedListener(DbUpdateFinishedListener listener) {
         if (!listenerList.contains(listener)) {
@@ -53,9 +60,9 @@ public class EntityOptimizer implements Consumer<List<Project>> {
             Log.w(TAG, "Problems with inserting entities to database.");
         } else {
             Log.d(TAG, "Finished inserting data.");
-            for (DbUpdateFinishedListener listener : listenerList) {
-                listener.onDbUpdateFinished();
-            }
+//            for (DbUpdateFinishedListener listener : listenerList) {
+//                listener.onDbUpdateFinished();
+//            }
             usersToAdd.clear();
             issuesToAdd.clear();
             timeEntriesToAdd.clear();
@@ -169,7 +176,7 @@ public class EntityOptimizer implements Consumer<List<Project>> {
         }
     }
 
-    interface DbUpdateFinishedListener {
+    public interface DbUpdateFinishedListener {
         void onDbUpdateFinished();
     }
 }

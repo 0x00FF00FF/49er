@@ -12,4 +12,5 @@ public interface IssuesInterfaces {
     int SORT_TYPE_OLDEST_FIRST = 2;
     int SORT_TYPE_ALPHANUMERIC = 3;
 
+    String KEY_ISSUE_ID = "issueId";
 }

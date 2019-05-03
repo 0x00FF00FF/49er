@@ -81,8 +81,8 @@ public class AsyncTimeEntryDataCacheAdapter
     }
 
     @Override
-    public Single<List<TimeEntryData>> getMatching(String term, boolean lazy) {
-        return dao.getMatching(term, lazy).subscribeOn(Schedulers.io());
+    public Single<List<TimeEntryData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        return dao.getMatching(term, parentId, lazy).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -128,7 +128,7 @@ public class AsyncTimeEntryDataCacheAdapter
         getDisposables().add(
                 dao.update(toUpdate).subscribeOn(Schedulers.io())
                         .subscribe(updated -> {
-                            timeEntryDataCache.putData(toUpdate, false);
+                            timeEntryDataCache.putData(toUpdate, true);
                             singleSubject.onSuccess(updated);
                         })
         );

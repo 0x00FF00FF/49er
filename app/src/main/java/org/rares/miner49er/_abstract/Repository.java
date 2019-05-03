@@ -14,7 +14,7 @@ public abstract class Repository {
     private static final String TAG = Repository.class.getSimpleName();
 
     private NetworkingService ns = NetworkingService.INSTANCE;
-    protected CompositeDisposable disposables = new CompositeDisposable();
+    protected CompositeDisposable disposables = null;
     protected PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
     protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
 

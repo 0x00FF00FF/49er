@@ -12,6 +12,10 @@
     <string name="_projects_pictures_description">Project Picture</string>
 
     <string name="_projects_info_template" formatted="false">Issues: %s Users: %s Hours: %s</string>
+    <string name="_issues_info_template" formatted="false">Entries: %s User Hours: %s Total Hours: %s</string>
+    <string name="_users_info_template" formatted="false">Currently working on %s other project%s.</string>
+    <string name="_users_info_template_zero">no</string>
+    <string name="_users_info_template_plural_suffix">s</string>
 
     <string name="_toolbar_back_button_description">Go back</string>
 
@@ -38,12 +42,21 @@
     <string name="action_save">Save</string>
     <string name="action_dismiss">Dismiss</string>
 
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+
     <string name="btn_cancel">Cancel</string>
+
+
+    <!--context_menu-->
+    <string name="menu_title_upload_icon">Upload an image</string>
+    <string name="menu_title_browse_existing">Select from existing</string>
+
 
     <!--project form-->
     <string name="project_form_header_add">Adding a project</string>
     <string name="project_form_header_edit">Editing a project</string>
-    <string name="helper_required">Fields marked with * are required.</string>
+    <string name="project_form_header_details">Viewing project details</string>
 
     <string name="hint_project_name">Project name *</string>
     <string name="helper_project_name">Insert the project name.</string>
@@ -68,9 +81,80 @@
     <string name="success_project_add">The %s project has been successfully created.</string>
     <string name="success_project_save">The %s project has been saved.</string>
 
+    <string name="question_delete_project">Delete project \'%s\'?</string>
+    <string name="details_question_delete_project">This will also delete all the related issues and time entries.</string>
+
+    <string name="btn_edit_users">Edit users</string>
+
+    <string name="title_edit_users">Select team members</string>
+
+    <string name="helper_users_selection">* Cards marked with a star indicate team members.</string>
+
+    <!--issue form-->
+    <string name="issue_form_header_add">Adding an issue</string>
+    <string name="issue_form_header_edit">Editing an issue</string>
+    <string name="issue_form_header_details">Viewing issue details</string>
+
+    <string name="hint_issue_project_name">Project name</string>
+    <string name="helper_issue_project_name">Insert the project name.</string>
+
+    <string name="hint_issue_name">Issue name *</string>
+    <string name="helper_issue_name">Insert the issue name.</string>
+
+    <string name="hint_issue_owner">Issue owner</string>
+    <string name="helper_issue_owner">Set the issue owner.</string>
+
+    <string name="success_issue_add">The %s issue has been successfully created.</string>
+    <string name="success_issue_save">The %s issue has been saved.</string>
+
+    <string name="question_delete_issue">Delete issue \'%s\'?</string>
+    <string name="details_question_delete_issue">This will also delete all the time entries for this issue.</string>
+
+    <!--time entry form-->
+    <string name="time_entry_form_header_add">Adding a time entry</string>
+    <string name="time_entry_form_header_edit">Editing a time entry</string>
+
+    <string name="hint_time_entry_issue_name">Issue name</string>
+    <string name="helper_time_entry_issue_name">The issue name.</string>
+
+    <string name="hint_time_entry_owner">Time entry owner</string>
+    <string name="helper_time_entry_owner">Set the time entry owner.</string>
+
+    <string name="hint_time_entry_work_date">Time entry work date *</string>
+    <string name="helper_time_entry_work_date">Set the date for this time entry.</string>
+
+    <string name="hint_time_entry_hours">Hours worked *</string>
+    <string name="helper_time_entry_hours">Set the number of hours worked.</string>
+
+    <string name="hint_time_entry_comments">Comments</string>
+    <string name="helper_time_entry_comments">Add comments to this time entry.</string>
+
+    <string name="success_time_entry_add">The time entry has been successfully created.</string>
+    <string name="success_time_entry_save">The time entry has been saved.</string>
+
+    <string name="error_time_entry_too_many_hours">You cannot enter more than %s hours a day.</string>
+    <string name="error_time_entry_hours">You must enter a number between %s and %s.</string>
+
+
+    <string name="hint_date_added">Date added</string>
+    <string name="helper_date_added">Shows the date when this item was created.</string>
+
+    <string name="helper_required">Fields marked with * are required.</string>
+
     <string name="error_field_required">This field is required.</string>
     <string name="error_field_already_exists">This name already exists.</string>
     <string name="error_field_contains_illegal_characters">This field contains illegal characters.</string>
+    <string name="error_field_number_of_characters">This field contains too many characters.</string>
 
     <string name="error_name_unavailable">This name is unavailable.</string>
+
+    <string name="entry_removed">The entry has been removed.</string>
+    <string name="err_entry_not_removed">The entry has not been removed.</string>
+    <string name="err_operation_not_completed">The operation could not be completed.</string>
+    <string name="err_operation_not_completed_try_again">The operation could not be completed. Please try again later.</string>
+
+    <string name="role_developer">developer</string>
+    <string name="role_designer">designer</string>
+    <string name="role_project_owner">project owner</string>
+    <string name="role_project_manager">project manager</string>
 </resources>

@@ -52,22 +52,38 @@ public class TimeEntryDiff extends DiffUtil.Callback {
         TimeEntryData newData = newTimeEntryData.get(newItemPosition);
         TimeEntryData oldData = oldTimeEntryData.get(oldItemPosition);
 
-        if (!newData.getUserName().equals(oldData.getUserName())) {
+        if (newData.getUserName() == null) {
+            if (oldData.getUserName() != null) {
+                bundle.putString("UserName", "");
+            }
+        } else if (!newData.getUserName().equals(oldData.getUserName())) {
             bundle.putString("UserName", newData.getUserName());
         }
         if(newData.getWorkDate() != oldData.getWorkDate()){
             bundle.putLong("WorkDate", newData.getWorkDate());
         }
-        if (!newData.getUserPhoto().equals(oldData.getUserPhoto())) {
+        if (newData.getUserPhoto() == null) {
+            if (oldData.getUserPhoto() != null) {
+                bundle.putString("UserPhoto", "");
+            }
+        } else if (!newData.getUserPhoto().equals(oldData.getUserPhoto())) {
             bundle.putString("UserPhoto", newData.getUserPhoto());
         }
         if (newData.getHours() != oldData.getHours()) {
             bundle.putInt("Hours", newData.getHours());
         }
-        if (!newData.getComments().equals(oldData.getComments())) {
+        if (newData.getComments() == null) {
+            if (oldData.getComments() != null) {
+                bundle.putString("Comments", "");
+            }
+        } else if (!newData.getComments().equals(oldData.getComments())) {
             bundle.putString("Comments", newData.getComments());
         }
-        if (!newData.getUserId().equals(oldData.getUserId())) {
+        if (newData.getUserId() == null) {
+            if (oldData.getUserId() != null) {
+                bundle.putLong("UserId", newData.getUserId());  ///
+            }
+        } else if (!newData.getUserId().equals(oldData.getUserId())) {
             bundle.putLong("UserId", newData.getUserId());
         }
         if (newData.getColor() != oldData.getColor()) {

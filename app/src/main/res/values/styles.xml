@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="AppTheme" parent="Theme.MaterialComponents"/>
 
@@ -31,6 +31,37 @@
         <!-- Action Mode styles -->
         <!--<item name="actionModeStyle">@style/Custom.Widget.ActionMode</item>-->
         <!--<item name="actionModeCloseButtonStyle">@style/Custom.Widget.ActionButton.CloseMode</item>-->
+
+        <item name="android:textViewStyle">@font/futura_book_bt</item>
+        <item name="android:buttonStyle">@font/futura_book_bt</item>
+
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+
+        <!--popup theme:-->
+        <item name="android:popupMenuStyle">@style/Custom.PopupMenu</item>
+        <item name="popupMenuStyle">@style/Custom.PopupMenu</item>
+
+        <!--material fonts override-->
+
+        <item name="textAppearanceHeadline1">@style/Custom.TextAppearance.MaterialComponents.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/Custom.TextAppearance.MaterialComponents.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/Custom.TextAppearance.MaterialComponents.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/Custom.TextAppearance.MaterialComponents.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/Custom.TextAppearance.MaterialComponents.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/Custom.TextAppearance.MaterialComponents.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/Custom.TextAppearance.MaterialComponents.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/Custom.TextAppearance.MaterialComponents.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/Custom.TextAppearance.MaterialComponents.Body1</item>
+        <item name="textAppearanceBody2">@style/Custom.TextAppearance.MaterialComponents.Body2</item>
+        <item name="textAppearanceCaption">@style/Custom.TextAppearance.MaterialComponents.Caption</item>
+        <item name="textAppearanceButton">@style/Custom.TextAppearance.MaterialComponents.Button</item>
+        <item name="textAppearanceOverline">@style/Custom.TextAppearance.MaterialComponents.Overline</item>
+
+    </style>
+
+    <style name="Custom.PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/background_menu_drawable</item>
     </style>
 
     <style name="Custom.Widget.Toolbar" parent="Widget.AppCompat.Toolbar">
@@ -84,19 +115,19 @@
 
     <style name="Custom_Toolbar_Title">
         <item name="android:textSize">@dimen/toolbar_title_text_size</item>
-        <item name="fontFamily">sans-serif</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
         <item name="android:textColor">@color/pureWhite</item>
     </style>
 
     <style name="Custom_Toolbar_Title_Action">
         <item name="android:textSize">@dimen/toolbar_title_text_size</item>
-        <item name="fontFamily">sans-serif-light</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
         <item name="android:textColor">@color/pureWhite</item>
     </style>
 
     <style name="Custom_Toolbar_Subtitle">
         <item name="android:textSize">@dimen/toolbar_subtitle_text_size</item>
-        <item name="fontFamily">sans-serif-light</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
         <item name="android:textColor">@color/android_color_dim_foreground_dark</item>
     </style>
 
@@ -104,12 +135,18 @@
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox"
            parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <item name="boxStrokeColor">@color/pureWhite</item>
+        <item name="boxStrokeColor">@color/color_selector_outline</item>
         <!--<item name="android:layout_margin">@dimen/sv_margin</item>-->
         <item name="hintTextAppearance">@style/Custom.TextAppearance.MaterialComponents.Hint</item>
+        <item name="errorTextColor">@color/error_color</item>
+        <item name="counterTextColor">@color/indigo.A100_grayed</item>
+        <item name="counterOverflowTextColor">@color/error_color</item>
         <item name="android:textColorHint">@color/color_selector_hint</item>
+        <item name="android:textColor">@color/color_selector_text</item>
         <item name="android:inputType">textNoSuggestions</item>
         <item name="android:singleLine">true</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
     </style>
 
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox.Layout"
@@ -119,6 +156,8 @@
         <item name="android:layout_marginRight">@dimen/sv_margin</item>
         <item name="android:layout_marginStart">@dimen/sv_margin</item>
         <item name="android:layout_marginEnd">@dimen/sv_margin</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
     </style>
 
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.EditText" parent="Theme.AppCompat.Light">
@@ -127,11 +166,17 @@
 
         <!-- Cursor and Active underline color, uses colorAccent by default if not defined-->
         <item name="colorControlActivated">@color/projects.default.c9aac8</item>
+        <!--<item name="editTextColor">@color/color_selector_hint</item>-->
+
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
     </style>
 
     <style name="Custom.TextAppearance.MaterialComponents.Hint" parent="TextAppearance.Design.Hint">
         <!-- Inactive and Active label color, pointing to a selector-->
         <item name="android:textColor">@color/color_selector_hint</item>
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
     </style>
 
     <style name="Custom.TextAppearance.MaterialComponents.Error" parent="TextAppearance.Design.Error">
@@ -140,7 +185,7 @@
     </style>
 
     <style name="TempCardViewStyle" parent="CardView.Dark">
-        <item name="cardBackgroundColor">@color/indigo.A100_grayed</item>
+        <item name="cardBackgroundColor">@color/indigo_100_blacked</item>
         <item name="cardCornerRadius">4dp</item>
     </style>
 
@@ -159,5 +204,105 @@
         <item name="android:layout_marginRight">@dimen/sv_margin</item>
         <item name="android:layout_marginStart">@dimen/sv_margin</item>
         <item name="android:layout_marginEnd">@dimen/sv_margin</item>
+    </style>
+
+
+    <style name="mdtp_ActionButton.Text.custom" parent="mdtp_ActionButton.Text">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!--<style name="CustomButtonStyle" parent="android:Widget.Holo.Button">-->
+        <!--<item name="fontFamily">@font/futura_book_bt</item>-->
+    <!--</style>-->
+    <!--<style name="CustomTextViewStyle" parent="android:Widget.TextView">-->
+        <!--<item name="fontFamily">@font/futura_book_bt</item>-->
+    <!--</style>-->
+
+    <style name="CustomBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!--material font customizing-->
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline1"
+           parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline2"
+           parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline3"
+           parent="TextAppearance.MaterialComponents.Headline3">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline4"
+           parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline5"
+           parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Headline6"
+           parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Subtitle1"
+           parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Subtitle2"
+           parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Body1"
+           parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Body2"
+           parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Caption"
+           parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Button"
+           parent="TextAppearance.MaterialComponents.Button">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
+    </style>
+
+    <style name="Custom.TextAppearance.MaterialComponents.Overline"
+           parent="TextAppearance.MaterialComponents.Overline">
+        <item name="fontFamily">@font/futura_book_bt</item>
+        <item name="android:fontFamily" tools:ignore="NewApi">@font/futura_book_bt</item>
     </style>
 </resources>

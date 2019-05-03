@@ -8,21 +8,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
+import org.rares.miner49er.domain.users.userlist.UserInterfaces;
+import org.rares.miner49er.domain.users.userlist.UserListFragmentPureRv;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
-import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.ui.custom.glide.GlideApp;
+import org.rares.miner49er.ui.custom.validation.FormValidationException;
+import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
@@ -30,11 +36,14 @@ import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT
 public class ProjectEditFormFragment extends ProjectActionFragment {
 
     public static final String TAG = ProjectEditFormFragment.class.getSimpleName();
+    private static final String KEY_EDIT_TEAM = "go2edit";
 
-
-    public static ProjectEditFormFragment newInstance(long projectId) {
+    public static ProjectEditFormFragment newInstance(long projectId, boolean editTeam) {
         Bundle args = new Bundle();
         args.putLong(KEY_PROJECT_ID, projectId);
+        if (editTeam) {
+            args.putBoolean(KEY_EDIT_TEAM, true);
+        }
 
         ProjectEditFormFragment fragment = new ProjectEditFormFragment();
         fragment.setArguments(args);
@@ -52,7 +61,10 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView() called ");
+
         createView(inflater, container);
+
         Object pid = getArguments().get(KEY_PROJECT_ID);
         if (pid == null) {
             throw new IllegalStateException("To edit a project you need an id.");
@@ -66,11 +78,10 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-//        UiUtil.sendViewToBack(getView());
-        if (projectData != null && projectData.getId() > 0) {
-            populateFields(projectData.getId());
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null && getArguments().getBoolean(KEY_EDIT_TEAM)) {
+            showUsersEditFragment();
         }
     }
 
@@ -83,74 +94,54 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
     }
 
     public boolean validateForm() {
-        boolean validForm = true;
-        int scrollToY = container.getHeight();
-        int diff = (int) UiUtil.pxFromDp(getContext(), 15);
-
-        if (!validateEmptyText(editTextProjectName, inputLayoutProjectName)) {
-            validForm = false;
-            scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
-        } else {
-            if (!validateCharacters(editTextProjectName, inputLayoutProjectName)) {
-                validForm = false;
-                scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
-            } else {
-                if (!validateExistingName(editTextProjectName, inputLayoutProjectName, projectsDAO)) {
-                    validForm = false;
-                    scrollToY = Math.min((int) inputLayoutProjectName.getY() - diff, scrollToY);
-                }
+        clearErrors();
+        updateProjectData();
+        FormValidator<ProjectData> validator = FormValidator.of(projectData);
+        try {
+            validator.validate(ProjectData::getName, n -> !n.isEmpty(), inputLayoutProjectName, errRequired)
+                    .validate(ProjectData::getName, p -> !p.contains("#"), inputLayoutProjectName, errCharacters)
+                    .validate(ProjectData::getName, name -> {
+                        List<? extends AbstractViewModel> entities =
+                                projectsDAO.getMatching(name, Optional.of(null), true).blockingGet();
+                        if ((entities == null || entities.isEmpty())) {
+                            return true;
+                        }
+                        // TODO: optimize this by querying the database for results not including projectData.id
+                        for (int i = 0; i < entities.size(); i++) {
+                            ProjectData pd = (ProjectData) entities.get(i);
+                            if (pd.id.equals(projectData.id)) {
+                                entities.remove(pd);
+                                break;
+                            }
+                        }
+                        return entities.isEmpty();
+                    }, inputLayoutProjectName, errExists)
+                    .validate(ProjectData::getOwner, o -> o != null, inputLayoutProjectOwner, errRequired)
+                    .validate(ProjectData::getDescription, d -> !d.contains("#"), inputLayoutProjectDescription, errCharacters)
+                    .validate(ProjectData::getIcon, d -> !d.contains("#"), inputLayoutProjectIcon, errCharacters)
+                    .get();
+        } catch (FormValidationException e) {
+            int scrollToY = container.getHeight();
+            int diff = (int) UiUtil.pxFromDp(getContext(), 15);
+            Map<Object, String> errors = e.getInvalidFields();
+            for (Object o : errors.keySet()) {
+                TextInputLayout layout = ((TextInputLayout) o);
+                layout.setError(errors.get(o));
+                scrollToY = Math.min((int) layout.getY() - diff, scrollToY);
             }
-        }
-
-        if (!validateEmptyText(editTextProjectOwner, inputLayoutProjectOwner)) {
-            validForm = false;
-            scrollToY = Math.min((int) inputLayoutProjectOwner.getY() - diff, scrollToY);
-        } else {
-            if (!validateCharacters(editTextProjectOwner, inputLayoutProjectOwner)) {
-                validForm = false;
-                scrollToY = Math.min((int) inputLayoutProjectOwner.getY() - diff, scrollToY);
-            }
-        }
-
-        if (!validateCharacters(editTextProjectShortName, inputLayoutProjectShortName)) {
-            validForm = false;
-            scrollToY = Math.min((int) inputLayoutProjectShortName.getY() - diff, scrollToY);
-        }
-
-        if (!validateCharacters(editTextProjectDescription, inputLayoutProjectDescription)) {
-            validForm = false;
-            scrollToY = Math.min((int) inputLayoutProjectDescription.getY() - diff, scrollToY);
-        }
-
-        if (!validateCharacters(editTextProjectIcon, inputLayoutProjectIcon)) {
-            validForm = false;
-            scrollToY = Math.min((int) inputLayoutProjectIcon.getY() - diff, scrollToY);
-        }
-
-        if (!validForm) {
             rootView.smoothScrollTo(0, scrollToY);
+            return false;
         }
-
-        return validForm;
+        return true;
     }
-
 
     private boolean saveProject() {
 
-        projectData.setName(editTextProjectName.getEditableText().toString());
-        projectData.setDescription(editTextProjectDescription.getEditableText().toString());
-        String iconUrl = editTextProjectIcon.getEditableText().toString();
-        try {
-            iconUrl = URLEncoder.encode(editTextProjectIcon.getEditableText().toString(), UTFEnc);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        projectData.setIcon(iconUrl);
-        projectData.setPicture(iconUrl);
+        updateProjectData();
 
-        projectsDAO.update(projectData);
+        boolean updated = projectsDAO.update(projectData).blockingGet();
 
-        final String snackbarText = String.format(successfulUpdate, editTextProjectName.getEditableText().toString());
+        final String snackbarText = String.format(updated ? successfulUpdate : errNotCompleted, editTextProjectName.getEditableText().toString());
 
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
@@ -170,28 +161,44 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
         return true;
     }
 
-    private void populateFields(long projectId) {
+    protected void populateFields(long projectId) {
         if (projectId <= 0) {
             return;
         }
 
-        projectData = projectsDAO.get(projectId, false).blockingGet().get();        ////
+        projectData = projectsDAO.get(projectId, true).blockingGet().get().clone(true);        ////
 
-        inputLayoutProjectName.setError("");
+        long[] ids = getUsersIds(projectData.getTeam());
+        if (userListFragment == null) {
+            userListFragment = UserListFragmentPureRv.newInstance(ids);
+        } else {
+            Bundle args = new Bundle();
+            args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, ids);
+            userListFragment.setArguments(args);
+        }
+        userListFragment.refreshData();
+
+        getChildFragmentManager().beginTransaction()
+                .show(userListFragment)
+                .commit();
+
+        clearErrors();
         editTextProjectName.setText(projectData.getName());
-        inputLayoutProjectShortName.setError("");
-        editTextProjectShortName.setText(TextUtils.extractVowels(projectData.getName()));
-        inputLayoutProjectDescription.setError("");
+        editTextProjectShortName.setText(projectData.getName().length() > 4 ? TextUtils.extractVowels(projectData.getName()) : projectData.getName());
         editTextProjectDescription.setText(projectData.getDescription());
-        inputLayoutProjectIcon.setError("");
         String iconUrl = projectData.getIcon();
         try {
-            iconUrl = URLDecoder.decode(projectData.getIcon(), UTFEnc);
+            if (!iconUrl.startsWith("/")) {
+                iconUrl = URLDecoder.decode(projectData.getIcon(), UTFEnc);
+            }
+            GlideApp
+                    .with(getContext())
+                    .load(iconUrl)
+                    .into(projectIconImage);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         editTextProjectIcon.setText(iconUrl);
-        inputLayoutProjectOwner.setError("");
         String ownerName = "";
         if (projectData.getOwner() != null) {
             ownerName = projectData.getOwner().getName();
@@ -199,29 +206,11 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
             Log.i(TAG, "populateFields: OWNER NULL");
         }
         editTextProjectOwner.setText(ownerName);
-    }
 
-    @Override
-    protected boolean validateExistingName(
-            TextInputEditText editText,
-            TextInputLayout layout,
-            AsyncGenericDao<? extends AbstractViewModel> dao) {
-
-        List<? extends AbstractViewModel> entities =
-                dao.getMatching(editText.getEditableText().toString(), true).blockingGet();
-
-        if (entities == null || entities.isEmpty()) {
-            layout.setError("");
-            return true;
-        } else {
-            if (entities.size() == 1) {
-                if (entities.get(0).getId().equals(projectData.getId())) {
-                    layout.setError("");
-                    return true;
-                }
-            }
-            layout.setError(errExists);
-        }
-        return false;
+        Log.i(TAG, "populateFields: " + editTextProjectOwner.getEditableText() + " " +
+                editTextProjectName.getEditableText() + " " +
+                editTextProjectShortName.getEditableText() + " " +
+                editTextProjectDescription.getEditableText() + " " +
+                editTextProjectIcon.getEditableText());
     }
 }

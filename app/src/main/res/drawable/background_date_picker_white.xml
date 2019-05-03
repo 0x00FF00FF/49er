@@ -1,0 +1,30 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <color android:color="@color/pureWhite"/>
+    </item>
+
+    <item
+            android:left="@dimen/_list_item_invisible_margin"
+            android:right="@dimen/_list_item_invisible_margin"
+            android:bottom="@dimen/_list_item_invisible_margin"
+        android:top="@dimen/_list_item_invisible_margin"
+    >
+        <shape
+                android:shape="rectangle">
+
+            <gradient
+                    android:startColor="#4c5171"
+                    android:endColor="#20222e"
+                    android:gradientRadius="400dp"
+                    android:centerY="1.1"
+                    android:type="radial"
+            />
+
+            <!--<corners-->
+                    <!--android:bottomLeftRadius="@dimen/_list_item_corner_radius_large"-->
+                    <!--android:bottomRightRadius="@dimen/_list_item_corner_radius_large"-->
+            <!--/>-->
+        </shape>
+    </item>
+</layer-list>

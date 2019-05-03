@@ -1,6 +1,5 @@
-package org.rares.miner49er.domain.projects.ui.actions;
+package org.rares.miner49er.ui.custom.validation;
 
-import org.rares.miner49er.ui.custom.FormValidationException;
 import org.rares.miner49er.ui.custom.functions.AdvancedFunction;
 import org.rares.miner49er.ui.custom.functions.NoErrorPredicate;
 
@@ -18,19 +17,15 @@ public class FormValidator<T> {
         this.t = t;
     }
 
-    public static <T> FormValidator of(T t) {
+    public static <T> FormValidator<T> of(T t) {
         return new FormValidator<>(Objects.requireNonNull(t));
     }
 
-    public FormValidator<T> validate(
+    private FormValidator<T> validate(
             NoErrorPredicate<T> validation,
             Object target, String message) {
-        try {
-            if (!validation.test(t)) {
-                errorList.put(target, message);
-            }
-        } catch (Exception x) {
-
+        if (!validation.test(t)) {
+            errorList.put(target, message);
         }
         return this;
     }
@@ -43,7 +38,7 @@ public class FormValidator<T> {
         return validate(projection.andThen(validation::test)::apply, target, message);
     }
 
-    public T get() {
+    public T get() throws FormValidationException {
         if (errorList.isEmpty()) {
             return t;
         } else {

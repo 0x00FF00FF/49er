@@ -12,6 +12,8 @@ import java.util.List;
 
 public class IssueDataCache implements Cache<IssueData> {
 
+    private static final String TAG = IssueDataCache.class.getSimpleName();
+
     private ViewModelCache cache = ViewModelCache.getInstance();
     private LruCache<Long, IssueData> issuesCache = cache.getIssuesLruCache();
     private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
@@ -34,7 +36,7 @@ public class IssueDataCache implements Cache<IssueData> {
             synchronized (projectsCache.get(issue.parentId)) {
                 ProjectData projectData = projectsCache.get(issue.parentId);
                 if (projectData != null) {
-                    List<IssueData> issues = projectsCache.get(projectData.id).getIssues();
+                    List<IssueData> issues = projectData.getIssues();
                     if (issues != null) {
 
                         boolean found = false;
@@ -46,7 +48,11 @@ public class IssueDataCache implements Cache<IssueData> {
                             }
                         }
                         if (!found) {
+                            if(issues.equals(Collections.emptyList())){
+                                issues = new ArrayList<>();
+                            }
                             issues.add(issue);
+                            projectData.setIssues(issues);
                         }
                     } else {
                         issues = new ArrayList<>();
@@ -92,7 +98,17 @@ public class IssueDataCache implements Cache<IssueData> {
             ProjectData projectData = projectsCache.get(parentId.get());
             if (projectData != null) {
                 List<IssueData> issues = projectData.getIssues();
-                return issues == null ? Collections.emptyList() : issues;
+                if (issues == null) {
+//                    return Collections.emptyList();
+                    return null;
+                }
+                Collections.sort(issues, (id1, id2) -> id1.id.compareTo(id2.id));
+                Collections.reverse(issues);
+//                for (int i = 0; i < issues.size(); i++) {
+//                    IssueData issueData = issues.get(i);
+//                    Log.i(IssueDataCache.class.getSimpleName(), "getData: " + issueData.getName() + " " + issueData.id);
+//                }
+                return issues;
             }
         }
         return new ArrayList<>(issuesCache.snapshot().values());

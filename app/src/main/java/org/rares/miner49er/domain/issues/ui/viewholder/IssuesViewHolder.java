@@ -7,7 +7,6 @@ import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +14,12 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import butterknife.BindString;
 import butterknife.BindView;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import lombok.Getter;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
-import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.NumberUtils;
@@ -29,16 +29,14 @@ import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
 import org.rares.ratv.rotationaware.animation.DefaultRotationAnimatorHost;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author rares
  * @since 10.10.2017
  */
 
-public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator
-
-{
+public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemViewAnimator {
     private static final String TAG = IssuesViewHolder.class.getSimpleName();
 
     @BindView(R.id.resizeable_list_item_container)
@@ -48,14 +46,10 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     @Getter
     RotationAwareTextView issueName;
 
-    private int originalTextSize = 60;  ////////////
+    @BindString(R.string._issues_info_template)
+    String infoTemplate;
 
-    @BindString(R.string._issues_info_entries_label)
-    String entriesLabel;
-    @BindString(R.string._issues_info_user_hours_label)
-    String userHoursLabel;
-    @BindString(R.string._issues_info_total_hours_label)
-    String totalHoursLabel;
+    private int originalTextSize = 60;  ////////////
 
     private TextView infoLabel = null;
 
@@ -73,13 +67,18 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         animationUpdateListener = new NoWidthUpdateListener(issueName);
         animatorHost = new DefaultRotationAnimatorHost(issueName.gatherAnimationData());
 
-        issueName.getTextPaint().setTypeface(typefaceLight);
+//        issueName.getTextPaint().setTypeface(typefaceLight);
+        issueName.getTextPaint().setTypeface(customTypeface);
     }
 
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         holderData = (IssueData) o;
-        shortTitle = TextUtils.extractInitials(holderData.getName());
+        shortTitle = !holderData.getName().contains(" ") ?
+                TextUtils.extractVowels(holderData.getName()) :
+                TextUtils.extractInitials(holderData.getName());
+
+
         longTitle = TextUtils.capitalize(holderData.getName());
 
 /*        Drawable d = itemView.getBackground();
@@ -95,10 +94,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         getItemProperties().setId(holderData.getId());
 
 //        prepareIssueInfo();
-        if (infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
-            toggleInfoContainerVisiblity(false);
-            infoLabel.setAlpha(0);
-        }
+//        if (shortVersion && infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
+//            if(holderData.getName().equals("20"))
+//            Log.i(TAG, "bindData: setting visibility false, alpha 0");
+//            toggleInfoContainerVisiblity(false);
+//            infoLabel.setAlpha(0);
+//        }
 
         validateItem(shortVersion, selected);
     }
@@ -183,11 +184,21 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             toggleInfoContainerVisiblity(!collapsed);
 
             if (!collapsed && (currentAlpha != 1 && (getAnimator() == null || !getAnimator().isRunning()))) {
-                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
+                disposables.add(Single.just(1)
+                        .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(one -> startInfoContainerFade(currentAlpha))
+                );
+//                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
 //                startInfoContainerFade(currentAlpha);
             }
         } else {
-            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
+            disposables.add(Single.just(1)
+                    .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(one -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed))
+            );
+//            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
 //            addInfoLabelToContainer(itemView.getContext().getResources(), collapsed);
         }
     }
@@ -392,7 +403,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      */
     private void addInfoLabelToContainer(Resources res, boolean collapsed) {
         if (res == null || issueName == null || topContainer == null || infoLabelId != -1) {
-            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
+//            Log.w(TAG, "addInfoLabelToContainer: RETURNING. Prerequisites not met.");
             return;
         }
         int textColor = 0xAA999999;
@@ -402,6 +413,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabelId = NumberUtils.generateViewId();
         infoLabel.setId(infoLabelId);
 
+        infoLabel.setTypeface(customTypeface);
         infoLabel.setTextColor(textColor);
         infoLabel.setText(infoLabelString);
         infoLabel.setAlpha(0);
@@ -411,7 +423,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         infoLabel.setSingleLine();
         infoLabel.setEllipsize(TruncateAt.END);
 
-        infoLabel.setTypeface(typefaceLight);
+//        infoLabel.setTypeface(typefaceLight);
 
         int textSize = res.getDimensionPixelSize(R.dimen.list_item_secondary_text_size);
         infoLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
@@ -459,7 +471,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 issueName.setEllipsize(reverse);
             }
             toggleInfoContainerVisiblity(reverse);
-            issueName.getTextPaint().setTypeface(selected ? reverse ? typefaceLight : typefaceRegular : typefaceLight);
+//            issueName.getTextPaint().setTypeface(selected ? reverse ? typefaceLight : typefaceRegular : typefaceLight);
         }
     }
 
@@ -489,34 +501,13 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     private void prepareIssueInfo() {
 
-//        float entriesNumber = 100.44F;
-//        float userHours = 100.24F;
-//        float totalHours = 60000.1234F;
-
-        List<TimeEntryData> entries = holderData.getTimeEntries();
-        int entriesNumber = 0;
-        int userHours = 0;
-        int totalHours = 0;
-        if (entries != null) {
-            entriesNumber = entries.size();
-            for (TimeEntryData entry : entries) {
-                userHours += entry.getUserId() == 2 ? entry.getHours() : 0;
-                totalHours += entry.getHours();
-            }
-        }
-
-//        Log.i(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
-
-        infoLabelString =
-                entriesLabel + " " + entriesNumber + " " +
-                        userHoursLabel + " " + userHours + " " +
-                        totalHoursLabel + " " + totalHours;
+        infoLabelString = UiUtil.populateInfoString(infoTemplate, holderData);
 
         if (infoLabel != null) {
             infoLabel.setText(infoLabelString);
         }
 
-        Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
+//        Log.d(TAG, "prepareIssueInfo: " + issueName.getText() + "|" + infoLabelString);
     }
 
     @Override
@@ -529,9 +520,6 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
             issueName.getHandler().removeCallbacksAndMessages(null);
         }
         issueName = null;
-        entriesLabel = null;
-        userHoursLabel = null;
-        totalHoursLabel = null;
         infoLabel = null;
         infoLabelString = null;
 

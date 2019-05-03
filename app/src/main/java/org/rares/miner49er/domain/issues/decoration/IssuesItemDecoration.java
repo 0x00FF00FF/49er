@@ -111,39 +111,39 @@ public class IssuesItemDecoration extends RecyclerView.ItemDecoration {
                     int verticalTopY0 = topY - localStrokeWidth / 2;
                     int verticalTopY1 = topY + cornerWidth;
 
-                    gradient = new LinearGradient(
-                            horizontalBottomX0, horizontalBottomY0, horizontalBottomX1, horizontalBottomY1,
-                            new int[]{colorCenter, colorStart}, null,
-                            Shader.TileMode.CLAMP);
-                    p.setShader(gradient);
-
-//                ---
-                    c.drawLine(horizontalBottomX0, horizontalBottomY0, horizontalBottomX1, horizontalBottomY1, p);
-//                |
-                    gradient = new LinearGradient(
-                            verticalBottomX0, verticalBottomY0, verticalBottomX1, verticalBottomY1,
-                            new int[]{colorCenter, colorStart}, null,
-                            Shader.TileMode.CLAMP);
-                    p.setShader(gradient);
-
-                    c.drawLine(verticalBottomX0, verticalBottomY0, verticalBottomX1, verticalBottomY1, p);
-
-//                ---
-                    gradient = new LinearGradient(
-                            horizontalTopX0, horizontalTopY0, horizontalTopX1, horizontalTopY1,
-                            new int[]{colorCenter, colorStart}, null,
-                            Shader.TileMode.CLAMP);
-                    p.setShader(gradient);
-
-                    c.drawLine(horizontalTopX0, horizontalTopY0, horizontalTopX1, horizontalTopY1, p);
-//                |
-                    gradient = new LinearGradient(
-                            verticalTopX0, verticalTopY0, verticalTopX1, verticalTopY1,
-                            new int[]{colorCenter, colorStart}, null,
-                            Shader.TileMode.CLAMP);
-                    p.setShader(gradient);
-
-                    c.drawLine(verticalTopX0, verticalTopY0, verticalTopX1, verticalTopY1, p);
+//                    gradient = new LinearGradient(
+//                            horizontalBottomX0, horizontalBottomY0, horizontalBottomX1, horizontalBottomY1,
+//                            new int[]{colorCenter, colorStart}, null,
+//                            Shader.TileMode.CLAMP);
+//                    p.setShader(gradient);
+//
+////                ---
+//                    c.drawLine(horizontalBottomX0, horizontalBottomY0, horizontalBottomX1, horizontalBottomY1, p);
+////                |
+//                    gradient = new LinearGradient(
+//                            verticalBottomX0, verticalBottomY0, verticalBottomX1, verticalBottomY1,
+//                            new int[]{colorCenter, colorStart}, null,
+//                            Shader.TileMode.CLAMP);
+//                    p.setShader(gradient);
+//
+//                    c.drawLine(verticalBottomX0, verticalBottomY0, verticalBottomX1, verticalBottomY1, p);
+//
+////                ---
+//                    gradient = new LinearGradient(
+//                            horizontalTopX0, horizontalTopY0, horizontalTopX1, horizontalTopY1,
+//                            new int[]{colorCenter, colorStart}, null,
+//                            Shader.TileMode.CLAMP);
+//                    p.setShader(gradient);
+//
+//                    c.drawLine(horizontalTopX0, horizontalTopY0, horizontalTopX1, horizontalTopY1, p);
+////                |
+//                    gradient = new LinearGradient(
+//                            verticalTopX0, verticalTopY0, verticalTopX1, verticalTopY1,
+//                            new int[]{colorCenter, colorStart}, null,
+//                            Shader.TileMode.CLAMP);
+//                    p.setShader(gradient);
+//
+//                    c.drawLine(verticalTopX0, verticalTopY0, verticalTopX1, verticalTopY1, p);
                 }
             }
         }

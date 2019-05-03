@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import butterknife.Unbinder;
+import io.reactivex.Completable;
 import io.reactivex.annotations.Nullable;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -127,5 +128,13 @@ public interface BaseInterfaces {
         void onParentRemoved(ItemViewProperties viewProperties);
 
         void onParentChanged(ItemViewProperties itemViewProperties);
+    }
+
+    interface Messenger {
+        int DISMISSIBLE = 1;
+        int UNDOABLE = 2;
+
+        void showMessage(String message, int actionType, Completable action);
+//        void showMessage(Snackbar snackbar);
     }
 }

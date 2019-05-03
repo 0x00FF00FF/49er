@@ -19,6 +19,7 @@ import org.rares.miner49er.persistence.storio.resolvers.LazyTimeEntryGetResolver
 import org.rares.miner49er.persistence.storio.resolvers.TimeEntryStorIOSQLiteGetResolver;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 
+import java.util.Collections;
 import java.util.List;
 
 public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
@@ -46,8 +47,16 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
     }
 
     @Override
-    public Single<List<TimeEntryData>> getMatching(String term, boolean lazy) {
-        return null;
+    public Single<List<TimeEntryData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
+        String[] data = term.split(" ");
+        long startDate = Long.parseLong(data[0]);
+        long endDate = Long.parseLong(data[1]);
+        long userId = Long.parseLong(data[2]);
+        long issueId = parentId.isPresent() ? parentId.get() : -1;
+        return lazyResolver.getMatchingAsync(storio, issueId, userId, startDate, endDate).map(
+                list -> list != null ?
+                        daoConverter.dmToVm(list) :
+                        Collections.emptyList());
     }
 
     @Override
@@ -56,9 +65,9 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
                 lazyResolver.getByIdAsync(storio, id) :
                 eagerResolver.getByIdAsync(storio, id))
                 .subscribeOn(Schedulers.io())
-                .map(projectOptional ->
-                        projectOptional.isPresent() ?
-                                Optional.of(daoConverter.dmToVm(projectOptional.get())) :
+                .map(opt ->
+                        opt.isPresent() ?
+                                Optional.of(daoConverter.dmToVm(opt.get())) :
                                 Optional.of(null));
     }
 
@@ -95,7 +104,7 @@ public class AsyncTimeEntriesDao implements AsyncGenericDao<TimeEntryData> {
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io())
-                .map(dr -> dr.numberOfRowsDeleted() != 0);
+                .map(dr -> dr.numberOfRowsDeleted() > 0);
     }
 
     private AsyncTimeEntriesDao() {

@@ -3,13 +3,21 @@ package org.rares.miner49er.domain.projects.ui.control;
 import android.os.Bundle;
 import androidx.fragment.app.FragmentManager;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddActionListener;
+import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddFormFragment;
+import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddFormFragment;
+import org.rares.miner49er.domain.projects.ui.actions.details.ProjectDetailsActionListener;
+import org.rares.miner49er.domain.projects.ui.actions.details.ProjectDetailsFragment;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditActionListener;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditFormFragment;
+import org.rares.miner49er.domain.projects.ui.actions.remove.ProjectRemoveAction;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.ActionListenerManager;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
+import org.rares.miner49er.ui.fragments.YesNoDialogFragment;
 
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
 
@@ -19,37 +27,37 @@ public class ProjectMenuActionsProvider
     private static final String TAG = ProjectMenuActionsProvider.class.getSimpleName();
     private FragmentManager fragmentManager;
     private ActionListenerManager actionManager;
+    private ProjectRemoveAction projectRemoveAction;
 
-    private ActionFragment projectAddFormFragment;
-    private ProjectAddActionListener projectAddActionListener;
-
-    private ActionFragment projectEditFormFragment;
-    private ProjectEditActionListener projectEditActionListener;
-
-    ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager) {
+    ProjectMenuActionsProvider(FragmentManager fragmentManager, ActionListenerManager manager, ProjectRemoveAction projectRemoveAction) {
         this.fragmentManager = fragmentManager;
         actionManager = manager;
+        this.projectRemoveAction = projectRemoveAction;
     }
 
     @Override
     public boolean add(long id) {
 
         // show add issue fragment
-        return false;
+
+        ActionFragment issueAddFormFragment = IssueAddFormFragment.newInstance();
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putLong(KEY_PROJECT_ID, id);
+        issueAddFormFragment.setArguments(fragmentArgs);
+        IssueAddActionListener issueAddActionListener = new IssueAddActionListener(issueAddFormFragment, actionManager);
+
+        showFragment(issueAddFormFragment);
+
+        actionManager.registerActionListener(issueAddActionListener);
+
+        return true;
     }
 
     @Override
     public boolean edit(long id) {
-        if (projectEditFormFragment == null) {
-            projectEditFormFragment = ProjectEditFormFragment.newInstance(id);
-        } else {
-            Bundle args = new Bundle();
-            args.putLong(KEY_PROJECT_ID, id);
-            projectEditFormFragment.setArguments(args);
-        }
-        if (projectEditActionListener == null) {
-            projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
-        }
+        ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id, false);
+
+        ProjectEditActionListener projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
         showFragment(projectEditFormFragment);
 
         actionManager.registerActionListener(projectEditActionListener);
@@ -59,12 +67,27 @@ public class ProjectMenuActionsProvider
 
     @Override
     public boolean remove(long id) {
-        return false;
+        String projectName = InMemoryCacheAdapterFactory.ofType(ProjectData.class).get(id, true).blockingGet().get().getName();
+        YesNoDialogFragment removeYnDialog =
+                YesNoDialogFragment.newInstance(projectName, R.string.question_delete_project, R.string.details_question_delete_project);
+
+        projectRemoveAction.setProjectId(id);
+
+        removeYnDialog.setListener(projectRemoveAction);
+        removeYnDialog.show(fragmentManager, YesNoDialogFragment.TAG);
+        return true;
     }
 
     @Override
     public boolean details(long id) {
-        return false;
+        ActionFragment projectDetailsFragment = ProjectDetailsFragment.newInstance(id);
+
+        ProjectDetailsActionListener projectDetailsActionListener = new ProjectDetailsActionListener(projectDetailsFragment, actionManager);
+        showFragment(projectDetailsFragment);
+
+        actionManager.registerActionListener(projectDetailsActionListener);
+
+        return true;
     }
 
     @Override
@@ -86,16 +109,19 @@ public class ProjectMenuActionsProvider
     public boolean menuAction(int menuActionId, long id) {
 
         if (menuActionId == R.id.action_add_user) {
-            // show add user fragment
+            ActionFragment projectEditFormFragment = ProjectEditFormFragment.newInstance(id, true);
+
+            ProjectEditActionListener projectEditActionListener = new ProjectEditActionListener(projectEditFormFragment, actionManager);
+            showFragment(projectEditFormFragment);
+
+            actionManager.registerActionListener(projectEditActionListener);
+
+            return true;
         }
 
         if (menuActionId == R.id.action_add_project) {
-            if (projectAddFormFragment == null) {
-                projectAddFormFragment = ProjectAddFormFragment.newInstance();
-            }
-            if (projectAddActionListener == null) {
-                projectAddActionListener = new ProjectAddActionListener(projectAddFormFragment, actionManager);
-            }
+            ActionFragment projectAddFormFragment = ProjectAddFormFragment.newInstance();
+            ProjectAddActionListener projectAddActionListener = new ProjectAddActionListener(projectAddFormFragment, actionManager);
 
             showFragment(projectAddFormFragment);
 
@@ -106,16 +132,12 @@ public class ProjectMenuActionsProvider
 
     private void showFragment(ActionFragment fragment) {
         String tag = fragment.getActionTag();
-        if (fragmentManager.findFragmentByTag(tag) == null) {
-
             fragmentManager
                     .beginTransaction()
                     .setCustomAnimations(
                             R.anim.item_animation_from_left, R.anim.item_animation_to_left)
                     .replace(R.id.main_container, fragment, tag)
-                    .addToBackStack(tag)
                     .show(fragment)
                     .commit();
-        }
     }
 }

@@ -1,6 +1,7 @@
 package org.rares.miner49er;
 
 import android.app.ActivityManager;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -24,10 +25,17 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.optimizer.CacheFeederService;
+import org.rares.miner49er.cache.optimizer.EntityOptimizer;
+import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -45,11 +53,15 @@ import org.rares.miner49er.util.UiUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
+
 public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
-        ProjectsResizeListener {
+        ProjectsResizeListener,
+        DbUpdateFinishedListener,
+        Messenger {
 
     public static final String TAG = HomeScrollingActivity.class.getName();
     private float dp2px;
@@ -108,6 +120,12 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
+        if (ViewModelCache.getInstance().lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
+            startCacheUpdate();
+        }
+        EntityOptimizer entityOptimizer = new EntityOptimizer();
+        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
+        entityOptimizer.addDbUpdateFinishedListener(this);
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
@@ -143,6 +161,10 @@ public class HomeScrollingActivity
                 int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
                 projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
                 projectsUiOps.refreshData(false);
+
+//                ViewModelCache.getInstance().dump();
+
+
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }
@@ -214,10 +236,11 @@ public class HomeScrollingActivity
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem removeItem = menu.findItem(R.id.action_remove);
-        if (removeItem != null) {
-            removeItem.setEnabled(false);
-        }
+        super.onPrepareOptionsMenu(menu);
+//        MenuItem removeItem = menu.findItem(R.id.action_remove);
+//        if (removeItem != null) {
+//            removeItem.setEnabled(false);
+//        }
         return true;
     }
 
@@ -237,7 +260,7 @@ public class HomeScrollingActivity
 
     @Override
     public void onProjectsListShrink() {
-        flingBarUp();
+//        flingBarUp();
     }
 
     @Override
@@ -260,6 +283,7 @@ public class HomeScrollingActivity
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
         timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
+        timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
@@ -283,6 +307,7 @@ public class HomeScrollingActivity
 
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
+        issuesUiOps.setFragmentManager(getSupportFragmentManager());
 
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);
@@ -323,8 +348,6 @@ public class HomeScrollingActivity
 //        projectsRV.setRecycledViewPool(sharedPool);
 
 
-
-
         // supportsPredictiveItemAnimations
         Log.e(TAG, "setupRV: DONE");
     }
@@ -348,20 +371,6 @@ public class HomeScrollingActivity
         setupResizeableManager(manager, itemElevation, itemCollapsedSelectedWidth, rvCollapsedWidth);
     }
 
-    /**
-     * Called when the project list is getting shrinked,
-     * as a follow-up to a project being selected.
-     */
-    private void flingBarUp() {
-/*        // fling the app bar up
-        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-        BehaviorFix behavior = (BehaviorFix) params.getBehavior();
-        if (behavior != null) {
-            behavior.onNestedFling(mainContainer, appBarLayout, null, 0, 7000, true);
-//            behavior.onNestedPreScroll(mainContainer, appBarLayout, appBarLayout, 0, 1000, new int[] {0, 0});
-        }*/
-    }
-
     @Override
     public void onBackPressed() {
         ToolbarActionManager toolbarManager = (ToolbarActionManager) toolbar.getTag(R.integer.tag_toolbar_action_manager);
@@ -373,29 +382,29 @@ public class HomeScrollingActivity
         super.onBackPressed();
     }
 
-    //    @Override
-//    public void registerUnbinder(Unbinder unbinder) {
-//        unbinderList.add(unbinder);
-//    }
-//
-//    @Override
-//    public boolean deRegisterUnbinder(Unbinder unbinder) {
-//        return
-//                unbinderList != null
-//                        && unbinderList.size() > 0
-//                        && unbinderList.remove(unbinder);
-//    }
-
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause() called");
         super.onPause();
+/*
+        // clear backstack for now. no fragment re-creation.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            int id = fragmentManager.getBackStackEntryAt(0).getId();
+            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        // need to also clear the TAM queue
+*/
     }
 
     @Override
     protected void onResume() {
         Log.e(TAG, "onResume() called");
         super.onResume();
+        // make sure we show some data
+        // if the user comes back to the app
+        // or changes orientation after the cache is filled
+        ViewModelCache.getInstance().sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
     }
 
     @Override
@@ -418,19 +427,16 @@ public class HomeScrollingActivity
 
     @Override
     public void onTrimMemory(int level) {
-        ViewModelCache.getInstance().clear();   // TODO: 3/7/19 enqueue another cache fill when needed
+        // not going to clear cache every time we're not in foreground
+        // 10_000 cached items occupy about 2MB of memory
+        if (TRIM_MEMORY_RUNNING_CRITICAL == level) {
+            ViewModelCache.getInstance().clear();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-//        // clear backstack for now. no fragment re-creation.
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        if (fragmentManager.getBackStackEntryCount() > 0) {
-//            int id = fragmentManager.getBackStackEntryAt(0).getId();
-//            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-//        }
 
         NetworkingService.INSTANCE.end();
 
@@ -469,4 +475,53 @@ public class HomeScrollingActivity
         return new CompositeDisposable();
     }
 
+    @Override
+    public void showMessage(String message, int actionType, Completable action) {
+        View container = mainContainer;
+        int snackbarBackgroundColor = container.getContext().getResources().getColor(R.color.indigo_100_blacked);
+        int snackbarTextColor = container.getContext().getResources().getColor(R.color.pureWhite);
+
+        Snackbar snackbar = Snackbar.make(container, message, Snackbar.LENGTH_LONG);
+//        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
+        View snackbarView = snackbar.getView();
+
+        snackbarView.setBackgroundColor(snackbarBackgroundColor);
+
+        TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(snackbarTextColor);
+
+        if (UNDOABLE == actionType) {
+            snackbar.setAction(R.string.action_undo, v -> action.subscribe(
+                    new CompletableObserver() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            Log.i(TAG, "onComplete: Undid operation.");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: Could not undo the operation.");
+                        }
+                    }));
+        }
+        if (DISMISSIBLE == actionType) {
+            snackbar.setAction(R.string.action_dismiss, clicklistener -> snackbar.dismiss());
+        }
+        snackbar.show();
+    }
+
+    @Override
+    public void onDbUpdateFinished() {
+        startCacheUpdate();
+    }
+
+    private void startCacheUpdate() {
+        Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
+        startService(cacheFeederServiceIntent);
+    }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+            android:id="@+id/upload_local"
+            android:title="@string/menu_title_upload_icon"
+            android:icon="@drawable/icon_path_cloud_upload"
+            app:showAsAction="never"/>
+    <item
+            android:id="@+id/browse_existing"
+            android:title="@string/menu_title_browse_existing"
+            android:icon="@drawable/icon_path_cloud_download"
+            app:showAsAction="never"/>
+</menu>

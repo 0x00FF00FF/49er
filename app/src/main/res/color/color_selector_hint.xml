@@ -2,5 +2,6 @@
 >
     <item android:state_focused="true" android:color="@color/hint_color_active"/>
     <item android:state_focused="false" android:color="@color/hint_color_inactive"/>
-    <!--<item app:state_error="true" android:color="@color/error_color"/>-->
+    <item android:state_enabled="false" android:state_focused="false" android:color="@color/indigo_100_grayed"/>
+    <item android:color="@color/hint_color_inactive" />
 </selector>

@@ -27,23 +27,27 @@ public class InMemoryCacheAdapterFactory {
     private static final String TAG = InMemoryCacheAdapterFactory.class.getSimpleName();
 
     /*
-     * This is the "clean" version of the Factory, that uses objects as parameters
-     * to know what type of DAO wrapper to return. The advantage is that its
-     * implementation looks cleaner, but it sometimes needs no-purpose instantiation.
-     * see GenericDaoFactory for the memory efficient implementation.
+     * Following commented area is a model of the "clean" version
+     * of the Factory, that uses objects as parameters to know
+     * what type of DAO wrapper to return. The advantage is that
+     * its implementation looks cleaner, but it sometimes may need
+     * no-purpose instantiations.
      *
 
-        public static GenericDAO<ProjectData> from(ProjectData data) {
-            return projectAdapter;
+        public static AsyncGenericDao<ProjectData> from (ProjectData p) {
+            return getProjectsCacheAdapter();
         }
-        public static GenericDAO<IssueData> from(IssueData data) {
-            return issueAdapter;
+
+        public static AsyncGenericDao<IssueData> from (IssueData i) {
+            return getIssuesCacheAdapter();
         }
-        public static GenericDAO<TimeEntryData> from(TimeEntryData data) {
-            return timeEntryAdapter;
+
+        public static AsyncGenericDao<TimeEntryData> from (TimeEntryData t) {
+            return getTimeEntriesCacheAdapter();
         }
-        public static GenericDAO<UserData> from(UserData data) {
-            return userAdapter;
+
+        public static AsyncGenericDao<UserData> from (UserData u) {
+            return getUsersCacheAdapter();
         }
      */
 

@@ -4,19 +4,30 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+import lombok.Getter;
+import lombok.Setter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
+import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
+import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
-import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
+import org.rares.miner49er.domain.issues.ui.actions.remove.IssueRemoveAction;
+import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.util.PermissionsUtil;
 
+import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ICON_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
@@ -30,20 +41,34 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 public class IssuesUiOps extends ResizeableItemsUiOps
         implements
         ToolbarActionManager.MenuActionListener,
-        DomainLink {
+        DomainLink,
+        SwipeDeletedListener {
 
     private static final String TAG = IssuesUiOps.class.getSimpleName();
     private IssuesRepository issuesRepository = new IssuesRepository();
 
     private ToolbarActionManager toolbarManager = null;
 
+    private IssueMenuActionsProvider menuActionsProvider;
     // this component always requires action mode
     private final boolean requiresActionMode = true;
+
+    @Getter
+    @Setter
+    private long menuActionEntityId;
+
+    private TouchHelperCallback<IssuesViewHolder, IssueData> touchHelperCallback = new TouchHelperCallback<>();
+    private ItemTouchHelper itemTouchHelper;
 
     public IssuesUiOps(RecyclerView rv) {
         setRv(rv);
         issuesRepository.setup();
         repository = issuesRepository;
+
+        itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+        itemTouchHelper.attachToRecyclerView(getRv());
+        touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(IssueData.class));
+        touchHelperCallback.setDeletedListener(this);
     }
 
     @Override
@@ -57,8 +82,11 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
+            itemTouchHelper.attachToRecyclerView(getRv());
         } else {
+            menuActionEntityId = holder.getItemProperties().getId();
             toolbarManager.registerActionListener(this);
+            itemTouchHelper.attachToRecyclerView(null);
         }
 
         return enlarge;
@@ -75,43 +103,65 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     @Override
     public void configureCustomActionMenu(ToolbarActionManager.MenuConfig config) {
-        // for now, re-use the generic one configured in the projects
-        ResizeableItemViewHolder holder = getSelectedViewHolder();
-
-        if (holder != null) {
-//            config.title = holder.getLongTitle();
-//            config.subtitle = holder.getInfoLabelString();
-            config.subtitle = holder.getLongTitle();
-            config.subtitleRes = 0;
-        }
 
         config.requireActionMode = requiresActionMode;
 
-        config.overrideGenericMenuResources = new int[1][4];
+        IssuesAdapter adapter = (IssuesAdapter) getRv().getAdapter();
+
+        if (adapter == null || adapter.getLastSelectedPosition() == -1) {
+            return;
+        }
+
+        IssueData issueData = adapter.getData().get(adapter.getLastSelectedPosition());
+
+        config.overrideGenericMenuResources = new int[3][5];
         config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
         config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
         config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
         config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_time_entry;
+        config.overrideGenericMenuResources[0][ENABLED] = PermissionsUtil.canAddIssue(issueData.parentId) ? 1 : 0;
+
+        config.overrideGenericMenuResources[1][ITEM_ID] = R.id.action_edit;
+        config.overrideGenericMenuResources[1][ICON_ID] = R.drawable.icon_path_edit;
+        config.overrideGenericMenuResources[1][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[1][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[1][ENABLED] = PermissionsUtil.canEditIssue(issueData) ? 1 : 0;
+
+        config.overrideGenericMenuResources[2][ITEM_ID] = R.id.action_remove;
+        config.overrideGenericMenuResources[2][ICON_ID] = R.drawable.icon_path_remove;
+        config.overrideGenericMenuResources[2][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+        config.overrideGenericMenuResources[2][ITEM_NAME] = 0;
+        config.overrideGenericMenuResources[2][ENABLED] = PermissionsUtil.canRemoveIssue(issueData) ? 1 : 0;
 
         config.createGenericMenu = true;
-
         config.additionalMenuId = R.menu.menu_additional_issues;
-        config.additionalResources = new int[1][4];
+        config.additionalResources = new int[1][5];
 
         config.additionalResources[0][ITEM_ID] = R.id.action_set_auto_add_hours;
         config.additionalResources[0][ICON_ID] = R.drawable.icon_path_auto_add_time_2;
         config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
         config.additionalResources[0][ITEM_NAME] = 0;
+        config.additionalResources[0][ENABLED] = PermissionsUtil.canAddTimeEntry(issueData) ? 1 : 0;
+
+        config.subtitleRes = 0;
+        config.titleRes = 0;
+
+        config.subtitle = issueData.getName();
     }
 
     @Override
     public GenericMenuActions getMenuActionsProvider() {
-        return null;
+        return menuActionsProvider;
     }
 
     @Override
     protected void configureMenuActionsProvider(FragmentManager fm) {
-
+        if (toolbarManager == null) {
+            provideToolbarActionManager();
+        }
+        if (menuActionsProvider == null) {
+            menuActionsProvider = new IssueMenuActionsProvider(fragmentManager, toolbarManager, new IssueRemoveAction(this));
+        }
     }
 
     @Override
@@ -141,34 +191,46 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             // so that the chance of leaked
             // context or views will be
             // minimal.
-            if (unbinderList.size() > 40) {
-                repository.shutdown();
-                getRv().setAdapter(null);
-                resetRv();
-            } else if (issuesAdapter != null) {
-                issuesAdapter.clearData();
-            }
+//            if (unbinderList.size() > 40) {
+            repository.shutdown();
+            getRv().setAdapter(null);
+            touchHelperCallback.setAdapter(null);
+            itemTouchHelper.attachToRecyclerView(null);
+            resetRv();
+//            } else if (issuesAdapter != null) {
+//                issuesAdapter.clearData();
+//            }
         } else {
-            if (issuesAdapter != null) {
-                onParentChanged(projectProperties);
-            } else {
-                getRv().setAdapter(createNewIssuesAdapter(projectProperties));
-            }
+//            if (issuesAdapter != null) {
+//                onParentChanged(projectProperties);
+//            } else {
+            getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+            itemTouchHelper.attachToRecyclerView(getRv());
+//            }
         }
+        getRv().scrollToPosition(0);
         resizeRv(!parentWasEnlarged);
     }
 
     @Override
     public void onParentChanged(ItemViewProperties itemViewProperties) {
-        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
+//        RecyclerView.LayoutManager _tempLm = getRv().getLayoutManager();
 //        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
 //        int lastSelectedPosition = adapter.getLastSelectedPosition();
 //        boolean somethingSelected = lastSelectedPosition > -1;
 //        getRv().scrollToPosition(somethingSelected ? lastSelectedPosition : 0);
 
-        if (_tempLm instanceof ResizeableLayoutManager) {
-            ((ResizeableLayoutManager) _tempLm).resetState(true);
-        }
+//        if (_tempLm instanceof ResizeableLayoutManager) {
+//            ((ResizeableLayoutManager) _tempLm).resetState(true);
+//        }
+        // ^this is responsible for
+        // * edit issue, apply, go to issues list, repeat a few times until
+        //			item decoration is not shown anymore under the previously
+        //			selected issue, click that issue -> crash.
+        //			- selected view is kept/laid out in stickyLM after expansion
+        // /!\ in fact, the selected view is reset and then added again when it shouldn't
+        // this is a fix for network data refresh resetting the selected view
+        // // FIXME: 25.04.2019 ^^^ for network data refresh + collision detection and fixing
         issuesRepository.setParentProperties(itemViewProperties);
         issuesRepository.refreshData(true);
     }
@@ -182,6 +244,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         domainLink.onParentRemoved(projectProperties);
     }
 
+    @Override
+    public void onListItemChanged(ItemViewProperties ivp) {
+        super.onListItemChanged(ivp);
+        toolbarManager.refreshActionMode();
+    }
+
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
         issuesAdapter.setUnbinderHost(this);
@@ -189,11 +257,36 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         issuesRepository.setup();
         issuesRepository.setParentProperties(projectViewProperties);
         issuesRepository.registerSubscriber(issuesAdapter);
+
+        touchHelperCallback.setAdapter(issuesAdapter);
         return issuesAdapter;
     }
 
     @Override
     protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
         return createNewIssuesAdapter(itemViewProperties);
+    }
+
+    // todo ... i don't like this!
+    private void provideToolbarActionManager() {
+        // TODO: 12/4/18 have the toolbar supplied, do not "grab"
+        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+
+        if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
+            toolbarManager = new ToolbarActionManager(t);
+            t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
+        } else {
+            toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
+        }
+    }
+
+    @Override
+    public void onItemDeleted(ViewHolder vh) {
+        toolbarManager.refreshActionMode();
+    }
+
+    @Override
+    public void onItemPseudoDeleted(ViewHolder vh) {
+        toolbarManager.refreshActionMode();
     }
 }

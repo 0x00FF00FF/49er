@@ -1,9 +1,10 @@
 package org.rares.miner49er.util;
 
+import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
@@ -76,6 +77,9 @@ public class TextUtils {
     }
 
     public static String capitalize(String str) {
+        if (str.length() == 0) {
+            return str;
+        }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
@@ -88,10 +92,10 @@ public class TextUtils {
     }
 
     public static String getItemText(View view) {
-        if (!(view instanceof LinearLayout)) {
+        if (!(view instanceof ViewGroup)) {
             return "BAD VIEW!";
         }
-        LinearLayout layout = (LinearLayout) view;
+        ViewGroup layout = (ViewGroup) view;    // constraint layout
         View childView = layout.getChildAt(0);
         if (childView instanceof TextView) {
             TextView tv = (TextView) childView;
@@ -103,6 +107,9 @@ public class TextUtils {
                 return ((RotationAwareTextView) v).getText();
             }
         }
+        if (childView instanceof RotationAwareTextView) {
+            return ((RotationAwareTextView) childView).getText();
+        }
         throw new UnsupportedOperationException("Unsupported view: " + view.getClass().toString());
     }
 
@@ -113,7 +120,7 @@ public class TextUtils {
         return "";
     }
 
-    private static String clearNamePrefix(String s) {
+    public static String clearNamePrefix(String s) {
         String res = s;
 
         res = res.replace("-", " ");
@@ -136,5 +143,26 @@ public class TextUtils {
         res = res.replace("Ing. ", "");
 
         return res;
+    }
+
+    public static void hideKeyboardFrom(View view) {
+        if (view == null) {
+            return;
+        }
+        Context context = view.getContext();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        view.clearFocus();
+    }
+
+
+    public static void showKeyboardFor(View view) {
+        if (view == null) {
+            return;
+        }
+        Context context = view.getContext();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        view.requestFocus();
+        imm.showSoftInput(view, 0);
     }
 }
