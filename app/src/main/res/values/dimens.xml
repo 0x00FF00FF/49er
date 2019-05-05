@@ -41,5 +41,12 @@
     <dimen name="users_list_search_height">48dp</dimen>
     <dimen name="list_item_spacing">16dp</dimen>
     <dimen name="list_item_spacing_half">8dp</dimen>
+
+    <!--login-->
+    <dimen name="sign_in_logo_top_margin">72dp</dimen>
+    <dimen name="sign_in_user_name_top_margin">48dp</dimen>
+    <dimen name="sign_up_user_image_top_margin">72dp</dimen>
+    <dimen name="sign_up_user_name_top_margin">48dp</dimen>
+    <dimen name="landing_button_margin">64dp</dimen>
 </resources>
 

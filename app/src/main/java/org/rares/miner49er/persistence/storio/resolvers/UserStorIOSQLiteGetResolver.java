@@ -105,7 +105,7 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
                 .withQuery(
                         Query.builder()
                                 .table(UserTable.NAME)
-                                .where(UserTable.NAME_COLUMN + " = ? ")
+                                .where(UserTable.NAME_COLUMN + " = ? or " + UserTable.EMAIL_COLUMN + " = ?")
                                 .whereArgs(term)
                                 .build())
                 .prepare();

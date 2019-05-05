@@ -13,7 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/skull"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="@dimen/sign_in_logo_top_margin"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -25,18 +25,16 @@
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/icon_path_user_outline"
             android:drawableStart="@drawable/icon_path_user_outline"
-            android:drawablePadding="8dp"
             android:layout_marginLeft="48dp"
             android:layout_marginStart="48dp"
             android:layout_marginRight="48dp"
             android:layout_marginEnd="48dp"
-            android:layout_marginTop="48dp"
-            android:textColor="@color/indigo.100"
+            android:layout_marginTop="@dimen/sign_in_user_name_top_margin"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/app_logo_image"
-            tools:text="johanna.glied@49er.org"
-    />
+            style="@style/LoginEditText"
+            tools:text="johanna.glied@49er.org"/>
 
     <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/user_password_edit_text"
@@ -44,12 +42,11 @@
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/icon_path_lock"
             android:drawableStart="@drawable/icon_path_lock"
-            android:inputType="textPassword"
-            android:drawablePadding="8dp"
-            android:textColor="@color/indigo.100"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="@id/user_name_edit_text"
             app:layout_constraintEnd_toEndOf="@id/user_name_edit_text"
             app:layout_constraintTop_toBottomOf="@id/user_name_edit_text"
+            style="@style/LoginEditText.Password"
             tools:text="•••••••••••"
     />
 
@@ -57,7 +54,7 @@
             android:id="@+id/login_floating_button"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="36dp"
             android:gravity="center"
             android:backgroundTint="@color/pureWhite"
             android:background="@color/pureWhite"
@@ -73,24 +70,26 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
             android:alpha="0"
             app:layout_constraintStart_toStartOf="@id/login_floating_button"
             app:layout_constraintEnd_toEndOf="@id/login_floating_button"
             app:layout_constraintTop_toBottomOf="@id/login_floating_button"
+            app:layout_constraintBottom_toTopOf="@+id/tac_text"
             tools:text="@string/login_failed_bad_u_p"
     />
 
     <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/toc_text"
+            android:id="@+id/tac_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="16dp"
             android:textColor="@color/indigo.100"
+            android:text="@string/terms_and_conditions"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Terms and conditions"
     />
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -101,9 +100,9 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:textColor="@color/indigo.100"
+            android:text="@string/privacy_policy"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Privacy policy"
     />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

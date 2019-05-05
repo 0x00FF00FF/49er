@@ -6,4 +6,10 @@
     <dimen name="users_list_item_height">96dp</dimen>
     <dimen name="users_list_item_picture_margin_start">4dp</dimen>
     <dimen name="users_list_item_name_margin_start">@dimen/users_list_item_picture_margin_start</dimen>
+    <!--login-->
+    <dimen name="sign_in_logo_top_margin">48dp</dimen>
+    <dimen name="sign_in_user_name_top_margin">36dp</dimen>
+    <dimen name="sign_up_user_image_top_margin">48dp</dimen>
+    <dimen name="sign_up_user_name_top_margin">36dp</dimen>
+    <dimen name="landing_button_margin">40dp</dimen>
 </resources>

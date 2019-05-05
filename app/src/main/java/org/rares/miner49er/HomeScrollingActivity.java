@@ -43,11 +43,19 @@ import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
+import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.ui.custom.mask.OverlayMask;
+import org.rares.miner49er.ui.fragments.login.LoginLandingFragment;
+import org.rares.miner49er.ui.fragments.login.LoginLandingFragment.LandingListener;
+import org.rares.miner49er.ui.fragments.login.SignInFragment;
+import org.rares.miner49er.ui.fragments.login.SignInFragment.SignInListener;
+import org.rares.miner49er.ui.fragments.login.SignUpFragment;
+import org.rares.miner49er.ui.fragments.login.SignUpFragment.SignUpListener;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
@@ -59,6 +67,9 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
+        LandingListener,
+        SignInListener,
+        SignUpListener,
         ProjectsResizeListener,
         DbUpdateFinishedListener,
         Messenger {
@@ -99,6 +110,11 @@ public class HomeScrollingActivity
     @BindView(R.id.scroll_views_container)
     LinearLayout scrollViewsContainer;
 
+    @BindView(R.id.top_overlay_mask)
+    OverlayMask topOverlay;
+    @BindView(R.id.bottom_overlay_mask)
+    OverlayMask bottomOverlay;
+
     @BindDimen(R.dimen.projects_rv_collapsed_width)
 //    @BindDimen(R.dimen.projects_rv_collapsed_width_with_name)
             int rvCollapsedWidth;
@@ -111,6 +127,10 @@ public class HomeScrollingActivity
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
 
+    private LoginLandingFragment loginLandingFragment = null;
+    private SignInFragment signInFragment = null;
+    private SignUpFragment signUpFragment = null;
+
     Unbinder unbinder;
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
@@ -120,7 +140,8 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
-        if (ViewModelCache.getInstance().lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
+        ViewModelCache cache = ViewModelCache.getInstance();
+        if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
         EntityOptimizer entityOptimizer = new EntityOptimizer();
@@ -152,6 +173,23 @@ public class HomeScrollingActivity
 //        registerUnbinder(unbinder);
 
         setupRV();
+
+        if (cache.loggedInUser == null) {
+            scrollViewsContainer.setVisibility(View.GONE);
+            toolbar.setVisibility(View.GONE);
+            topOverlay.setVisibility(View.GONE);
+            bottomOverlay.setVisibility(View.GONE);
+            fab2.setVisibility(View.GONE);
+
+            if (loginLandingFragment == null) {
+                loginLandingFragment = LoginLandingFragment.newInstance();
+            }
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+        }
 
         fab2.setOnClickListener(new View.OnClickListener() {
 
@@ -379,6 +417,25 @@ public class HomeScrollingActivity
                 return;
             }
         }
+        if (signInFragment != null && signInFragment.isResumed()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(signInFragment)
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+            return;
+        }
+
+        if (signUpFragment != null && signUpFragment.isResumed()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(signUpFragment)
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+            return;
+        }
         super.onBackPressed();
     }
 
@@ -409,7 +466,6 @@ public class HomeScrollingActivity
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart() called");
         super.onStart();
 
         projectsUiOps.setupRepository();
@@ -523,5 +579,62 @@ public class HomeScrollingActivity
     private void startCacheUpdate() {
         Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
         startService(cacheFeederServiceIntent);
+    }
+
+
+    @Override
+    public void signUp() {
+        if (signUpFragment == null) {
+            signUpFragment = SignUpFragment.newInstance();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(loginLandingFragment)
+                .add(R.id.main_container, signUpFragment, SignUpFragment.TAG)
+                .commit();
+    }
+
+    @Override
+    public void signIn() {
+        if (signInFragment == null) {
+            signInFragment = SignInFragment.newInstance();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(loginLandingFragment)
+                .add(R.id.main_container, signInFragment, SignInFragment.TAG)
+                .commit();
+    }
+
+    @Override
+    public void signIn(UserData userData) {
+        ViewModelCache.getInstance().loggedInUser = userData;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(signInFragment)
+                .commit();
+        scrollViewsContainer.setVisibility(View.VISIBLE);
+        toolbar.setVisibility(View.VISIBLE);
+        topOverlay.setVisibility(View.VISIBLE);
+        bottomOverlay.setVisibility(View.VISIBLE);
+        fab2.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void signUp(UserData userData) {
+        ViewModelCache.getInstance().loggedInUser = userData;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(signUpFragment)
+                .commit();
+        scrollViewsContainer.setVisibility(View.VISIBLE);
+        toolbar.setVisibility(View.VISIBLE);
+        topOverlay.setVisibility(View.VISIBLE);
+        bottomOverlay.setVisibility(View.VISIBLE);
+        fab2.setVisibility(View.VISIBLE);
     }
 }
