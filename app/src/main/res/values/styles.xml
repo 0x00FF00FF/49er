@@ -139,6 +139,8 @@
         <item name="android:paddingRight">16dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:textColor">@color/indigo.100</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:inputType">text</item>
     </style>
     <style name="LoginEditText.Password" parent="LoginEditText">
         <item name="android:inputType">textPassword</item>

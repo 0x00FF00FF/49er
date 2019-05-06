@@ -2,16 +2,20 @@ package org.rares.miner49er.ui.fragments.login;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
-import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -23,9 +27,11 @@ import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.domain.users.persistence.UserSpecificDao;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
+import org.rares.miner49er.util.TextUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -55,11 +61,8 @@ public class SignInFragment extends Fragment {
     @BindView(R.id.pp_text)
     AppCompatTextView ppTextView;
 
-    @BindString(R.string.create_user_failed_no_email)
-    String errorEmail;
-
-    @BindString(R.string.login_failed_bad_u_p)
-    String errorLogin;
+    @BindView(R.id.progress_circular)
+    ContentLoadingProgressBar progressBar;
 
     private UserData userData;
     private AsyncGenericDao<UserData> usersDao;
@@ -109,16 +112,23 @@ public class SignInFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userNameEditText.setEnabled(false);
+        userPasswordEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                TextUtils.hideKeyboardFrom(v);
+                login();
+            }
+            return false;
+        });
 
-        disposables.add(usersDao.get(12, true)
+        // perhaps store the email/id in a preference file and populate from that
+/*        disposables.add(usersDao.get(12, true)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(u -> {
                     if (u.isPresent()) {
                         userData = u.get();
                         populateFields(userData);
                     }
-                }));
+                }));*/
     }
 
     @Override
@@ -138,70 +148,76 @@ public class SignInFragment extends Fragment {
         try {
             validator
                     .validate(s -> s, s -> !s.isEmpty(), null, null)
-//                    .validate(s -> s, this::validateEmail, errorText, errorEmail)
                     .get();
         } catch (FormValidationException e) {
-            errorText.setText(errorEmail);
-            if (errorText.getAlpha() != 1) {
-                errorText.animate().alpha(1).start();
-                disposables.add(
-                        Single.just("")
-                                .delay(2, TimeUnit.SECONDS)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(s -> errorText.animate().alpha(0).start()));
-            }
+            showErrorMessage(R.string.create_user_failed_no_email);
             return;
         }
 
         validator = FormValidator.of(userPassword);
         try {
             validator
-                    .validate(s -> s, s -> s.length() > 4, errorText, errorLogin)
+                    .validate(s -> s, s -> s.length() > 4, null, null)
                     .get();
         } catch (FormValidationException e) {
-            errorText.setText(errorLogin);
-            if (errorText.getAlpha() != 1) {
-                errorText.animate().alpha(1).start();
-                disposables.add(
-                        Single.just("")
-                                .delay(2, TimeUnit.SECONDS)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(s -> errorText.animate().alpha(0).start()));
-            }
+            showErrorMessage(R.string.login_failed_bad_u_p);
             return;
         }
-/*
         disposables.add(
-                usersDao.getMatching(
-                        userNameEditText.getEditableText().toString(), Optional.of(null), true)
+                ((UserSpecificDao)usersDao).getByEmail(userNameEditText.getEditableText().toString())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                list -> {
-                                    if (list.size() == 1) {
-                                        userData = list.get(0);
-                                        signInListener.signIn(userData);
+                                opt -> {
+                                    if (opt.isPresent()) {
+                                        userData = opt.get();
+                                        disableAll();
+                                        loginButton.setVisibility(View.INVISIBLE);
+                                        progressBar.show();
+                                        disposables.add(
+                                                Single.just(1)
+                                                        .delay(2, TimeUnit.SECONDS)
+                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                        .subscribe((s) -> {
+                                                            signInListener.signIn(userData);
+                                                            progressBar.hide();
+                                                        })
+                                        );
                                     } else {
-                                        errorText.setText(R.string.login_failed_bad_u_p);
-                                        if (errorText.getAlpha() != 1) {
-                                            errorText.animate().alpha(1).start();
-                                            disposables.add(
-                                                    Single.just("")
-                                                            .delay(2, TimeUnit.SECONDS)
-                                                            .observeOn(AndroidSchedulers.mainThread())
-                                                            .subscribe(s -> errorText.animate().alpha(0).start()));
-                                        }
+                                        showErrorMessage(R.string.login_failed_bad_u_p);
                                     }
                                 }
                         ));
-*/
-
-        signInListener.signIn(userData);  // // TODO: 05.05.2019 remove once password matching works
     }
 
-    private boolean validateEmail(String email) {
-        return !email.contains("@");
+//    private void populateFields(UserData userData) {
+//        userNameEditText.setText(userData.getName());
+//    }
+
+    private void showErrorMessage(@StringRes int errorMessageRes) {
+        errorText.setText(errorMessageRes);
+        if (errorText.getAlpha() != 1) {
+            errorText.animate().alpha(1).start();
+            disposables.add(
+                    Single.just("")
+                            .delay(2, TimeUnit.SECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(s -> errorText.animate().alpha(0).start()));
+        }
     }
 
-    private void populateFields(UserData userData) {
-        userNameEditText.setText(userData.getName());
+    private void disableAll() {
+        userNameEditText.setEnabled(false);
+        userPasswordEditText.setEnabled(false);
+//        createAccountButton.setEnabled(false);
+    }
+
+    @OnClick(R.id.tac_text)
+    void showTaC() {
+        Toast.makeText(getContext(), "You hereby agree with our terms.", Toast.LENGTH_LONG).show();
+    }
+
+    @OnClick(R.id.pp_text)
+    void showPrivacyPolicy() {
+        Toast.makeText(getContext(), "You trust us with your data.", Toast.LENGTH_LONG).show();
     }
 }

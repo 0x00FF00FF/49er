@@ -43,6 +43,7 @@
             android:drawableLeft="@drawable/icon_path_lock"
             android:drawableStart="@drawable/icon_path_lock"
             android:layout_marginTop="8dp"
+            android:imeOptions="actionDone"
             app:layout_constraintStart_toStartOf="@id/user_name_edit_text"
             app:layout_constraintEnd_toEndOf="@id/user_name_edit_text"
             app:layout_constraintTop_toBottomOf="@id/user_name_edit_text"
@@ -77,6 +78,23 @@
             app:layout_constraintTop_toBottomOf="@id/login_floating_button"
             app:layout_constraintBottom_toTopOf="@+id/tac_text"
             tools:text="@string/login_failed_bad_u_p"
+    />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progress_circular"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/pureWhite"
+            android:indeterminateDuration="100"
+            android:indeterminateBehavior="repeat"
+            android:background="@android:color/transparent"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/login_floating_button"
+            app:layout_constraintEnd_toEndOf="@id/login_floating_button"
+            app:layout_constraintTop_toTopOf="@id/login_floating_button"
+            app:layout_constraintBottom_toBottomOf="@id/login_floating_button"
+            style="?android:attr/progressBarStyleLarge"
     />
 
     <androidx.appcompat.widget.AppCompatTextView

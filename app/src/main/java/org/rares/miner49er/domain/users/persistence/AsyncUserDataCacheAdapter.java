@@ -19,7 +19,9 @@ import java.util.List;
 
 public class AsyncUserDataCacheAdapter
         extends AbstractAsyncCacheAdapter
-        implements AsyncGenericDao<UserData> {
+        implements AsyncGenericDao<UserData>,
+        UserSpecificDao
+{
 
     private AsyncGenericDao<UserData> dao = AsyncGenericDaoFactory.ofType(UserData.class);
     private final Cache<UserData> userDataCache = cache.getCache(UserData.class);
@@ -72,7 +74,7 @@ public class AsyncUserDataCacheAdapter
 
     @Override
     public Single<List<UserData>> getMatching(String term, Optional<Long> parentId, boolean lazy) {
-        return lazy ?
+        return lazy ?   // this breaks "contract" | <- code smell
                 Single.just(ModelUtil.getMatching(userDataCache.getData(Optional.of(null)), term)) :
                 dao.getMatching(term, parentId, false).subscribeOn(Schedulers.io());
     }
@@ -162,6 +164,16 @@ public class AsyncUserDataCacheAdapter
         return  projects;
     }
 
+// ----
 
-
+    @Override
+    public Single<Optional<UserData>> getByEmail(String email) {
+        List<UserData> users = userDataCache.getData(Optional.of(null));
+        for(UserData ud: users){
+            if (ud.getEmail().equalsIgnoreCase(email)) {
+                return Single.just(Optional.of(ud));
+            }
+        }
+        return ((UserSpecificDao)dao).getByEmail(email);
+    }
 }

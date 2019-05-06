@@ -20,7 +20,7 @@ import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.List;
 
-public class AsyncUsersDao implements AsyncGenericDao<UserData> {
+public class AsyncUsersDao implements AsyncGenericDao<UserData>, UserSpecificDao {
 
     public static AsyncGenericDao<UserData> getInstance() {
         return INSTANCE;
@@ -46,6 +46,17 @@ public class AsyncUsersDao implements AsyncGenericDao<UserData> {
                 .getMatchingNameAsync(storio, term)
                 .subscribeOn(Schedulers.io())
                 .map(daoConverter::dmToVm);
+    }
+
+    @Override
+    public Single<Optional<UserData>> getByEmail(String email) {
+        return eagerResolver
+                .getByEmailAsync(storio, email)
+                .subscribeOn(Schedulers.io())
+                .map(projectOptional ->
+                        projectOptional.isPresent() ?
+                                Optional.of(daoConverter.dmToVm(projectOptional.get())) :
+                                Optional.of(null));
     }
 
     @Override
