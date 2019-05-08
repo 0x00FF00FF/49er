@@ -42,9 +42,9 @@ public class LoginLandingFragment extends Fragment {
      * Interface that allows to act upon a user signing in or signing up in the app.
      */
     public interface LandingListener {
-        void signUp();
+        void showSignUp();
 
-        void signIn();
+        void showSignIn();
     }
 
     @Override
@@ -73,11 +73,11 @@ public class LoginLandingFragment extends Fragment {
 
     @OnClick(R.id.sign_up_button)
     void signUp() {
-        landingListener.signUp();
+        landingListener.showSignUp();
     }
 
     @OnClick(R.id.sign_in_button)
     void signIn() {
-        landingListener.signIn();
+        landingListener.showSignIn();
     }
 }

@@ -8,9 +8,9 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -166,7 +166,7 @@ public class HomeScrollingActivity
 //        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
 //        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
 
-        toolbar.inflateMenu(R.menu.menu_home);
+//        toolbar.inflateMenu(R.menu.menu_home);
         setSupportActionBar(toolbar);
 
         unbinder = ButterKnife.bind(this);
@@ -230,7 +230,6 @@ public class HomeScrollingActivity
             }
         });*/
 
-
     }
 
     //    @OnClick(R.id.fab)
@@ -263,22 +262,46 @@ public class HomeScrollingActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+            if (ViewModelCache.getInstance().loggedInUser == null) {
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void inflateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_home, menu);
         // fixme
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0, R.string.action_add_project);
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0, 0);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflateOptionsMenu(menu);
         return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        // hw menu key on older phones shows the menu even if no user is logged in.
+        MenuItem settingsItem = menu.findItem(R.id.action_settings);
+
+        if (ViewModelCache.getInstance().loggedInUser == null) {
+            menu.removeItem(R.id.action_add_project);
+            settingsItem.setEnabled(false);
+            return true;
+        } else {
+            if (settingsItem != null && !settingsItem.isEnabled()) {
+                menu.clear();
+                inflateOptionsMenu(menu);
+            }
+        }
+
         super.onPrepareOptionsMenu(menu);
-//        MenuItem removeItem = menu.findItem(R.id.action_remove);
-//        if (removeItem != null) {
-//            removeItem.setEnabled(false);
-//        }
         return true;
     }
 
@@ -299,12 +322,6 @@ public class HomeScrollingActivity
     @Override
     public void onProjectsListShrink() {
 //        flingBarUp();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.e(TAG, "onTouchEvent");
-        return super.onTouchEvent(event);
     }
 
     private void setupRV() {
@@ -583,7 +600,7 @@ public class HomeScrollingActivity
 
 
     @Override
-    public void signUp() {
+    public void showSignUp() {
         if (signUpFragment == null) {
             signUpFragment = SignUpFragment.newInstance();
         }
@@ -596,7 +613,7 @@ public class HomeScrollingActivity
     }
 
     @Override
-    public void signIn() {
+    public void showSignIn() {
         if (signInFragment == null) {
             signInFragment = SignInFragment.newInstance();
         }
