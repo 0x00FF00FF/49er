@@ -3,12 +3,17 @@ package org.rares.miner49er.ui.fragments.login;
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
@@ -19,6 +24,7 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
+import butterknife.BindFont;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -72,6 +78,9 @@ public class SignUpFragment extends Fragment {
 
     @BindView(R.id.progress_circular)
     ContentLoadingProgressBar progressBar;
+
+    @BindFont(R.font.futura_book_bt)
+    Typeface passwordTypeface;
 
     private int PICK_IMAGE = 14;
 
@@ -130,6 +139,7 @@ public class SignUpFragment extends Fragment {
             }
             return false;
         });
+        userPasswordEditText.setOnTouchListener(passwordPeekListener);
     }
 
     @Override
@@ -141,7 +151,7 @@ public class SignUpFragment extends Fragment {
         unbinder = null;
     }
 
-    @OnClick(R.id.user_image_hint_text)
+    @OnClick({R.id.user_image_hint_text, R.id.user_image})
     void addImage() {
         if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
             disposables.add(rxPermissions.request(permission.READ_EXTERNAL_STORAGE/*, permission.WRITE_EXTERNAL_STORAGE*/)
@@ -299,5 +309,43 @@ public class SignUpFragment extends Fragment {
         userPasswordEditText.setEnabled(true);
 //        createAccountButton.setEnabled(true);
     }
+
+    private PasswordTransformationMethod passwordOn = new PasswordTransformationMethod();
+    private OnTouchListener passwordPeekListener = new OnTouchListener() {
+        private int selectionStart;
+        private int selectionEnd;
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (!v.equals(userPasswordEditText)) {
+                return false;
+            }
+            int DRAWABLE_RIGHT = 2;
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getRawX() >= (
+                        userPasswordEditText.getRight() - userPasswordEditText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                    userPasswordEditText.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
+                    userPasswordEditText.setTypeface(passwordTypeface);
+                    userPasswordEditText.setTransformationMethod(null);
+                    selectionStart = userPasswordEditText.getSelectionStart();
+                    selectionEnd = userPasswordEditText.getSelectionEnd();
+                    return true;
+                }
+            }
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getRawX() >= (
+                        userPasswordEditText.getRight() - userPasswordEditText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                    userPasswordEditText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    userPasswordEditText.setTransformationMethod(passwordOn);
+                    if (selectionStart == selectionEnd && selectionStart == 0) {
+                        selectionStart = userPasswordEditText.getEditableText().length();
+                        selectionEnd = selectionStart;
+                    }
+                    userPasswordEditText.setSelection(selectionStart, selectionEnd);
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
 
 }
