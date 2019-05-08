@@ -31,6 +31,7 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.concurrent.TimeUnit;
 
@@ -165,6 +166,7 @@ public class SignInFragment extends Fragment {
                                         userData = opt.get();
                                         disableAll();
                                         loginButton.setIcon(getContext().getResources().getDrawable(R.drawable.icon_path_placeholder));
+                                        loginButton.setIconSize((int) UiUtil.pxFromDp(getContext(), 48));
                                         loginButton.shrink();
                                         progressBar.show();
                                         disposables.add(

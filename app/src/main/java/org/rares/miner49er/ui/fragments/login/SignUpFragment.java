@@ -39,6 +39,7 @@ import org.rares.miner49er.ui.custom.validation.FormValidationException;
 import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.FileUtils;
 import org.rares.miner49er.util.TextUtils;
+import org.rares.miner49er.util.UiUtil;
 
 import java.util.concurrent.TimeUnit;
 
@@ -214,6 +215,8 @@ public class SignUpFragment extends Fragment {
                                                                 }
                                                                 disableAll();
                                                                 createAccountButton.setIcon(getContext().getResources().getDrawable(R.drawable.icon_path_placeholder));
+                                                                createAccountButton.setIconSize((int) UiUtil.pxFromDp(getContext(), 48));
+                                                                createAccountButton.setPadding(0,0,0,0);    // because of the padding set in the xml
                                                                 createAccountButton.shrink();
                                                                 progressBar.show();
                                                                 disposables.add(
