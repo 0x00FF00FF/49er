@@ -69,12 +69,6 @@ public class SignUpFragment extends Fragment {
     @BindView(R.id.error_text)
     AppCompatTextView errorText;
 
-    @BindView(R.id.tac_text)
-    AppCompatTextView tocTextView;
-
-    @BindView(R.id.pp_text)
-    AppCompatTextView ppTextView;
-
     @BindView(R.id.progress_circular)
     ContentLoadingProgressBar progressBar;
 
@@ -219,7 +213,8 @@ public class SignUpFragment extends Fragment {
                                                                     errorText.setAlpha(0);
                                                                 }
                                                                 disableAll();
-                                                                createAccountButton.setVisibility(View.INVISIBLE);
+                                                                createAccountButton.setIcon(getContext().getResources().getDrawable(R.drawable.icon_path_placeholder));
+                                                                createAccountButton.shrink();
                                                                 progressBar.show();
                                                                 disposables.add(
                                                                         Single.just(1)
@@ -292,7 +287,7 @@ public class SignUpFragment extends Fragment {
         userEmailEditText.setEnabled(false);
         userNameEditText.setEnabled(false);
         userPasswordEditText.setEnabled(false);
-//        createAccountButton.setEnabled(false);
+        createAccountButton.setEnabled(false);
     }
 
     private void enableAll() {
@@ -302,13 +297,4 @@ public class SignUpFragment extends Fragment {
 //        createAccountButton.setEnabled(true);
     }
 
-    @OnClick(R.id.tac_text)
-    void showTaC() {
-        Toast.makeText(getContext(), "You hereby agree with our terms.", Toast.LENGTH_LONG).show();
-    }
-
-    @OnClick(R.id.pp_text)
-    void showPrivacyPolicy() {
-        Toast.makeText(getContext(), "You trust us with your data.", Toast.LENGTH_LONG).show();
-    }
 }

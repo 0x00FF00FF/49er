@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -54,12 +53,6 @@ public class SignInFragment extends Fragment {
 
     @BindView(R.id.error_text)
     AppCompatTextView errorText;
-
-    @BindView(R.id.tac_text)
-    AppCompatTextView tocTextView;
-
-    @BindView(R.id.pp_text)
-    AppCompatTextView ppTextView;
 
     @BindView(R.id.progress_circular)
     ContentLoadingProgressBar progressBar;
@@ -171,7 +164,8 @@ public class SignInFragment extends Fragment {
                                     if (opt.isPresent()) {
                                         userData = opt.get();
                                         disableAll();
-                                        loginButton.setVisibility(View.INVISIBLE);
+                                        loginButton.setIcon(getContext().getResources().getDrawable(R.drawable.icon_path_placeholder));
+                                        loginButton.shrink();
                                         progressBar.show();
                                         disposables.add(
                                                 Single.just(1)
@@ -208,16 +202,7 @@ public class SignInFragment extends Fragment {
     private void disableAll() {
         userNameEditText.setEnabled(false);
         userPasswordEditText.setEnabled(false);
-//        createAccountButton.setEnabled(false);
+        loginButton.setEnabled(false);
     }
 
-    @OnClick(R.id.tac_text)
-    void showTaC() {
-        Toast.makeText(getContext(), "You hereby agree with our terms.", Toast.LENGTH_LONG).show();
-    }
-
-    @OnClick(R.id.pp_text)
-    void showPrivacyPolicy() {
-        Toast.makeText(getContext(), "You trust us with your data.", Toast.LENGTH_LONG).show();
-    }
 }

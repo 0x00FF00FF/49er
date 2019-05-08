@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import butterknife.BindView;
@@ -80,15 +79,5 @@ public class LoginLandingFragment extends Fragment {
     @OnClick(R.id.sign_in_button)
     void signIn() {
         landingListener.signIn();
-    }
-
-    @OnClick(R.id.tac_text)
-    void showTaC() {
-        Toast.makeText(getContext(), "You hereby agree with our terms.", Toast.LENGTH_LONG).show();
-    }
-
-    @OnClick(R.id.pp_text)
-    void showPrivacyPolicy() {
-        Toast.makeText(getContext(), "You trust us with your data.", Toast.LENGTH_LONG).show();
     }
 }
