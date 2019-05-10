@@ -83,11 +83,11 @@
             android:id="@+id/tac_pp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:name="org.rares.miner49er.ui.fragments.login.TacPpFragment"
+            android:name="org.rares.miner49er.ui.fragments.login.simple.TacPpFragment"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:context="org.rares.miner49er.ui.fragments.login.TacPpFragment"
+            tools:context="org.rares.miner49er.ui.fragments.login.simple.TacPpFragment"
             tools:layout="@layout/fragment_tac_pp"
     />
 

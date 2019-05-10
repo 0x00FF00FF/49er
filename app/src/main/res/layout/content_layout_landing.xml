@@ -1,16 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/container"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/signup_container"
 >
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/welcome_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome!"
+            android:textSize="54sp"
+            android:layout_marginTop="100dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/app_logo_image"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="36dp"
+            android:src="@drawable/skull"
+            app:layout_constraintTop_toBottomOf="@id/welcome_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/guideline_vertical_middle"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5"
+    />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/sign_up_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:iconPadding="0dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginRight="24dp"
+            android:backgroundTint="@color/pureWhite"
+            android:background="@color/pureWhite"
+            android:text="@string/sign_up"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/app_logo_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_vertical_middle"
+    />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/sign_in_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/landing_button_margin"
+            android:layout_marginRight="@dimen/landing_button_margin"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:iconPadding="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginLeft="24dp"
+            android:backgroundTint="@color/pureWhite"
+            android:background="@color/pureWhite"
+            android:text="@string/sign_in"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/app_logo_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline_vertical_middle"
+    />
+
+
+    <!--signup-->
     <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/user_image"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_marginTop="@dimen/sign_up_user_image_top_margin"
+            android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -29,10 +105,10 @@
             android:background="@drawable/circle_semitransparent_background"
             android:gravity="center"
             android:text="@string/hint_add_image"
+            android:visibility="gone"
             app:layout_constraintTop_toTopOf="@id/user_image"
             app:layout_constraintStart_toStartOf="@id/user_image"
             app:layout_constraintEnd_toEndOf="@id/user_image"
-            tools:alpha="1"
     />
 
     <androidx.appcompat.widget.AppCompatEditText
@@ -46,6 +122,7 @@
             android:textColor="@color/indigo.100"
             android:maxLines="1"
             android:inputType="textPersonName"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_image"
@@ -63,6 +140,7 @@
             android:textColor="@color/indigo.100"
             android:maxLines="1"
             android:inputType="textEmailAddress"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_name_edit_text"
@@ -83,6 +161,7 @@
             android:textColor="@color/indigo.100"
             android:maxLines="1"
             android:imeOptions="actionDone"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_email_edit_text"
@@ -91,18 +170,19 @@
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/create_account_btn"
-            android:layout_width="wrap_content"
+            android:layout_width="190dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="36dp"
             android:gravity="center"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             app:iconPadding="0dp"
             android:backgroundTint="@color/pureWhite"
             android:background="@color/pureWhite"
             android:text="@string/create_account_text"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/user_password_edit_text"
@@ -120,14 +200,14 @@
             app:layout_constraintStart_toStartOf="@id/create_account_btn"
             app:layout_constraintEnd_toEndOf="@id/create_account_btn"
             app:layout_constraintTop_toBottomOf="@id/create_account_btn"
-            app:layout_constraintBottom_toTopOf="@+id/tac_pp"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="@string/create_user_failed_user_exists"
     />
 
     <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/progress_circular"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="0dp"
             android:indeterminate="true"
             android:indeterminateTint="?colorOnPrimary"
             android:indeterminateDuration="100"
@@ -142,16 +222,27 @@
             style="?android:attr/progressBarStyleLarge"
     />
 
-    <fragment
-            android:id="@+id/tac_pp"
-            android:layout_width="match_parent"
+    <!--signin-->
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/login_floating_button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:name="org.rares.miner49er.ui.fragments.login.simple.TacPpFragment"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="36dp"
+            android:gravity="center"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:iconPadding="0dp"
+            android:backgroundTint="@color/pureWhite"
+            android:background="@color/pureWhite"
+            android:textColor="@color/color_selector_efab_text"
+            android:text="@string/login_text"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:context="org.rares.miner49er.ui.fragments.login.simple.TacPpFragment"
-            tools:layout="@layout/fragment_tac_pp"
+            app:layout_constraintTop_toBottomOf="@id/user_password_edit_text"
     />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

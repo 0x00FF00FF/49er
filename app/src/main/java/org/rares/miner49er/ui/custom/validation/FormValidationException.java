@@ -8,4 +8,6 @@ import java.util.Map;
 public class FormValidationException extends IllegalStateException {
     @Getter
     private Map<Object, String> invalidFields = new HashMap<>();
+    @Getter
+    private Map<Object, Integer> invalidFieldsInt = new HashMap<>();
 }

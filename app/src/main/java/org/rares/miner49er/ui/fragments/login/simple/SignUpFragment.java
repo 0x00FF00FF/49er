@@ -1,4 +1,4 @@
-package org.rares.miner49er.ui.fragments.login;
+package org.rares.miner49er.ui.fragments.login.simple;
 
 import android.Manifest.permission;
 import android.content.Context;
