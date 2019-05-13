@@ -17,6 +17,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.transition.ChangeBounds;
+import androidx.transition.ChangeImageTransform;
 import androidx.transition.Fade;
 import androidx.transition.Transition;
 import androidx.transition.TransitionListenerAdapter;
@@ -216,7 +217,10 @@ public class LoginLandingConstraintSetFragment extends Fragment {
         TransitionSet autoTransition = new TransitionSet();
         autoTransition
                 .addListener(fadeListener)
+                .addTransition(new Fade(Fade.IN))
+                .addTransition(new Fade(Fade.OUT))
                 .addTransition(new ChangeBounds())
+                .addTransition(new ChangeImageTransform())
                 .setOrdering(TransitionSet.ORDERING_TOGETHER);
 
         autoTransition.setDuration(duration);
@@ -252,7 +256,10 @@ public class LoginLandingConstraintSetFragment extends Fragment {
         TransitionSet autoTransition = new TransitionSet();
         autoTransition
                 .addListener(fadeListener)
+                .addTransition(new Fade(Fade.IN))
+                .addTransition(new Fade(Fade.OUT))
                 .addTransition(new ChangeBounds())
+                .addTransition(new ChangeImageTransform())
                 .setOrdering(TransitionSet.ORDERING_TOGETHER);
         autoTransition.setDuration(duration);
 
@@ -283,6 +290,7 @@ public class LoginLandingConstraintSetFragment extends Fragment {
         autoTransition
                 .addListener(fadeListener)
                 .addTransition(new ChangeBounds())
+                .addTransition(new ChangeImageTransform())
                 .addTransition(new Fade(Fade.OUT))
                 .addTransition(new Fade(Fade.IN))
                 .setOrdering(TransitionSet.ORDERING_TOGETHER);

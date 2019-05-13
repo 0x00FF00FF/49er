@@ -2,6 +2,7 @@
     <string name="app_name">Miner 49er</string>
 
     <!--login-->
+    <string name="welcome">Welcome!</string>
 
     <string name="login_failed_bad_u_p">Could not log you in. \nPlease check your credentials and try again.</string>
     <string name="login_failed_network">Could not log you in. \nPlease check your network availability.</string>
