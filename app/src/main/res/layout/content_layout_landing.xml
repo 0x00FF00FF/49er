@@ -10,7 +10,7 @@
             android:id="@+id/welcome_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome!"
+            android:text="@string/welcome"
             android:textSize="54sp"
             android:layout_marginTop="100dp"
             app:layout_constraintTop_toTopOf="parent"
