@@ -15,8 +15,7 @@
             android:layout_height="?attr/actionBarSize"
             app:layout_constraintTop_toTopOf="parent"
             tools:popupTheme="@style/Custom.Widget.ActionButton.Overflow.Menu"
-    >
-    </androidx.appcompat.widget.Toolbar>
+    />
 
     <androidx.constraintlayout.widget.Guideline
             android:layout_width="0dp"
@@ -72,19 +71,7 @@
     </LinearLayout>
 
     <org.rares.miner49er.ui.custom.mask.OverlayMask
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
-            android:layout_marginStart="@dimen/_list_item_invisible_margin"
-            android:layout_marginRight="@dimen/_list_item_invisible_margin"
-            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
-            app:layout_constraintTop_toBottomOf="@id/guideline_horizontal_end"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-    />
-
-    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:id="@+id/top_overlay_mask"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:rotation="180"
@@ -93,6 +80,20 @@
             android:layout_marginRight="@dimen/_list_item_invisible_margin"
             android:layout_marginEnd="@dimen/_list_item_invisible_margin"
             app:layout_constraintTop_toTopOf="@id/scroll_views_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:id="@+id/bottom_overlay_mask"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintTop_toBottomOf="@id/guideline_horizontal_end"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
     />

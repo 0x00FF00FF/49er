@@ -22,6 +22,7 @@ private static final String TAG = UserData.class.getSimpleName();
     private String email;
     private String picture;
     private String apiKey;
+    private String password;
     private boolean active;
 
     public boolean compareContents(UserData otherData) {
@@ -30,6 +31,7 @@ private static final String TAG = UserData.class.getSimpleName();
                 (email == null ? "" : email).equals(otherData.email == null ? "" : otherData.email) &&
                 (apiKey == null ? "" : apiKey).equals(otherData.apiKey == null ? "" : otherData.apiKey) &&
                 (name == null ? "" : name).equals(otherData.getName() == null ? "" : otherData.getName()) &&
+                (password == null ? "" : password).equals(otherData.getPassword() == null ? "" : otherData.getPassword()) &&
                 (picture == null ? "" : picture).equals(otherData.picture == null ? "" : otherData.picture);
     }
 
@@ -39,6 +41,7 @@ private static final String TAG = UserData.class.getSimpleName();
         role = newUserData.role;
         name = newUserData.name;
         email = newUserData.email;
+        password = newUserData.password;
         picture = newUserData.picture;
         apiKey = newUserData.apiKey;
     }

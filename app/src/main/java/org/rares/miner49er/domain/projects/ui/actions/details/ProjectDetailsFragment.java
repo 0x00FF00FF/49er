@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import org.rares.miner49er.R;
 import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditFormFragment;
 
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
@@ -49,6 +50,7 @@ public class ProjectDetailsFragment extends ProjectEditFormFragment {
         editTextProjectDescription.setEnabled(false);
         editTextProjectIcon.setEnabled(false);
         editTextProjectOwner.setEnabled(false);
+        rootView.findViewById(R.id.user_list_container).setEnabled(false);
         return rootView;
     }
 }

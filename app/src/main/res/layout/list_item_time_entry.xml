@@ -7,6 +7,7 @@
               android:gravity="center|start"
               android:layout_marginStart="@dimen/_list_item_corner_radius_small"
               android:layout_marginLeft="@dimen/_list_item_corner_radius_small"
+              android:foreground="?selectableItemBackground"
 >
     <TextView
             android:id="@+id/user_initials_tv"

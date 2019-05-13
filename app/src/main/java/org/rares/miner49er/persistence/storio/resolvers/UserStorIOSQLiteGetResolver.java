@@ -61,6 +61,10 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
         return _getAll(storIOSQLite, projectId).executeAsBlocking();
     }
 
+    public User getByEmail(StorIOSQLite storIOSQLite, String term) {
+        return _getByEmail(storIOSQLite, term).executeAsBlocking();
+    }
+
     ////
 
     public Single<Optional<User>> getByIdAsync(StorIOSQLite storIOSQLite, long id) {
@@ -84,6 +88,11 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
         return _getAll(storIOSQLite, projectId).asRxSingle();
     }
 
+    public Single<Optional<User>> getByEmailAsync(StorIOSQLite storIOSQLite, String term) {
+        return _getByEmail(storIOSQLite, term).asRxSingle();
+    }
+
+    ////
 
     private PreparedGetObject<User> _getById(StorIOSQLite storIOSQLite, long id) {
         return storIOSQLite
@@ -164,5 +173,18 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
             }
         }
         return teamIds;
+    }
+
+    private PreparedGetObject<User> _getByEmail(StorIOSQLite storIOSQLite, String term) {
+        return storIOSQLite
+                .get()
+                .object(User.class)
+                .withQuery(
+                        Query.builder()
+                                .table(UserTable.NAME)
+                                .where(UserTable.EMAIL_COLUMN + " = ? ")
+                                .whereArgs(term)
+                                .build())
+                .prepare();
     }
 }

@@ -288,7 +288,6 @@ public abstract class ProjectActionFragment
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
-                        Log.d(TAG, "onMenuItemClick() called with: item = [" + item + "]");
                         if (R.id.upload_local == item.getItemId()) {
                             if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
                                 disposables.add(rxPermissions.request(permission.READ_EXTERNAL_STORAGE/*, permission.WRITE_EXTERNAL_STORAGE*/)

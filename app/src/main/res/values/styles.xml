@@ -131,6 +131,21 @@
         <item name="android:textColor">@color/android_color_dim_foreground_dark</item>
     </style>
 
+    <!--login forms-->
+    <style name="LoginEditText">
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textColor">@color/indigo.100</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:inputType">textEmailAddress</item>
+    </style>
+    <style name="LoginEditText.Password" parent="LoginEditText">
+        <item name="android:inputType">textPassword</item>
+    </style>
+
     <!--forms text input-->
     <style name="Custom.Widget.MaterialComponents.TextInputLayout.OutlinedBox"
            parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -187,6 +202,7 @@
     <style name="TempCardViewStyle" parent="CardView.Dark">
         <item name="cardBackgroundColor">@color/indigo_100_blacked</item>
         <item name="cardCornerRadius">4dp</item>
+        <item name="android:foreground">?selectableItemBackground</item>
     </style>
 
     <style name="TempCardViewStyle.Top" parent="TempCardViewStyle">

@@ -8,9 +8,9 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,11 +43,15 @@ import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
+import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.rares.miner49er.ui.custom.mask.OverlayMask;
+import org.rares.miner49er.ui.fragments.login.animated.LoginLandingConstraintSetFragment;
+import org.rares.miner49er.ui.fragments.login.simple.SignInFragment.SignInListener;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.ArrayList;
@@ -59,6 +63,9 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
+//        LandingListener,
+        SignInListener,
+//        SignUpListener,
         ProjectsResizeListener,
         DbUpdateFinishedListener,
         Messenger {
@@ -99,6 +106,11 @@ public class HomeScrollingActivity
     @BindView(R.id.scroll_views_container)
     LinearLayout scrollViewsContainer;
 
+    @BindView(R.id.top_overlay_mask)
+    OverlayMask topOverlay;
+    @BindView(R.id.bottom_overlay_mask)
+    OverlayMask bottomOverlay;
+
     @BindDimen(R.dimen.projects_rv_collapsed_width)
 //    @BindDimen(R.dimen.projects_rv_collapsed_width_with_name)
             int rvCollapsedWidth;
@@ -111,6 +123,11 @@ public class HomeScrollingActivity
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
 
+    private LoginLandingConstraintSetFragment llFrag = null;
+//    private LoginLandingFragment loginLandingFragment = null;
+//    private SignInFragment signInFragment = null;
+//    private SignUpFragment signUpFragment = null;
+
     Unbinder unbinder;
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
@@ -120,7 +137,8 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
-        if (ViewModelCache.getInstance().lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
+        ViewModelCache cache = ViewModelCache.getInstance();
+        if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
         EntityOptimizer entityOptimizer = new EntityOptimizer();
@@ -145,13 +163,40 @@ public class HomeScrollingActivity
 //        toolbar.setNavigationIcon(R.drawable.icon_path_left_arrow);
 //        toolbar.setNavigationContentDescription(R.string._toolbar_back_button_description);
 
-        toolbar.inflateMenu(R.menu.menu_home);
+//        toolbar.inflateMenu(R.menu.menu_home);
         setSupportActionBar(toolbar);
 
         unbinder = ButterKnife.bind(this);
 //        registerUnbinder(unbinder);
 
         setupRV();
+
+        if (cache.loggedInUser == null) {
+            scrollViewsContainer.setVisibility(View.GONE);
+            toolbar.setVisibility(View.GONE);
+            topOverlay.setVisibility(View.GONE);
+            bottomOverlay.setVisibility(View.GONE);
+            fab2.setVisibility(View.GONE);
+
+            /*if (loginLandingFragment == null) {
+                loginLandingFragment = LoginLandingFragment.newInstance();
+            }
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+            */
+            llFrag = (LoginLandingConstraintSetFragment) getSupportFragmentManager().findFragmentByTag(LoginLandingConstraintSetFragment.TAG);
+            if (llFrag == null) {
+                llFrag = LoginLandingConstraintSetFragment.newInstance();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .add(R.id.main_container, llFrag, LoginLandingConstraintSetFragment.TAG)
+                        .commit();
+            }
+
+        }
 
         fab2.setOnClickListener(new View.OnClickListener() {
 
@@ -192,7 +237,6 @@ public class HomeScrollingActivity
             }
         });*/
 
-
     }
 
     //    @OnClick(R.id.fab)
@@ -225,22 +269,46 @@ public class HomeScrollingActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+            if (ViewModelCache.getInstance().loggedInUser == null) {
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void inflateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_home, menu);
         // fixme
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0, R.string.action_add_project);
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0, 0);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflateOptionsMenu(menu);
         return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        // hw menu key on older phones shows the menu even if no user is logged in.
+        MenuItem settingsItem = menu.findItem(R.id.action_settings);
+
+        if (ViewModelCache.getInstance().loggedInUser == null) {
+            menu.removeItem(R.id.action_add_project);
+            settingsItem.setEnabled(false);
+            return true;
+        } else {
+            if (settingsItem != null && !settingsItem.isEnabled()) {
+                menu.clear();
+                inflateOptionsMenu(menu);
+            }
+        }
+
         super.onPrepareOptionsMenu(menu);
-//        MenuItem removeItem = menu.findItem(R.id.action_remove);
-//        if (removeItem != null) {
-//            removeItem.setEnabled(false);
-//        }
         return true;
     }
 
@@ -261,12 +329,6 @@ public class HomeScrollingActivity
     @Override
     public void onProjectsListShrink() {
 //        flingBarUp();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.e(TAG, "onTouchEvent");
-        return super.onTouchEvent(event);
     }
 
     private void setupRV() {
@@ -379,6 +441,30 @@ public class HomeScrollingActivity
                 return;
             }
         }
+        if (llFrag != null && ViewModelCache.getInstance().loggedInUser == null) {
+            if (llFrag.onBackPressed()) {
+                return;
+            }
+        }
+/*        if (signInFragment != null && signInFragment.isResumed()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(signInFragment)
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+            return;
+        }
+
+        if (signUpFragment != null && signUpFragment.isResumed()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(signUpFragment)
+                    .add(R.id.main_container, loginLandingFragment, LoginLandingFragment.TAG)
+                    .commit();
+            return;
+        }*/
         super.onBackPressed();
     }
 
@@ -409,7 +495,6 @@ public class HomeScrollingActivity
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart() called");
         super.onStart();
 
         projectsUiOps.setupRepository();
@@ -441,6 +526,8 @@ public class HomeScrollingActivity
         NetworkingService.INSTANCE.end();
 
         unbinder.unbind();
+
+        llFrag = null;
 
         timeEntriesUiOps.shutdown();
         timeEntriesUiOps = null;
@@ -524,4 +611,63 @@ public class HomeScrollingActivity
         Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
         startService(cacheFeederServiceIntent);
     }
+
+/*
+    @Override
+    public void showSignUp() {
+        if (signUpFragment == null) {
+            signUpFragment = SignUpFragment.newInstance();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(loginLandingFragment)
+                .add(R.id.main_container, signUpFragment, SignUpFragment.TAG)
+                .commit();
+    }
+
+    @Override
+    public void showSignIn() {
+        if (signInFragment == null) {
+            signInFragment = SignInFragment.newInstance();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(loginLandingFragment)
+                .add(R.id.main_container, signInFragment, SignInFragment.TAG)
+                .commit();
+    }
+*/
+    @Override
+    public void signIn(UserData userData) {
+        ViewModelCache.getInstance().loggedInUser = userData;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+//                .remove(signInFragment)
+                .remove(llFrag)
+                .commit();
+        scrollViewsContainer.setVisibility(View.VISIBLE);
+        toolbar.setVisibility(View.VISIBLE);
+        topOverlay.setVisibility(View.VISIBLE);
+        bottomOverlay.setVisibility(View.VISIBLE);
+        fab2.setVisibility(View.VISIBLE);
+    }
+/*
+    @Override
+    public void signUp(UserData userData) {
+        ViewModelCache.getInstance().loggedInUser = userData;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                .remove(signUpFragment)
+                .commit();
+        scrollViewsContainer.setVisibility(View.VISIBLE);
+        toolbar.setVisibility(View.VISIBLE);
+        topOverlay.setVisibility(View.VISIBLE);
+        bottomOverlay.setVisibility(View.VISIBLE);
+        fab2.setVisibility(View.VISIBLE);
+    }
+*/
 }

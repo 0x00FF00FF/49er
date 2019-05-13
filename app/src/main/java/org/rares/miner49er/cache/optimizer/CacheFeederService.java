@@ -91,10 +91,10 @@ public class CacheFeederService extends IntentService /*implements EntityOptimiz
                 .limit(daoList.size())
                 .count()
                 .subscribe(x -> {
-                    Optional<UserData> userDataOptional = uDao.get(12, true).blockingGet();
-                    if (userDataOptional.isPresent()) {
-                        cache.loggedInUser = userDataOptional.get();   ///
-                    }
+//                    Optional<UserData> userDataOptional = uDao.get(12, true).blockingGet();
+//                    if (userDataOptional.isPresent()) {
+//                        cache.loggedInUser = userDataOptional.get();   ///
+//                    }
                     cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
                     linkData();
                 })
