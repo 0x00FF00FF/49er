@@ -32,8 +32,8 @@ android {
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId 'org.rares.miner49er'
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName '1.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -58,6 +58,25 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    sourceSets {
+        String sharedTestDir = 'src/sharedTest/java'
+        test {
+            java.srcDir sharedTestDir
+        }
+        androidTest {
+            java.srcDir sharedTestDir
+        }
+    }
+
+    testOptions.unitTests {
+        includeAndroidResources = true
+
+        all {
+            testLogging {
+                events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+            }
+        }
+    }
 }
 // Configuration 'compile' is obsolete and has been replaced with 'implementation' and 'api'.
 dependencies {
@@ -65,66 +84,93 @@ dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     // included ratv_lib.aar here.
     // included date picker fork here.
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    implementation "androidx.legacy:legacy-support-v4:$androidxLegacySupportV4Version"
+    implementation "androidx.recyclerview:recyclerview:$androidxRecyclerViewVersion"
 
-//    implementation 'com.jakewharton:butterknife:8.8.1'
-//    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    implementation 'com.jakewharton:butterknife:10.1.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
-//    annotationProcessor 'libs/butterknife-compiler-8.8.1.jar'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    annotationProcessor 'androidx.annotation:annotation:1.0.2'  //  !
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha5'
-    implementation 'com.google.android.material:material:1.1.0-alpha04'
-    // alpha 5 accidentally my overflow menu background
-    testImplementation 'junit:junit:4.12'
-    compileOnly 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
-    implementation 'net.danlew:android.joda:2.9.9.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.okio:okio:1.14.1'
-    implementation 'com.squareup.moshi:moshi:1.6.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-moshi:2.4.0'
-    implementation 'com.pushtorefresh.storio3:sqlite:3.0.0'
-    implementation 'com.pushtorefresh.storio3:content-resolver:3.0.0'
-    implementation 'com.pushtorefresh.storio3:sqlite-annotations:3.0.0'
-    implementation 'com.pushtorefresh.storio3:content-resolver-annotations:3.0.0'
-    annotationProcessor 'com.pushtorefresh.storio3:sqlite-annotations-processor:3.0.0'
-    annotationProcessor 'com.pushtorefresh.storio3:content-resolver-annotations-processor:3.0.0'
-    implementation 'com.jakewharton.rxbinding2:rxbinding:2.1.1'
-    implementation 'com.jakewharton.rxbinding2:rxbinding-appcompat-v7:2.1.1'
-    implementation 'com.jakewharton.rxbinding2:rxbinding-recyclerview-v7:2.1.1'
-    //    implementation 'com.jakewharton.rxbinding2:rxbinding-design:2.1.1'
-    //    implementation 'net.orfjackal.retrolambda:retrolambda:2.5.4'
-    //    compile group: 'com.github.javafaker', name: 'javafaker', version: '0.14'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.1'
-    implementation 'com.github.bumptech.glide:glide:4.8.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.8.0'
-    implementation 'com.facebook.stetho:stetho:1.5.1'
-    implementation 'com.facebook.stetho:stetho-okhttp3:1.5.1'
-    implementation 'com.xwray:groupie:2.3.0'
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation 'de.hdodenhof:circleimageview:3.0.0'
-    implementation 'me.xdrop:fuzzywuzzy:1.2.0'
-    implementation 'com.github.tbruyelle:rxpermissions:0.10.2'
-    androidTestImplementation 'androidx.test:rules:1.2.0-beta01'
-//    implementation 'com.wdullaer:materialdatetimepicker:4.1.2'
-//    implementation 'com.github.bumptech.glide:recyclerview-integration:4.8.0'
-    /*implementation ('com.github.bumptech.glide:okhttp3-integration:4.8.0'){
+    implementation "com.jakewharton:butterknife:$butterKnifeVersion"
+    annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnifeCompilerVersion"
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    annotationProcessor "androidx.annotation:annotation:$androidxAnnotationProcessorVersion"  //  !
+    implementation "androidx.constraintlayout:constraintlayout:$androidxConstraintLayoutVersion"
+    implementation "com.google.android.material:material:$materialComponentsVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    implementation "net.danlew:android.joda:$jodaTimeVersion"
+    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion"
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.okio:okio:$okioVersion"
+    implementation "com.squareup.moshi:moshi:$moshiVersion"
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
+    implementation "com.pushtorefresh.storio3:sqlite:$storioVersion"
+    implementation "com.pushtorefresh.storio3:content-resolver:$storioVersion"
+    implementation "com.pushtorefresh.storio3:sqlite-annotations:$storioVersion"
+    implementation "com.pushtorefresh.storio3:content-resolver-annotations:$storioVersion"
+    annotationProcessor "com.pushtorefresh.storio3:sqlite-annotations-processor:$storioVersion"
+    annotationProcessor "com.pushtorefresh.storio3:content-resolver-annotations-processor:$storioVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-appcompat-v7:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-recyclerview-v7:$rxBindingVersion"
+    //    implementation "com.jakewharton.rxbinding2:rxbinding-design:2.1.1"
+    //    implementation "net.orfjackal.retrolambda:retrolambda:2.5.4"
+    //    compile group: "com.github.javafaker", name: "javafaker", version: "0.14"
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$leakCanaryVersion"
+    debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:$leakCanaryVersion"
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    implementation "com.github.bumptech.glide:okhttp3-integration:$glideVersion"
+    implementation "com.facebook.stetho:stetho:$stethoVersion"
+    implementation "com.facebook.stetho:stetho-okhttp3:$stethoVersion"
+    implementation "com.xwray:groupie:$groupieVersion"
+    implementation "com.android.support:multidex:$multiDexVersion"
+    implementation "de.hdodenhof:circleimageview:$circleImageViewVersion"
+    implementation "me.xdrop:fuzzywuzzy:$fuzzySearchVersion"
+    implementation "com.github.tbruyelle:rxpermissions:$rxPermissionsVersion"
+//    implementation "com.wdullaer:materialdatetimepicker:4.1.2"
+//    implementation "com.github.bumptech.glide:recyclerview-integration:4.8.0"
+    /*implementation ("com.github.bumptech.glide:okhttp3-integration:4.8.0"){
             exclude group: com.squareup.okhttp3, module: okhttp
-            //exclude group: 'glide-parent'
+            //exclude group: "glide-parent"
         }*/
+
+
+//    testImplementation "junit:junit:4.12"
+//    androidTestImplementation("androidx.test.espresso:espresso-core:3.1.0", {
+//        exclude group: "com.android.support", module: "support-annotations"
+//    })
+//    androidTestImplementation "androidx.test:rules:1.2.0-beta01"
+
+    androidTestImplementation "androidx.test:core:$androidxTestCoreVersion"        // - robolectric environment?
+//    androidTestImplementation "androidx.test:rules:$androidxTestRulesVersion"       //
+    androidTestImplementation "androidx.test:rules:$androidxTestRulesVersion"
+    androidTestImplementation "androidx.test:runner:$androidxTestRunnerVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxTestExtJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-accessibility:$androidxTestEspressoAccessibilityVersion"     //
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxTestEspressoCoreVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:$androidxTestEspressoContribVersion"       //
+    androidTestImplementation "androidx.test.espresso:espresso-intents:$androidxTestEspressoIntentsVersion"
+    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$androidxTestEspressoIdlingConcurrentVersion"       //
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$androidxTestEspressoIdlingResource"       //
+//    androidTestImplementation "androidx.test.espresso:espresso-web:$androidxTestEspressoWebVersion"       //
+
+//    androidTestImplementation "androidx.test.ext:truth:$androidxTestExtTruthVersion"
+//    androidTestImplementation "com.google.truth:truth:$googleTruthVersion"     // 0.42 requires com.google.code.findbugs:jsr305:3.0.2
+    androidTestImplementation "org.hamcrest:hamcrest-library:$hamcrestLibraryVersion"
+    androidTestImplementation "androidx.test.uiautomator:uiautomator:$androidxTestUiAutomatorVersion"
+
+    testImplementation "androidx.test:runner:$androidxTestRunnerVersion"
+    testImplementation "androidx.test.ext:junit:$androidxTestExtJunitVersion"
+    testImplementation "androidx.test.espresso:espresso-intents:$androidxTestEspressoIntentsVersion"
+    testImplementation "androidx.test.espresso:espresso-core:$androidxTestEspressoCoreVersion"
+//    testImplementation "androidx.test.ext:truth:$androidxTestExtTruthVersion"   // 1.0.0 needs com.google.code.findbugs:jsr305:3.0.2
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
+
+    testImplementation "androidx.test:rules:$androidxTestRulesVersion"
+    testImplementation "androidx.test:core:$androidxTestCoreVersion"
 }

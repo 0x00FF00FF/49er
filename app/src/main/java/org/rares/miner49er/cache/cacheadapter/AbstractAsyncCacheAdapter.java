@@ -14,11 +14,6 @@ public abstract class AbstractAsyncCacheAdapter implements EventBroadcaster {
 
     private CompositeDisposable disposables = null;
 
-//    @Override
-//    public void registerEventListener(Consumer<Byte> listener) {
-//        cache.registerEventListener(listener);
-//    }
-
 
     @Override
     public Flowable<Byte> getBroadcaster() {
