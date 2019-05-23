@@ -31,13 +31,12 @@ class CacheFeedWorker {
 
     private CompositeDisposable disposables = null;
 
-    private NetworkingService ns = NetworkingService.INSTANCE;
+    private final NetworkingService ns = NetworkingService.INSTANCE;
     private final ViewModelCache cache = ViewModelCache.getInstance();
+
     private final Collection<ProjectData> cachedProjects = new ArrayList<>();
     private final Collection<IssueData> cachedIssues = new ArrayList<>();
     private final Collection<TimeEntryData> cachedTimeEntries = new ArrayList<>();
-
-    private final AsyncGenericDao<UserData> uDao = InMemoryCacheAdapterFactory.ofType(UserData.class);
 
     private final Cache<ProjectData> projectDataCache = cache.getCache(ProjectData.class);
     private final Cache<IssueData> issueDataCache = cache.getCache(IssueData.class);
@@ -46,8 +45,52 @@ class CacheFeedWorker {
 
     private final String TAG = CacheFeedWorker.class.getSimpleName();
 
-    CacheFeedWorker() {
+    private AsyncGenericDao<UserData> uDao = InMemoryCacheAdapterFactory.ofType(UserData.class);
+    private AsyncGenericDao<ProjectData> pDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
+    private AsyncGenericDao<IssueData> iDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
+    private AsyncGenericDao<TimeEntryData> tDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
+
+    static final class Builder {
+
+        private AsyncGenericDao<UserData> uDao;
+        private AsyncGenericDao<ProjectData> pDao;
+        private AsyncGenericDao<IssueData> iDao;
+        private AsyncGenericDao<TimeEntryData> tDao;
+
+        CacheFeedWorker build() {
+            return new CacheFeedWorker(this);
+        }
+
+        Builder userDao(AsyncGenericDao<UserData> uDao) {
+            this.uDao = uDao;
+            return this;
+        }
+
+        Builder projectsDao(AsyncGenericDao<ProjectData> pDao) {
+            this.pDao = pDao;
+            return this;
+        }
+
+        Builder issuesDao(AsyncGenericDao<IssueData> iDao) {
+            this.iDao = iDao;
+            return this;
+        }
+
+        Builder timeEntriesDao(AsyncGenericDao<TimeEntryData> tDao) {
+            this.tDao = tDao;
+            return this;
+        }
+    }
+
+    private CacheFeedWorker() {
+    }
+
+    private CacheFeedWorker(Builder builder) {
         disposables = new CompositeDisposable();
+        uDao = builder.uDao;
+        pDao = builder.pDao;
+        iDao = builder.iDao;
+        tDao = builder.tDao;
     }
 
     void close() {
@@ -60,9 +103,6 @@ class CacheFeedWorker {
 
         final PublishProcessor<Integer> progressProcessor = PublishProcessor.create();
 
-        final AsyncGenericDao<ProjectData> pDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
-        final AsyncGenericDao<IssueData> iDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
-        final AsyncGenericDao<TimeEntryData> tDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
         List<AsyncGenericDao<? extends AbstractViewModel>> daoList = new ArrayList<>();
         daoList.add(uDao);
@@ -76,10 +116,6 @@ class CacheFeedWorker {
                         .limit(daoList.size())
                         .count()
                         .subscribe(x -> {
-//                    Optional<UserData> userDataOptional = uDao.get(12, true).blockingGet();
-//                    if (userDataOptional.isPresent()) {
-//                        cache.loggedInUser = userDataOptional.get();   ///
-//                    }
                             cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
                             linkData();
                         })
@@ -101,9 +137,9 @@ class CacheFeedWorker {
     private void linkData() {
 
         Log.v(TAG, "linkData: ------------------------ start " + Thread.currentThread().getName());
-        cachedProjects.addAll(projectDataCache.getData(Optional.of(null)));
-        cachedIssues.addAll(issueDataCache.getData(Optional.of(null)));
-        cachedTimeEntries.addAll(timeEntryDataCache.getData(Optional.of(null)));
+        cachedProjects.addAll(projectDataCache.getData(Optional.empty()));
+        cachedIssues.addAll(issueDataCache.getData(Optional.empty()));
+        cachedTimeEntries.addAll(timeEntryDataCache.getData(Optional.empty()));
 
         if (cachedProjects.size() == 0) {
             Log.i(TAG, "linkData: ------------------------ no data ");
@@ -159,8 +195,8 @@ class CacheFeedWorker {
                 if (projectData.getTeam() == null) {
                     projectData.setTeam(Collections.emptyList());
                 }
-                if (projectData.getIssues() == null) {
-                    projectData.setIssues(Collections.emptyList());
+                if (projectData.getIssues() == null) {              // is this correct? or should it remain null?
+                    projectData.setIssues(Collections.emptyList()); // if it should be empty list, then why not the same with issues?
                 }
                 return projectData;
             };

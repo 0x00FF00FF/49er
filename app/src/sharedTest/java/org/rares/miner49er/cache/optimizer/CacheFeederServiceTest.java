@@ -20,7 +20,7 @@ public class CacheFeederServiceTest {
     @Before
     public void setUp() throws Exception {
         assertNull(vmCache.loggedInUser);
-        cacheWorker = new CacheFeedWorker();
+        cacheWorker = new CacheFeedWorker.Builder().build();
     }
 
     @Test

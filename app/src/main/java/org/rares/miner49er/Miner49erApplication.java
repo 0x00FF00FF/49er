@@ -1,5 +1,6 @@
 package org.rares.miner49er;
 
+import android.os.Build;
 import androidx.multidex.MultiDexApplication;
 import com.facebook.stetho.Stetho;
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -30,7 +31,9 @@ public class Miner49erApplication extends MultiDexApplication {
 
         StorioFactory.INSTANCE.setup(this);
 
-        Stetho.initializeWithDefaults(this);
+        if (!isRoboUnitTest()) {
+            Stetho.initializeWithDefaults(this);
+        }
 
 //        NetworkingService.INSTANCE.start();
 
@@ -45,5 +48,9 @@ public class Miner49erApplication extends MultiDexApplication {
 
 //      remember to use the following in the view that needs to be watched:
         /*Miner49erApplication.getRefWatcher(itemView.getContext()).watch(itemView);*/
+    }
+
+    public static boolean isRoboUnitTest() {
+        return "robolectric".equals(Build.FINGERPRINT);
     }
 }
