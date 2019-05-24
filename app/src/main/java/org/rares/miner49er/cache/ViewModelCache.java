@@ -83,10 +83,19 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     @CallSuper
     public void clear() {
-        usersCache.evictAll();
-        projectsCache.evictAll();
-        issuesCache.evictAll();
-        timeEntriesCache.evictAll();
+        if (usersCache != null) {
+            usersCache.evictAll();
+        }
+        if (projectsCache != null) {
+            projectsCache.evictAll();
+        }
+        if (issuesCache != null) {
+            issuesCache.evictAll();
+        }
+        if (timeEntriesCache != null) {
+            timeEntriesCache.evictAll();
+        }
+
         // FIXME: 28.03.2019
         // * unfortunately it's not enough to clear this,
         // * we need to also clear every reference to

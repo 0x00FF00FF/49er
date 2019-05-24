@@ -32,6 +32,9 @@ public class IssueDataCache implements Cache<IssueData> {
 
     @Override
     public void putData(IssueData issue, boolean link) {
+        if (projectsCache.get(issue.parentId) == null) {
+            link = false;
+        }
         if (link) {
             synchronized (projectsCache.get(issue.parentId)) {
                 ProjectData projectData = projectsCache.get(issue.parentId);
@@ -48,7 +51,7 @@ public class IssueDataCache implements Cache<IssueData> {
                             }
                         }
                         if (!found) {
-                            if(issues.equals(Collections.emptyList())){
+                            if (issues.equals(Collections.emptyList())) {
                                 issues = new ArrayList<>();
                             }
                             issues.add(issue);
@@ -68,16 +71,18 @@ public class IssueDataCache implements Cache<IssueData> {
 
     @Override
     public void removeData(IssueData issue) {
-        synchronized (projectsCache.get(issue.parentId)) {
-            ProjectData projectData = projectsCache.get(issue.parentId);
-            if (projectData != null) {
-                List<IssueData> projectIssues = projectData.getIssues();
-                if (projectIssues != null) {
-                    for (int i = 0; i < projectIssues.size(); i++) {
-                        IssueData issueData = projectIssues.get(i);
-                        if (issueData.id.equals(issue.id)) {
-                            projectIssues.remove(i);
-                            break;
+        if (projectsCache.get(issue.parentId) != null) {
+            synchronized (projectsCache.get(issue.parentId)) {
+                ProjectData projectData = projectsCache.get(issue.parentId);
+                if (projectData != null) {
+                    List<IssueData> projectIssues = projectData.getIssues();
+                    if (projectIssues != null) {
+                        for (int i = 0; i < projectIssues.size(); i++) {
+                            IssueData issueData = projectIssues.get(i);
+                            if (issueData.id.equals(issue.id)) {
+                                projectIssues.remove(i);
+                                break;
+                            }
                         }
                     }
                 }
