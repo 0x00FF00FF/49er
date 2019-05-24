@@ -20,7 +20,7 @@ import java.util.Map;
 @SuppressLint("UseSparseArrays")
 public class EntityOptimizer implements Consumer<List<Project>> {
 
-    public static final String TAG = EntityOptimizer.class.getSimpleName();
+    private static final String TAG = EntityOptimizer.class.getSimpleName();
 
     private final Map<Long, User> usersToAdd = new HashMap<>();
     private final Map<Long, Issue> issuesToAdd = new HashMap<>();
@@ -34,7 +34,50 @@ public class EntityOptimizer implements Consumer<List<Project>> {
 
     private List<DbUpdateFinishedListener> listenerList = new ArrayList<>();
 
-    public EntityOptimizer() {
+    public static final class Builder {
+
+        private GenericEntityDao<User> uDao;
+        private GenericEntityDao<Project> pDao;
+        private GenericEntityDao<Issue> iDao;
+        private GenericEntityDao<TimeEntry> tDao;
+
+        public EntityOptimizer build() {
+            return new EntityOptimizer(this);
+        }
+
+        public EntityOptimizer defaultBuild() {
+            return new EntityOptimizer();
+        }
+
+        public Builder userDao(GenericEntityDao<User> uDao) {
+            this.uDao = uDao;
+            return this;
+        }
+
+        public Builder projectsDao(GenericEntityDao<Project> pDao) {
+            this.pDao = pDao;
+            return this;
+        }
+
+        public Builder issuesDao(GenericEntityDao<Issue> iDao) {
+            this.iDao = iDao;
+            return this;
+        }
+
+        public Builder timeEntriesDao(GenericEntityDao<TimeEntry> tDao) {
+            this.tDao = tDao;
+            return this;
+        }
+    }
+
+    private EntityOptimizer() {
+    }
+
+    private EntityOptimizer(Builder builder) {
+        projectDao = builder.pDao;
+        issueDao = builder.iDao;
+        timeEntryDao = builder.tDao;
+        userDao = builder.uDao;
     }
 
     public void addDbUpdateFinishedListener(DbUpdateFinishedListener listener) {
@@ -49,24 +92,29 @@ public class EntityOptimizer implements Consumer<List<Project>> {
     public void accept(List<Project> projects) {
         boolean successful = false;
         if (prepareEntities(projects)) {
+            // TODO: 24.05.2019 should this even happen?
             userDao.wipe();     //// user dao should wipe just the user db (+ related tables = all tables :) )
-            successful =
-                    userDao.insert(new ArrayList<>(usersToAdd.values())).blockingGet() &&
-                            projectDao.insert(new ArrayList<>(projectsToAdd.values())).blockingGet() &&
-                            issueDao.insert(new ArrayList<>(issuesToAdd.values())).blockingGet() &&
-                            timeEntryDao.insert(new ArrayList<>(timeEntriesToAdd.values())).blockingGet();
         }
+
+        boolean userInsert = userDao.insert(new ArrayList<>(usersToAdd.values())).blockingGet();
+        boolean projectInsert = projectDao.insert(new ArrayList<>(projectsToAdd.values())).blockingGet();
+        boolean issueInsert = issueDao.insert(new ArrayList<>(issuesToAdd.values())).blockingGet();
+        boolean timeEntryInsert = timeEntryDao.insert(new ArrayList<>(timeEntriesToAdd.values())).blockingGet();
+
+        successful = userInsert && projectInsert && issueInsert && timeEntryInsert;
+
         if (!successful) {
             Log.w(TAG, "Problems with inserting entities to database.");
         } else {
             Log.d(TAG, "Finished inserting data.");
-//            for (DbUpdateFinishedListener listener : listenerList) {
-//                listener.onDbUpdateFinished();
-//            }
             usersToAdd.clear();
             issuesToAdd.clear();
             timeEntriesToAdd.clear();
             projectsToAdd.clear();
+        }
+
+        for (DbUpdateFinishedListener listener : listenerList) {
+            listener.onDbUpdateFinished(successful);
         }
     }
 
@@ -110,7 +158,7 @@ public class EntityOptimizer implements Consumer<List<Project>> {
                     if (p.getIssues() != null) {
                         issues = p.getIssues();
                     }
-                    prepareIssues(issues);
+                    prepareIssues(issues, p);
 
                     p.setPicture(p.getPicture().replaceAll("148", "114"));
 
@@ -133,50 +181,52 @@ public class EntityOptimizer implements Consumer<List<Project>> {
         }
     }
 
-    private void prepareIssues(List<Issue> issues) {
+    private void prepareIssues(List<Issue> issues, Project p) {
         for (Issue i : issues) {
 
             List<TimeEntry> timeEntries = Collections.emptyList();
             if (i.getTimeEntries() != null) {
                 timeEntries = i.getTimeEntries();
             }
-            prepareTimeEntries(timeEntries);
+            prepareTimeEntries(timeEntries, i);
 
             if (i.getOwner() != null) {
                 if (i.getOwnerId() == null || i.getOwnerId() == 0) {
                     i.setOwnerId(i.getOwner().getId());
                 }
                 if (!usersToAdd.keySet().contains(i.getOwnerId())) {
+                    // this is not ok. warn?
                     usersToAdd.put(i.getOwner().getId(), i.getOwner());
                 }
             }
 
-            if (i.getProject() != null && (i.getProjectId() == null || i.getProjectId() == 0)) {
-                i.setProjectId(i.getProject().getId());
+            if (i.getProjectId() == null || i.getProjectId() == 0) {
+                i.setProjectId(p.getId());
             }
 
             issuesToAdd.put(i.getId(), i);
         }
     }
 
-    private void prepareTimeEntries(List<TimeEntry> timeEntries) {
+    private void prepareTimeEntries(List<TimeEntry> timeEntries, Issue i) {
         for (TimeEntry te : timeEntries) {
             if (te.getUser() != null) {
                 if ((te.getUserId() == null || te.getUserId() == 0)) {
                     te.setUserId(te.getUser().getId());
                 }
                 if (!usersToAdd.keySet().contains(te.getUserId())) {
+                    // this is not ok. warn?
                     usersToAdd.put(te.getUser().getId(), te.getUser());
                 }
             }
-            if (te.getIssue() != null && (te.getIssueId() == null || te.getIssueId() == 0)) {
-                te.setIssueId(te.getIssue().getId());
+            if (te.getIssueId() == null || te.getIssueId() == 0) {
+                te.setIssueId(i.getId());
             }
             timeEntriesToAdd.put(te.getId(), te);
         }
     }
 
     public interface DbUpdateFinishedListener {
-        void onDbUpdateFinished();
+        void onDbUpdateFinished(boolean result);
     }
 }

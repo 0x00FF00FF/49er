@@ -141,7 +141,7 @@ public class HomeScrollingActivity
         if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
-        EntityOptimizer entityOptimizer = new EntityOptimizer();
+        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
         NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
         entityOptimizer.addDbUpdateFinishedListener(this);
 
@@ -603,8 +603,10 @@ public class HomeScrollingActivity
     }
 
     @Override
-    public void onDbUpdateFinished() {
-        startCacheUpdate();
+    public void onDbUpdateFinished(boolean success) {
+        if (success) {
+            startCacheUpdate();
+        }
     }
 
     private void startCacheUpdate() {
@@ -612,33 +614,33 @@ public class HomeScrollingActivity
         startService(cacheFeederServiceIntent);
     }
 
-/*
-    @Override
-    public void showSignUp() {
-        if (signUpFragment == null) {
-            signUpFragment = SignUpFragment.newInstance();
+    /*
+        @Override
+        public void showSignUp() {
+            if (signUpFragment == null) {
+                signUpFragment = SignUpFragment.newInstance();
+            }
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(loginLandingFragment)
+                    .add(R.id.main_container, signUpFragment, SignUpFragment.TAG)
+                    .commit();
         }
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
-                .remove(loginLandingFragment)
-                .add(R.id.main_container, signUpFragment, SignUpFragment.TAG)
-                .commit();
-    }
 
-    @Override
-    public void showSignIn() {
-        if (signInFragment == null) {
-            signInFragment = SignInFragment.newInstance();
+        @Override
+        public void showSignIn() {
+            if (signInFragment == null) {
+                signInFragment = SignInFragment.newInstance();
+            }
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
+                    .remove(loginLandingFragment)
+                    .add(R.id.main_container, signInFragment, SignInFragment.TAG)
+                    .commit();
         }
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)
-                .remove(loginLandingFragment)
-                .add(R.id.main_container, signInFragment, SignInFragment.TAG)
-                .commit();
-    }
-*/
+    */
     @Override
     public void signIn(UserData userData) {
         ViewModelCache.getInstance().loggedInUser = userData;
