@@ -128,6 +128,24 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         return disposables;
     }
 
+    /**
+     * This method should be used to increase the cache size. <br />
+     * It only sets a bigger value and creates a new LruCache
+     * (containing all previously stored items). <br />
+     *
+     * @param newSize the new size of the cache
+     */
+    LruCache<Long, ProjectData> increaseProjectsCacheSize(int newSize) {
+        if (newSize > getProjectsLruCache().maxSize()) {
+            LruCache<Long, ProjectData> newCache = new LruCache<>(newSize);
+            for (Long key : projectsCache.snapshot().keySet()) {
+                newCache.put(key, projectsCache.get(key));
+            }
+            projectsCache = newCache;
+        }
+        return projectsCache;
+    }
+
     LruCache<Long, ProjectData> getProjectsLruCache() {
         if (projectsCache == null) {
             projectsCache = new LruCache<>(100);

@@ -23,8 +23,8 @@ public class ProjectDataCache implements Cache<ProjectData> {
     @Override
     public void putData(List<ProjectData> list, boolean link) {
         if (list != null) {
-            if (projectsCache.maxSize() < list.size()) {
-                projectsCache = new LruCache<>(list.size());
+            if (getSize() + list.size() > projectsCache.maxSize()) {
+                projectsCache = cache.increaseProjectsCacheSize(getSize() + list.size());
             }
             for (ProjectData pd : list) {
                 putData(pd, link);
@@ -34,6 +34,9 @@ public class ProjectDataCache implements Cache<ProjectData> {
 
     @Override
     public void putData(ProjectData projectData, boolean link) {
+        if (getSize() == projectsCache.maxSize() && getData(projectData.id) == null) {
+            projectsCache = cache.increaseProjectsCacheSize(getSize() + 10);
+        }
         projectsCache.put(projectData.id, projectData);
         cache.sendEvent(CACHE_EVENT_UPDATE_PROJECT);
     }
