@@ -31,6 +31,12 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
 
     @Override
     public void putData(TimeEntryData ted, boolean link) {
+        if (ted.parentId == null) {
+            return;
+        }
+        if (link && issueDataCache.get(ted.parentId) == null) {
+            link = false;
+        }
         if (link) {
             synchronized (issueDataCache.get(ted.parentId)) {
                 IssueData issueData = issueDataCache.get(ted.parentId);
@@ -46,7 +52,11 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
                             }
                         }
                         if (!found) {
+                            if (timeEntries.equals(Collections.emptyList())) {
+                                timeEntries = new ArrayList<>();
+                            }
                             timeEntries.add(ted);
+                            issueData.setTimeEntries(timeEntries);
                         }
                     } else {
                         timeEntries = new ArrayList<>();
@@ -92,7 +102,9 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
             if (issueData != null) {
                 List<TimeEntryData> timeEntries = issueData.getTimeEntries();
                 if (timeEntries == null) {
-                    return Collections.emptyList();
+                    return null;
+                    // // TODO: 28.05.2019 null returned, but if needed, we can use Collections.emptyList()
+                    // just remember to return the same thing in IssueDataCache, for consistency
                 }
                 Collections.sort(timeEntries, (te1, te2) -> te1.id.compareTo(te2.id));
                 Collections.reverse(timeEntries);

@@ -32,6 +32,9 @@ public class IssueDataCache implements Cache<IssueData> {
 
     @Override
     public void putData(IssueData issue, boolean link) {
+        if (issue.parentId == null) {
+            return;
+        }
         if (projectsCache.get(issue.parentId) == null) {
             link = false;
         }
@@ -106,6 +109,8 @@ public class IssueDataCache implements Cache<IssueData> {
                 if (issues == null) {
 //                    return Collections.emptyList();
                     return null;
+                    // // TODO: 28.05.2019 null returned, but if needed, we can use Collections.emptyList()
+                    // just remember to return the same thing in TimeEntryDataCache, for consistency
                 }
                 Collections.sort(issues, (id1, id2) -> id1.id.compareTo(id2.id));
                 Collections.reverse(issues);

@@ -16,7 +16,7 @@ public class ProjectDataCache implements Cache<ProjectData> {
     private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
 
     @Override
-    public synchronized void putData(List<ProjectData> list, Predicate<ProjectData> ptCondition, boolean link) {
+    public void putData(List<ProjectData> list, Predicate<ProjectData> ptCondition, boolean link) {
 
     }
 

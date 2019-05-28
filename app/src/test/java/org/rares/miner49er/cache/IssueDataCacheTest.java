@@ -295,9 +295,10 @@ public class IssueDataCacheTest {
     }
 
     /*
-     *  Given   two issue data in the cache
-     *  When    getData is called with no parent id
-     *  Then    all issue data will be returned
+     *  Given   two issue data in the cache, one linked to the parent and one not
+     *  When    getData is called with parent id
+     *  Then    all respective issue data will be returned (1 issue)
+     *  And     the issue data not linked to the project will not be in the returned list (1 issue)
      */
     @Test
     public void testGetProjectIssueData() {
@@ -448,5 +449,22 @@ public class IssueDataCacheTest {
             assertEquals(issues.size(), ic.getSize());
             assertEquals(issues.size(), pc.getData(parent.id).getIssues().size());
         }
+    }
+
+    /*
+     *  Given   a not cached issue with null parent id,
+     *  When    put(issue, true) is called
+     *  Then    the issue is skipped because no orphaned entities are allowed
+     */
+    @Test
+    public void orphanedIssue() {
+        IssueData issueData = new IssueData();
+        issueData.setId(1L);
+
+        assertEquals(0, ic.getSize());
+
+        ic.putData(issueData, true);
+
+        assertEquals(0, ic.getSize());
     }
 }
