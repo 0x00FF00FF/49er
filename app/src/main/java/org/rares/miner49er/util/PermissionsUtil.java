@@ -1,6 +1,6 @@
 package org.rares.miner49er.util;
 
-import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
@@ -17,7 +17,7 @@ public class PermissionsUtil {
     private static AsyncGenericDao<IssueData> issuesDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
     private static AsyncGenericDao<TimeEntryData> entriesDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
 
-    private static UserData loggedInUser = ViewModelCache.getInstance().loggedInUser;
+    private static UserData loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
     public static boolean isResponsible = false;
 
     public static boolean canRemoveProject(ProjectData projectData) {

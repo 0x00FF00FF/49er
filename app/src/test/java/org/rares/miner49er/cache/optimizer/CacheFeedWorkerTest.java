@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -34,7 +35,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class CacheFeedWorkerTest {
 
-    private ViewModelCache vmCache = ViewModelCache.getInstance();
+//    private ViewModelCache vmCache = new ViewModelCache();
+    private ViewModelCache vmCache;
     private CacheFeedWorker cacheWorker = null;
 
     @Mock
@@ -55,10 +57,10 @@ public class CacheFeedWorkerTest {
     private IssueData testIssue;
     private TimeEntryData testTimeEntry;
 
-    private Cache<ProjectData> projectDataCache = vmCache.getCache(ProjectData.class);
-    private Cache<IssueData> issueDataCache = vmCache.getCache(IssueData.class);
-    private Cache<TimeEntryData> timeEntryDataCache = vmCache.getCache(TimeEntryData.class);
-    private Cache<UserData> userDataCache = vmCache.getCache(UserData.class);
+    private Cache<ProjectData> projectDataCache;
+    private Cache<IssueData> issueDataCache;
+    private Cache<TimeEntryData> timeEntryDataCache;
+    private Cache<UserData> userDataCache;
     
     private final int waitTime = 25;
 
@@ -66,6 +68,15 @@ public class CacheFeedWorkerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         dbChangesFlowable = publishProcessor.share();
+        if (vmCache != null) {
+            vmCache.close();
+        }
+//        vmCache = new ViewModelCache();
+        vmCache = ViewModelCacheSingleton.getInstance();
+        projectDataCache = vmCache.getCache(ProjectData.class);
+        issueDataCache = vmCache.getCache(IssueData.class);
+        timeEntryDataCache = vmCache.getCache(TimeEntryData.class);
+        userDataCache = vmCache.getCache(UserData.class);
 
         setUpMocks();
         setUpData();
@@ -75,6 +86,7 @@ public class CacheFeedWorkerTest {
                 .issuesDao(iDao)
                 .projectsDao(pDao)
                 .userDao(uDao)
+                .cache(vmCache)
                 .build();
     }
 
@@ -137,13 +149,13 @@ public class CacheFeedWorkerTest {
         testTimeEntry.parentId = testIssue.id;
 
         vmCache.clear();
-        // cache -> putData should be taken care of in dao.getAll()
+        // cache -> putData should be taken care of in the mocked/fake dao.getAll()
         // but we just do it here
-        vmCache.getCache(ProjectData.class).putData(testProject, false);
-        vmCache.getCache(IssueData.class).putData(testIssue, false);
-        vmCache.getCache(TimeEntryData.class).putData(testTimeEntry, false);
-        vmCache.getCache(UserData.class).putData(testProjectOwner, false);
-        vmCache.getCache(UserData.class).putData(testProjectTeamMember, false);
+        projectDataCache.putData(testProject, false);
+        issueDataCache.putData(testIssue, false);
+        timeEntryDataCache.putData(testTimeEntry, false);
+        userDataCache.putData(testProjectOwner, false);
+        userDataCache.putData(testProjectTeamMember, false);
     }
 
     private void setUpMocks() {
@@ -414,7 +426,7 @@ public class CacheFeedWorkerTest {
         newIssue.updateData(testIssue);
         newIssue.setOwner(null);
         newIssue.id = testIssue.id;
-        newIssue.setOwnerId(4);
+        newIssue.setOwnerId(4L);
 
         assertNotEquals(newIssue, issueDataCache.getData(Optional.empty()).get(0));
 

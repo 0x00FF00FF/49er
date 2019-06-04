@@ -14,9 +14,15 @@ public class IssueDataCache implements Cache<IssueData> {
 
     private static final String TAG = IssueDataCache.class.getSimpleName();
 
-    private ViewModelCache cache = ViewModelCache.getInstance();
-    private LruCache<Long, IssueData> issuesCache = cache.getIssuesLruCache();
-    private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
+    private final ViewModelCache cache;
+    private final LruCache<Long, IssueData> issuesCache;
+    private final LruCache<Long, ProjectData> projectsCache;
+
+    public IssueDataCache(ViewModelCache cache) {
+        this.cache = cache;
+        issuesCache = cache.getIssuesLruCache();
+        projectsCache = cache.getProjectsLruCache();
+    }
 
     @Override
     public void putData(List<IssueData> list, Predicate<IssueData> ptCondition, boolean link) {
@@ -45,20 +51,23 @@ public class IssueDataCache implements Cache<IssueData> {
                     List<IssueData> issues = projectData.getIssues();
                     if (issues != null) {
 
-                        boolean found = false;
+                        IssueData toReplace = null;
                         for (IssueData issueData : issues) {
                             if (issueData.id.equals(issue.id)) {
-                                issueData.updateData(issue);
-                                found = true;
+//                                issueData.updateData(issue);
+                                toReplace = issueData;
                                 break;
                             }
                         }
-                        if (!found) {
+                        if (toReplace == null) {
                             if (issues.equals(Collections.emptyList())) {
                                 issues = new ArrayList<>();
                             }
                             issues.add(issue);
                             projectData.setIssues(issues);
+                        } else {
+                            issues.remove(toReplace);
+                            issues.add(issue);
                         }
                     } else {
                         issues = new ArrayList<>();

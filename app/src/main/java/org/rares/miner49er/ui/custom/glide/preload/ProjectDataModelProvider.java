@@ -22,18 +22,20 @@ import static org.rares.miner49er.BaseInterfaces.UTFEnc;
 public class ProjectDataModelProvider implements MultipleListPreloader.PreloadModelProvider<String> {
 
     private Context context;
+    private ViewModelCache cache;
+
+    //    public static final String TAG = ProjectDataModelProvider.class.getSimpleName();
 
 
-    public ProjectDataModelProvider(Context context) {
+    public ProjectDataModelProvider(Context context, ViewModelCache cache) {
         this.context = context;
+        this.cache = cache;
     }
-
-//    public static final String TAG = ProjectDataModelProvider.class.getSimpleName();
 
     @NonNull
     @Override
     public List<String> getPreloadItems(int position) {
-        List<ProjectData> projectDataList = ViewModelCache.getInstance().getCache(ProjectData.class).getData(Optional.of(null));
+        List<ProjectData> projectDataList = cache.getCache(ProjectData.class).getData(Optional.empty());
         // todo: if mismatches appear maybe switch to adapter data.
         if (position >= projectDataList.size()) {
 //            Log.d(TAG, "getPreloadItems() called with: position = [" + position + "/" + projectDataList.size() + "]  X_X");

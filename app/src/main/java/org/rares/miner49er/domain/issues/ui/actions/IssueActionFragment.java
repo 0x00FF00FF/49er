@@ -20,6 +20,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -31,6 +32,8 @@ import org.rares.miner49er.util.TextUtils;
 public abstract class IssueActionFragment extends ActionFragment {
 
     private static final String TAG = IssueActionFragment.class.getSimpleName();
+
+    protected ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     protected AsyncGenericDao<ProjectData> projectsDAO;
     protected AsyncGenericDao<IssueData> issuesDAO;
@@ -188,7 +191,7 @@ public abstract class IssueActionFragment extends ActionFragment {
                 pdOpt -> {
                     projectData = pdOpt.get().clone(true);
                     projectNameEditText.setText(projectData.getName());
-                    userData = ViewModelCache.getInstance().loggedInUser;
+                    userData = cache.loggedInUser;
                     if (userData != null) {
                         issueOwnerEditText.setText(userData.getName());
                     }

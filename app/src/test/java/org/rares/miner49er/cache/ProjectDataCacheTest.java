@@ -19,15 +19,18 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class ProjectDataCacheTest {
-    private ViewModelCache cache = ViewModelCache.getInstance();
-    private Cache<IssueData> ic = cache.getCache(IssueData.class);
-    //    private Cache<ProjectData> pc = cache.getCache(ProjectData.class);
-    private ProjectDataCache pc = (ProjectDataCache) cache.getCache(ProjectData.class);
+    private ViewModelCache cache;
+    private Cache<IssueData> ic;
+    private ProjectDataCache pc;
 
     @Before
     public void setUp() {
-        cache = ViewModelCache.getInstance();
-        cache.clear();
+        if (cache != null) {
+            cache.close();
+        }
+        cache = new ViewModelCache();
+        ic = cache.getCache(IssueData.class);
+        pc = (ProjectDataCache) cache.getCache(ProjectData.class);
     }
 
     /*

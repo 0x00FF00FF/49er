@@ -3,14 +3,19 @@ package org.rares.miner49er.cache.optimizer;
 import android.annotation.SuppressLint;
 import android.util.Log;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.SingleSubject;
 import org.rares.miner49er.persistence.dao.GenericEntityDao;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressLint("UseSparseArrays")
-public class EntityOptimizer implements Consumer<List<Project>> {
+public class EntityOptimizer implements Consumer<List<Project>>, Closeable {
 
     private static final String TAG = EntityOptimizer.class.getSimpleName();
 
@@ -33,6 +38,8 @@ public class EntityOptimizer implements Consumer<List<Project>> {
     private GenericEntityDao<User> userDao = GenericEntityDao.Factory.of(User.class);
 
     private List<DbUpdateFinishedListener> listenerList = new ArrayList<>();
+
+    private CompositeDisposable disposables;
 
     public static final class Builder {
 
@@ -70,6 +77,11 @@ public class EntityOptimizer implements Consumer<List<Project>> {
         }
     }
 
+    @Override
+    public void close() throws IOException {
+        disposables.clear();
+    }
+
     private EntityOptimizer() {
     }
 
@@ -78,6 +90,7 @@ public class EntityOptimizer implements Consumer<List<Project>> {
         issueDao = builder.iDao;
         timeEntryDao = builder.tDao;
         userDao = builder.uDao;
+        disposables = new CompositeDisposable();
     }
 
     public void addDbUpdateFinishedListener(DbUpdateFinishedListener listener) {
@@ -90,50 +103,53 @@ public class EntityOptimizer implements Consumer<List<Project>> {
 
     @Override
     public void accept(List<Project> projects) {
-        boolean successful = false;
-        if (prepareEntities(projects)) {
-            // TODO: 24.05.2019 should this even happen?
-            userDao.wipe();     //// user dao should wipe just the user db (+ related tables = all tables :) )
-        }
+        disposables.add(prepareEntities(projects).subscribe(
+                prepared -> {
+                    boolean successful = false;
+                    if (prepared) {// TODO: 24.05.2019 should this even happen?
+                        userDao.wipe();// user dao should wipe just the user db (+ related tables = all tables :) )
+                    }
 
-        boolean userInsert = userDao.insert(new ArrayList<>(usersToAdd.values())).blockingGet();
-        boolean projectInsert = projectDao.insert(new ArrayList<>(projectsToAdd.values())).blockingGet();
-        boolean issueInsert = issueDao.insert(new ArrayList<>(issuesToAdd.values())).blockingGet();
-        boolean timeEntryInsert = timeEntryDao.insert(new ArrayList<>(timeEntriesToAdd.values())).blockingGet();
+                    boolean userInsert = userDao.insert(new ArrayList<>(usersToAdd.values())).blockingGet();
+                    boolean projectInsert = projectDao.insert(new ArrayList<>(projectsToAdd.values())).blockingGet();
+                    boolean issueInsert = issueDao.insert(new ArrayList<>(issuesToAdd.values())).blockingGet();
+                    boolean timeEntryInsert = timeEntryDao.insert(new ArrayList<>(timeEntriesToAdd.values())).blockingGet();
 
-        successful = userInsert && projectInsert && issueInsert && timeEntryInsert;
+                    successful = userInsert && projectInsert && issueInsert && timeEntryInsert;
 
-        if (!successful) {
-            Log.w(TAG, "Problems with inserting entities to database.");
-        } else {
-            Log.d(TAG, "Finished inserting data.");
-            usersToAdd.clear();
-            issuesToAdd.clear();
-            timeEntriesToAdd.clear();
-            projectsToAdd.clear();
-        }
+                    if (!successful) {
+                        Log.w(TAG, "Problems with inserting entities to database.");
+                    } else {
+                        Log.d(TAG, "Finished inserting data.");
+                        usersToAdd.clear();
+                        issuesToAdd.clear();
+                        timeEntriesToAdd.clear();
+                        projectsToAdd.clear();
+                    }
 
-        for (DbUpdateFinishedListener listener : listenerList) {
-            listener.onDbUpdateFinished(successful);
-        }
+                    for (DbUpdateFinishedListener listener : listenerList) {
+                        listener.onDbUpdateFinished(successful);
+                    }
+                }
+        ));
     }
 
-    private boolean prepareEntities(List<Project> projects) {
+    private Single<Boolean> prepareEntities(List<Project> projects) {
 
+        SingleSubject<Boolean> returnSubject = SingleSubject.create();
         if (Collections.emptyList().equals(projects)) {
             Log.e(TAG, "RECEIVED EMPTY LIST. stopping here.");
-            return false;
+            return Single.just(false);
         }
         // for badly written/interpreted JSON, perhaps
         // a more refined solution would be a JsonAdapter.Factory
         // https://github.com/square/moshi/issues/295
         if (projects.size() == 1 && projects.get(0).getName() == null) {
             Log.e(TAG, "persistProjects: EMPTY LIST FROM SERVER");
-            return false;
+            return Single.just(false);
         }
-
         Log.i(TAG, "prepareEntities: ..." + projects.size());
-        return Flowable.fromIterable(projects)
+        disposables.add(Flowable.fromIterable(projects)
                 .subscribeOn(Schedulers.computation())
                 .map(p -> {
                     Log.i(TAG, "prepareEntities: " + p.getName());
@@ -169,8 +185,10 @@ public class EntityOptimizer implements Consumer<List<Project>> {
                 })
                 .doOnComplete(() -> Log.i(TAG, "prepareEntities: done."))
                 .toList()
-                .map(list -> true)
-                .blockingGet();
+                .subscribe(list -> {
+                    returnSubject.onSuccess(true);
+                }));
+        return returnSubject;
     }
 
     private void prepareUsers(List<User> users) {

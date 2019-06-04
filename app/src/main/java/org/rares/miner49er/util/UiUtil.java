@@ -9,7 +9,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.view.View;
 import android.view.ViewGroup;
-import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
@@ -132,7 +132,7 @@ public class UiUtil {
             List<TimeEntryData> entries = issueData.getTimeEntries();
             if (entries != null) {
                 for (TimeEntryData entry : entries) {
-                    userHours += entry.getUserId().equals(ViewModelCache.getInstance().loggedInUser.id) ? entry.getHours() : 0;
+                    userHours += entry.getUserId().equals(ViewModelCacheSingleton.getInstance().loggedInUser.id) ? entry.getHours() : 0;
                     totalHours += entry.deleted ? 0 : entry.getHours();
                     entriesNumber += entry.deleted ? 0 : 1;
                 }

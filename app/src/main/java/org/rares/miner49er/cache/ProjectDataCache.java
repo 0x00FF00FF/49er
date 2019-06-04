@@ -12,8 +12,13 @@ import java.util.List;
 public class ProjectDataCache implements Cache<ProjectData> {
 
     private static final String TAG = ProjectDataCache.class.getSimpleName();
-    private final ViewModelCache cache = ViewModelCache.getInstance();
-    private LruCache<Long, ProjectData> projectsCache = cache.getProjectsLruCache();
+    private final ViewModelCache cache;
+    private LruCache<Long, ProjectData> projectsCache;
+
+    public ProjectDataCache(ViewModelCache cache) {
+        this.cache = cache;
+        projectsCache = cache.getProjectsLruCache();
+    }
 
     @Override
     public void putData(List<ProjectData> list, Predicate<ProjectData> ptCondition, boolean link) {

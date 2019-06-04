@@ -27,6 +27,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class EntityOptimizerTest {
 
+    private final long napTime = 100;
+
     private EntityOptimizer entityOptimizer;
 
     @Mock
@@ -349,7 +351,7 @@ public class EntityOptimizerTest {
      *  And     they will be sent to respective dao implementations for insertion
      */
     @Test
-    public void test_entityOptimizer_successfulProcess() {
+    public void test_entityOptimizer_successfulProcess() throws InterruptedException {
         userDao = new GenericDaoFake<>();
         projectDao = new GenericDaoFake<>();
         issueDao = new GenericDaoFake<>();
@@ -368,6 +370,8 @@ public class EntityOptimizerTest {
                 .build();
 
         entityOptimizer.accept(projects);
+
+        Thread.sleep(napTime);
 
         List<User> users = ((GenericDaoFake<User>) userDao).list;
         List<Project> projects = ((GenericDaoFake<Project>) projectDao).list;
@@ -497,7 +501,7 @@ public class EntityOptimizerTest {
      *  And     a successful result will be sent to the listener (true)
      */
     @Test
-    public void test_entityOptimizer_happy_linkedMetadata() {
+    public void test_entityOptimizer_happy_linkedMetadata() throws InterruptedException {
         project1.setOwnerId(null);
         project2.setOwnerId(null);
         project1.setOwner(projectOwner1);
@@ -561,6 +565,8 @@ public class EntityOptimizerTest {
         DbUpdateFinishedListener listener = Assert::assertTrue;
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
+
+        Thread.sleep(napTime);
 
         List<User> users = ((GenericDaoFake<User>) userDao).list;
         List<Project> projects = ((GenericDaoFake<Project>) projectDao).list;
@@ -683,7 +689,7 @@ public class EntityOptimizerTest {
      *  And     a successful result will be sent to the listener (true)
      */
     @Test
-    public void test_entityOptimizer_otherUsers() {
+    public void test_entityOptimizer_otherUsers() throws InterruptedException {
 
         User ghostUser = new User();
         ghostUser.setId(22L);
@@ -768,6 +774,8 @@ public class EntityOptimizerTest {
         DbUpdateFinishedListener listener = Assert::assertTrue;
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
+
+        Thread.sleep(napTime);
 
         List<User> users = ((GenericDaoFake<User>) userDao).list;
         List<Project> projects = ((GenericDaoFake<Project>) projectDao).list;

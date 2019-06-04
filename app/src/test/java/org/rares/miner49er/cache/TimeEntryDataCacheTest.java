@@ -23,15 +23,22 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class TimeEntryDataCacheTest {
-    private ViewModelCache cache = ViewModelCache.getInstance();
-    //    private Cache<TimeEntryData> tc = cache.getCache(TimeEntryData.class);
-    private TimeEntryDataCache tc = (TimeEntryDataCache) cache.getCache(TimeEntryData.class);
-    private Cache<IssueData> ic = cache.getCache(IssueData.class);
-    private Cache<ProjectData> pc = cache.getCache(ProjectData.class);
+    //    private Cache<TimeEntryData> tc;
+    private TimeEntryDataCache tc;
+    private Cache<IssueData> ic;
+    private Cache<ProjectData> pc;
+    ViewModelCache cache;
 
     @Before
     public void setUp() {
-        cache.clear();
+        if (cache != null) {
+            cache.close();
+        }
+        cache = new ViewModelCache();
+//        tc = cache.getCache(TimeEntryData.class);
+        tc = (TimeEntryDataCache) cache.getCache(TimeEntryData.class);
+        ic = cache.getCache(IssueData.class);
+        pc = cache.getCache(ProjectData.class);
     }
 
     /*
@@ -202,7 +209,12 @@ public class TimeEntryDataCacheTest {
         assertNotNull(ic.getData(issueData.id).getTimeEntries());
         assertEquals(1, ic.getData(issueData.id).getTimeEntries().size());
 
-        assertTrue(ic.getData(issueData.id).getTimeEntries().contains(timeEntryData));
+        assertFalse(ic.getData(issueData.id).getTimeEntries().contains(timeEntryData));
+        assertTrue(ic.getData(issueData.id).getTimeEntries().contains(timeEntryData1));
+
+        assertFalse(tc.getData(Optional.empty()).contains(timeEntryData));
+        assertTrue(tc.getData(Optional.empty()).contains(timeEntryData1));
+
         assertEquals(modified, ic.getData(issueData.id).getTimeEntries().get(0).getComments());
     }
 
@@ -407,7 +419,7 @@ public class TimeEntryDataCacheTest {
      */
     @Test
     public void multiThreaded_testPut_x1000() {
-        final int numberOfIterations = 1000;
+        final int numberOfIterations = 100;
         final int numberOfTimeEntries = 1000;
         final long parentId = 1;
         final int numberOfThreads = 4;
@@ -458,7 +470,7 @@ public class TimeEntryDataCacheTest {
      */
     @Test
     public void multiThreaded_testInsert_x1000() {
-        final int numberOfIterations = 1000;
+        final int numberOfIterations = 100;
         final int numberOfTimeEntries = 1000;
         final long parentId = 1;
         final int numberOfThreads = 4;

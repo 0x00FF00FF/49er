@@ -32,16 +32,16 @@ class CacheFeedWorker {
     private CompositeDisposable disposables = null;
 
     private final NetworkingService ns = NetworkingService.INSTANCE;
-    private final ViewModelCache cache = ViewModelCache.getInstance();
+    private ViewModelCache cache;
 
     private final Collection<ProjectData> cachedProjects = new ArrayList<>();
     private final Collection<IssueData> cachedIssues = new ArrayList<>();
     private final Collection<TimeEntryData> cachedTimeEntries = new ArrayList<>();
 
-    private final Cache<ProjectData> projectDataCache = cache.getCache(ProjectData.class);
-    private final Cache<IssueData> issueDataCache = cache.getCache(IssueData.class);
-    private final Cache<TimeEntryData> timeEntryDataCache = cache.getCache(TimeEntryData.class);
-    private final Cache<UserData> userDataCache = cache.getCache(UserData.class);
+    private Cache<ProjectData> projectDataCache;
+    private Cache<IssueData> issueDataCache;
+    private Cache<TimeEntryData> timeEntryDataCache;
+    private Cache<UserData> userDataCache;
 
     private final String TAG = CacheFeedWorker.class.getSimpleName();
 
@@ -52,6 +52,7 @@ class CacheFeedWorker {
 
     static final class Builder {
 
+        private ViewModelCache cache;
         private AsyncGenericDao<UserData> uDao;
         private AsyncGenericDao<ProjectData> pDao;
         private AsyncGenericDao<IssueData> iDao;
@@ -80,6 +81,11 @@ class CacheFeedWorker {
             this.tDao = tDao;
             return this;
         }
+
+        Builder cache(ViewModelCache cache) {
+            this.cache = cache;
+            return this;
+        }
     }
 
     private CacheFeedWorker() {
@@ -91,6 +97,12 @@ class CacheFeedWorker {
         pDao = builder.pDao;
         iDao = builder.iDao;
         tDao = builder.tDao;
+        cache = builder.cache;
+
+        projectDataCache = cache.getCache(ProjectData.class);
+        issueDataCache = cache.getCache(IssueData.class);
+        timeEntryDataCache = cache.getCache(TimeEntryData.class);
+        userDataCache = cache.getCache(UserData.class);
     }
 
     void close() {

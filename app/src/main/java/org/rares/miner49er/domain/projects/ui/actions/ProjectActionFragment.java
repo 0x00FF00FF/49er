@@ -35,6 +35,8 @@ import com.tbruyelle.rxpermissions2.RxPermissions;
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.CompositeDisposable;
 import org.rares.miner49er.R;
+import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
@@ -61,6 +63,8 @@ public abstract class ProjectActionFragment
         implements UserInterfaces.SelectedUsersListConsumer {
 
     public static final String TAG = ProjectActionFragment.class.getSimpleName();
+
+    protected ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     @BindView(R.id.content_container)
     protected ConstraintLayout container;

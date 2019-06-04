@@ -12,7 +12,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.rares.miner49er.R;
-import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.ui.actions.ProjectActionFragment;
 import org.rares.miner49er.domain.users.model.UserData;
@@ -56,7 +55,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
     @Override
     public void onStart() {
         super.onStart();
-        editTextProjectOwner.setText(ViewModelCache.getInstance().loggedInUser.getName());
+        editTextProjectOwner.setText(cache.loggedInUser.getName());
 //        UiUtil.sendViewToBack(getView());
     }
 
@@ -180,7 +179,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
         projectData.id = null;
 
         if (projectData.getOwner() == null) {
-            UserData userData = ViewModelCache.getInstance().loggedInUser;
+            UserData userData = cache.loggedInUser;
             projectData.setOwner(userData); //
             projectData.parentId = projectData.getOwner().id;
         }

@@ -33,6 +33,7 @@ import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.optimizer.CacheFeederService;
 import org.rares.miner49er.cache.optimizer.EntityOptimizer;
 import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
@@ -122,6 +123,7 @@ public class HomeScrollingActivity
     private TimeEntriesUiOps timeEntriesUiOps;
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
+    private ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     private LoginLandingConstraintSetFragment llFrag = null;
 //    private LoginLandingFragment loginLandingFragment = null;
@@ -137,7 +139,6 @@ public class HomeScrollingActivity
         super.onCreate(savedInstanceState);
 
         NetworkingService.INSTANCE.start();
-        ViewModelCache cache = ViewModelCache.getInstance();
         if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
@@ -271,7 +272,7 @@ public class HomeScrollingActivity
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
-            if (ViewModelCache.getInstance().loggedInUser == null) {
+            if (cache.loggedInUser == null) {
                 return true;
             }
         }
@@ -297,7 +298,7 @@ public class HomeScrollingActivity
         // hw menu key on older phones shows the menu even if no user is logged in.
         MenuItem settingsItem = menu.findItem(R.id.action_settings);
 
-        if (ViewModelCache.getInstance().loggedInUser == null) {
+        if (cache.loggedInUser == null) {
             menu.removeItem(R.id.action_add_project);
             settingsItem.setEnabled(false);
             return true;
@@ -441,7 +442,7 @@ public class HomeScrollingActivity
                 return;
             }
         }
-        if (llFrag != null && ViewModelCache.getInstance().loggedInUser == null) {
+        if (llFrag != null && cache.loggedInUser == null) {
             if (llFrag.onBackPressed()) {
                 return;
             }
@@ -490,7 +491,7 @@ public class HomeScrollingActivity
         // make sure we show some data
         // if the user comes back to the app
         // or changes orientation after the cache is filled
-        ViewModelCache.getInstance().sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
+        cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
     }
 
     @Override
@@ -515,7 +516,7 @@ public class HomeScrollingActivity
         // not going to clear cache every time we're not in foreground
         // 10_000 cached items occupy about 2MB of memory
         if (TRIM_MEMORY_RUNNING_CRITICAL == level) {
-            ViewModelCache.getInstance().clear();
+            cache.clear();
         }
     }
 
@@ -643,7 +644,7 @@ public class HomeScrollingActivity
     */
     @Override
     public void signIn(UserData userData) {
-        ViewModelCache.getInstance().loggedInUser = userData;
+        cache.loggedInUser = userData;
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)

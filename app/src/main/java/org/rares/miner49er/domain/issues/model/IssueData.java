@@ -27,7 +27,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
 
     private String name;
     private UserData owner;
-    private long ownerId;
+    private Long ownerId;
     private long dateAdded;
     private long dateDue;
     private List<TimeEntryData> timeEntries;
@@ -52,7 +52,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
                         deleted == other.deleted &&
                         dateAdded == other.dateAdded &&
                         ownerEqual &&
-                        ownerId == other.ownerId &&
+                        ownerId.equals(other.ownerId) &&
                         dateDue == other.dateDue;
     }
 

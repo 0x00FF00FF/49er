@@ -22,12 +22,18 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class IssueDataCacheTest {
-    private ViewModelCache cache = ViewModelCache.getInstance();
-    private Cache<IssueData> ic = cache.getCache(IssueData.class);
-    private Cache<ProjectData> pc = cache.getCache(ProjectData.class);
+    private IssueDataCache ic;
+    private Cache<ProjectData> pc;
+    private ViewModelCache cache;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
+        if (cache != null) {
+            cache.close();
+        }
+        cache = new ViewModelCache();
+        ic = (IssueDataCache) cache.getCache(IssueData.class);
+        pc = cache.getCache(ProjectData.class);
         cache.clear();
     }
 
@@ -174,7 +180,12 @@ public class IssueDataCacheTest {
         assertNotNull(pc.getData(parent.id).getIssues());
         assertEquals(1, pc.getData(parent.id).getIssues().size());
 
-        assertTrue(pc.getData(parent.id).getIssues().contains(issueData));
+        assertFalse(pc.getData(parent.id).getIssues().contains(issueData));
+        assertTrue(pc.getData(parent.id).getIssues().contains(issueData1));
+
+        assertFalse(ic.getData(Optional.empty()).contains(issueData));
+        assertTrue(ic.getData(Optional.empty()).contains(issueData1));
+
         assertEquals(modified, pc.getData(parent.id).getIssues().get(0).getName());
     }
 
@@ -325,7 +336,10 @@ public class IssueDataCacheTest {
         ic.putData(issues, true);
 
         assertEquals(2, ic.getSize());
-        assertEquals(1, pc.getData(parent.id).getIssues().size());
+        assertEquals(1, pc
+                .getData(parent.id)
+                .getIssues()
+                .size());
         assertTrue(ic.getData(Optional.of(parent.id)).contains(issueData));
         assertFalse(ic.getData(Optional.of(parent.id)).contains(issueData1));
 
@@ -359,8 +373,8 @@ public class IssueDataCacheTest {
      *  (1 insert + repeat put 1000 times)
      */
     @Test
-    public void multiThreaded_testPut_x1000() {
-        final int numberOfIterations = 1000;
+    public void multiThreaded_testPut_x1000() throws InterruptedException {
+        final int numberOfIterations = 100;
         final int numberOfIssues = 1000;
         final long parentId = 1;
         final int numberOfThreads = 4;
@@ -396,6 +410,33 @@ public class IssueDataCacheTest {
                     .count()
                     .blockingGet();
 
+//            CountDownLatch latch = new CountDownLatch(1);
+//            AtomicBoolean running = new AtomicBoolean();
+//            AtomicInteger overlaps = new AtomicInteger();
+//
+//            ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+//
+//            for (IssueData issue: issues) {
+//                service.submit(() -> {
+//                    try {
+//                        latch.await();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    if (running.get()) {
+//                        overlaps.incrementAndGet();
+//                    }
+//                    running.set(true);
+//                    ic.putData(issue, true);
+//                });
+//            }
+//
+//            latch.countDown();
+//
+//            Thread.sleep(25);
+//            System.out.println(i);
+//            assertThat(overlaps.get(), greaterThan(0));
+
             assertEquals(numberOfIssues, ic.getSize());
             assertEquals(numberOfIssues, pc.getData(parentId).getIssues().size());
         }
@@ -410,7 +451,7 @@ public class IssueDataCacheTest {
      */
     @Test
     public void multiThreaded_testInsert_x1000() {
-        final int numberOfIterations = 1000;
+        final int numberOfIterations = 100;
         final int numberOfIssues = 1000;
         final long parentId = 1;
         final int numberOfThreads = 4;

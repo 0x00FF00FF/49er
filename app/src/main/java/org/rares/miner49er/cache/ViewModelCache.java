@@ -3,7 +3,6 @@ package org.rares.miner49er.cache;
 import android.util.Log;
 import android.util.LruCache;
 import androidx.annotation.CallSuper;
-import com.pushtorefresh.storio3.Optional;
 import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
@@ -17,7 +16,6 @@ import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
 import java.io.Closeable;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
@@ -26,13 +24,48 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     public UserData loggedInUser;
 
-    private ViewModelCache() {
+    protected ViewModelCache() {
+        cacheUpdatedProcessor = PublishProcessor.create();
+        cacheUpdateFlowable = createCacheUpdateFlowable(true);
     }
 
-    private final static ViewModelCache INSTANCE = new ViewModelCache();
+    protected ViewModelCache(boolean throttleEvents) {
+        cacheUpdatedProcessor = PublishProcessor.create();
+        cacheUpdateFlowable = createCacheUpdateFlowable(throttleEvents);
+    }
 
-    public static ViewModelCache getInstance() {
-        return INSTANCE;
+    private Flowable<Byte> createCacheUpdateFlowable(boolean throttleEvents) {
+        if (throttleEvents) {
+            return
+                    cacheUpdatedProcessor
+                            .subscribeOn(Schedulers.computation())
+                            .onBackpressureBuffer(
+                                    128,
+                                    () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
+                                    BackpressureOverflowStrategy.DROP_OLDEST)
+                            .window(50, TimeUnit.MILLISECONDS)
+                            .flatMap(Flowable::distinct)
+//                            .map(b -> {
+////                                Log.i(TAG, "cache update event: \t\t" + b);
+//                                System.out.println("[" + System.currentTimeMillis() + "] cache update event: \t\t" + getProjectDataCache().translate(b) + " " + Thread.currentThread().getName());
+//                                return b;
+//                            })
+                            .share();
+        } else {
+            return
+                    cacheUpdatedProcessor
+                            .subscribeOn(Schedulers.computation())
+                            .onBackpressureBuffer(128,
+//                                    () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
+                                    () -> System.out.println("[ CACHE UPDATE OVERFLOW ]"),
+                                    BackpressureOverflowStrategy.DROP_OLDEST)
+//                            .map(b -> {
+////                                Log.i(TAG, "cache update event: \t\t" + b);
+//                                System.out.println("[" + System.currentTimeMillis() + "] cache update event: \t\t" + getProjectDataCache().translate(b) + " " + Thread.currentThread().getName());
+//                                return b;
+//                            })
+                            .share();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -53,17 +86,6 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         throw new UnsupportedOperationException("No existing cache was found for " + t.getSimpleName() + ".");
     }
 
-//    @Override
-//    public void registerEventListener(Consumer<Byte> listener) {
-//        checkDisposable().add(
-//                cacheUpdateObservable
-//                        .subscribeOn(Schedulers.computation())
-////                        .throttleLatest(1, TimeUnit.SECONDS)
-//                        .throttleLast(1, TimeUnit.SECONDS)
-//                        .doOnNext((x) -> Log.i(TAG, "sendEvent"))
-//                        .subscribe(listener));
-//    }
-
 
     @Override
     public Flowable<Byte> getBroadcaster() {
@@ -74,6 +96,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
     public void sendEvent(Byte event) {
 //        if (cacheUpdatedProcessor.hasSubscribers()) {
         cacheUpdatedProcessor.onNext(event);
+//        System.out.println("_cache_ event: " + getProjectDataCache().translate(event) + " " + Thread.currentThread().getName());
 //        if (!cacheUpdatedProcessor.offer(event)) {
 //            Log.w(TAG, "sendEvent: CACHE EVENT OFFER FAILED " + event);
 //         wait some time, then retry....
@@ -121,12 +144,12 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         return disposables.isDisposed();
     }
 
-    private CompositeDisposable checkDisposable() {
-        if (disposables.isDisposed()) {
-            disposables = new CompositeDisposable();
-        }
-        return disposables;
-    }
+//    private CompositeDisposable checkDisposable() {
+//        if (disposables.isDisposed()) {
+//            disposables = new CompositeDisposable();
+//        }
+//        return disposables;
+//    }
 
     /**
      * This method should be used to increase the cache size. <br />
@@ -174,42 +197,33 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
         return usersCache;
     }
 
-
     private Cache<ProjectData> getProjectDataCache() {
         if (projectDataCache == null) {
-            projectDataCache = new ProjectDataCache();
+            projectDataCache = new ProjectDataCache(this);
         }
         return projectDataCache;
     }
 
     private Cache<IssueData> getProjectIssueDataCache() {
         if (projectIssueDataCache == null) {
-            projectIssueDataCache = new IssueDataCache();
+            projectIssueDataCache = new IssueDataCache(this);
         }
         return projectIssueDataCache;
     }
 
     private Cache<TimeEntryData> getIssueTimeEntryDataCache() {
         if (issueTimeEntryDataCache == null) {
-            issueTimeEntryDataCache = new TimeEntryDataCache();
+            issueTimeEntryDataCache = new TimeEntryDataCache(this);
         }
         return issueTimeEntryDataCache;
     }
 
     private Cache<UserData> getProjectUserDataCache() {
         if (projectUserDataCache == null) {
-            projectUserDataCache = new UserDataCache();
+            projectUserDataCache = new UserDataCache(this);
         }
         return projectUserDataCache;
     }
-
-    public void dump() {
-        for (ProjectData pd : projectDataCache.getData(Optional.of(null))) {
-            List<UserData> team = pd.getTeam();
-            Log.i(TAG, "dump: " + pd.getName() + "/" + (team == null ? "null" : team.size()));
-        }
-    }
-
 
     private LruCache<Long, ProjectData> projectsCache = null;
     private LruCache<Long, IssueData> issuesCache = null;
@@ -223,21 +237,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     private static final String TAG = ViewModelCache.class.getSimpleName();
 
-    private PublishProcessor<Byte> cacheUpdatedProcessor = PublishProcessor.create();
-    private Flowable<Byte> cacheUpdateFlowable =
-            cacheUpdatedProcessor
-                    .window(50, TimeUnit.MILLISECONDS)
-                    .flatMap(Flowable::distinct)
-//                    .map(b -> {
-//                        Log.i(TAG, "cache update event: \t\t" + b);
-//                        return b;
-//                    })
-                    .onBackpressureBuffer(
-                            128,
-                            () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
-                            BackpressureOverflowStrategy.DROP_OLDEST)
-                    .subscribeOn(Schedulers.computation())
-                    .onBackpressureBuffer()
-                    .share();
+    private PublishProcessor<Byte> cacheUpdatedProcessor;
+    private Flowable<Byte> cacheUpdateFlowable;
     private CompositeDisposable disposables = new CompositeDisposable();
 }

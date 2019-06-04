@@ -5,12 +5,13 @@ import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
 
 public abstract class AbstractAsyncCacheAdapter implements EventBroadcaster {
 
     private static final String TAG = AbstractAsyncCacheAdapter.class.getSimpleName();
-    protected ViewModelCache cache = ViewModelCache.getInstance();
+    protected ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     private CompositeDisposable disposables = null;
 

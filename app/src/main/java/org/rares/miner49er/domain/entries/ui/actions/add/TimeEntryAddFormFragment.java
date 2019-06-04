@@ -13,6 +13,7 @@ import com.pushtorefresh.storio3.Optional;
 import org.joda.time.DateTime;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.ui.actions.HoursPerDayValidation;
 import org.rares.miner49er.domain.entries.ui.actions.TimeEntryActionFragment;
@@ -37,6 +38,7 @@ import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_OWNER_N
 public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
 
     public static final String TAG = TimeEntryAddFormFragment.class.getSimpleName();
+    private ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     public static TimeEntryAddFormFragment newInstance() {
         return new TimeEntryAddFormFragment();
@@ -163,7 +165,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         if (optional.isPresent()) {
             projectData = optional.get().clone(true);
         }
-        userData = ViewModelCache.getInstance().loggedInUser;
+        userData = cache.loggedInUser;
 
         String projectName = bundle.getString(KEY_PROJECT_NAME, projectData.getName());
         String issueName = bundle.getString(KEY_ISSUE_NAME, "");

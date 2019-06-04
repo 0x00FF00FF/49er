@@ -16,6 +16,7 @@ import org.rares.miner49er._abstract.AbstractAdapter;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
@@ -88,7 +89,7 @@ public class ProjectsUiOps
             ((ResizeableLayoutManager) rv.getLayoutManager()).addMeasureCompleteListener(this);
         }
 
-        glidePreloadModelProvider = new ProjectDataModelProvider(getRv().getContext());
+        glidePreloadModelProvider = new ProjectDataModelProvider(getRv().getContext(), ViewModelCacheSingleton.getInstance());
 
         MultipleListPreloader<String> projectListPreloader = new MultipleListPreloader<>(
                 GlideApp.with(getRv()),

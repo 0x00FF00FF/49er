@@ -12,10 +12,16 @@ import java.util.List;
 
 public class TimeEntryDataCache implements Cache<TimeEntryData> {
 
-    private final ViewModelCache cache = ViewModelCache.getInstance();
-    private LruCache<Long, TimeEntryData> timeEntriesCache = cache.getTimeEntriesLruCache();
-    private LruCache<Long, IssueData> issueDataCache = cache.getIssuesLruCache();
+    private final ViewModelCache cache;
+    private final LruCache<Long, TimeEntryData> timeEntriesCache;
+    private final LruCache<Long, IssueData> issueDataCache;
     private final String TAG = TimeEntryDataCache.class.getSimpleName();
+
+    public TimeEntryDataCache(ViewModelCache cache) {
+        this.cache = cache;
+        timeEntriesCache = cache.getTimeEntriesLruCache();
+        issueDataCache = cache.getIssuesLruCache();
+    }
 
     @Override
     public void putData(List<TimeEntryData> list, Predicate<TimeEntryData> ptCondition, boolean link) {
@@ -43,20 +49,23 @@ public class TimeEntryDataCache implements Cache<TimeEntryData> {
                 if (issueData != null) {
                     List<TimeEntryData> timeEntries = issueData.getTimeEntries();
                     if (timeEntries != null) {
-                        boolean found = false;
+                        TimeEntryData toReplace = null;
                         for (TimeEntryData timeEntryData : timeEntries) {   // enforce data validity
                             if (timeEntryData.id.equals(ted.id)) {
                                 timeEntryData.updateData(ted);
-                                found = true;
+                                toReplace = timeEntryData;
                                 break;
                             }
                         }
-                        if (!found) {
+                        if (toReplace == null) {
                             if (timeEntries.equals(Collections.emptyList())) {
                                 timeEntries = new ArrayList<>();
                             }
                             timeEntries.add(ted);
                             issueData.setTimeEntries(timeEntries);
+                        } else {
+                            timeEntries.remove(toReplace);
+                            timeEntries.add(ted);
                         }
                     } else {
                         timeEntries = new ArrayList<>();
