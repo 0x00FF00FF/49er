@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
-import org.rares.miner49er.cache.optimizer.fakes.GenericDaoFake;
+import org.rares.miner49er.fakes.GenericDaoFake;
 import org.rares.miner49er.persistence.dao.GenericEntityDao;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;

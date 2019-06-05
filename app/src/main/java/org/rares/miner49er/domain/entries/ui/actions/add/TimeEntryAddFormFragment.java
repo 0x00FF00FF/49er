@@ -11,6 +11,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.pushtorefresh.storio3.Optional;
 import org.joda.time.DateTime;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
@@ -45,6 +46,16 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
     }
 
     public TimeEntryAddFormFragment() {
+    }
+
+    public TimeEntryAddFormFragment(BaseInterfaces.ActionFragmentDependencyProvider provider){
+        projectsDAO = provider.getProjectsDAO();
+        issuesDAO = provider.getIssuesDAO();
+        timeEntriesDAO = provider.getTimeEntriesDAO();
+        usersDAO = provider.getUsersDAO();
+        loggedInUser = provider.getCache().loggedInUser;
+        replacedView = provider.getReplacedView();
+        resultListener = provider.getResultListener();
     }
 
     @Override

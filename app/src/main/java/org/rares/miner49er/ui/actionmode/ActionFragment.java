@@ -53,6 +53,8 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
 
 //    public abstract void populateFields(long entityId);
 
+    // TODO: 05.06.2019 use new androidx.fragment.FragmentFactory, set the following fields from the constructors
+
     @Setter
     protected View replacedView;
 

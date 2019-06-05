@@ -23,6 +23,8 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListen
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.rares.miner49er.BaseInterfaces;
+import org.rares.miner49er.BaseInterfaces.ActionFragmentDependencyProvider;
 import org.rares.miner49er.R;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
@@ -155,11 +157,23 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
-        issuesDAO = InMemoryCacheAdapterFactory.ofType(IssueData.class);
-        timeEntriesDAO = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
-        usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
-        loggedInUser = cache.loggedInUser;
+        if (loggedInUser == null)       // perhaps test each and not all at once?
+            if (context instanceof BaseInterfaces.ActionFragmentDependencyProvider) {
+                ActionFragmentDependencyProvider provider = (ActionFragmentDependencyProvider) context;
+                projectsDAO = provider.getProjectsDAO();
+                issuesDAO = provider.getIssuesDAO();
+                timeEntriesDAO = provider.getTimeEntriesDAO();
+                usersDAO = provider.getUsersDAO();
+                loggedInUser = provider.getCache().loggedInUser;
+                replacedView = provider.getReplacedView();
+                resultListener = provider.getResultListener();
+            } else {
+                projectsDAO = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
+                issuesDAO = InMemoryCacheAdapterFactory.ofType(IssueData.class);
+                timeEntriesDAO = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
+                usersDAO = InMemoryCacheAdapterFactory.ofType(UserData.class);
+                loggedInUser = cache.loggedInUser;
+            }
         Log.i(TAG, "onAttach: currently 'logged in user' is " + loggedInUser.getName());
     }
 
@@ -202,7 +216,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
             TextUtils.hideKeyboardFrom(rootView.findFocus());
         }
 
-        actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
+        if (replacedView != null) {
+            actionFragmentTransition.prepareExitAnimation(getView(), replacedView);
+        }
         resultListener.onFragmentDismiss();
         FragmentManager fm = getFragmentManager();
         if (fm != null) {
@@ -212,7 +228,9 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
 
     @Override
     public void prepareEntry() {
-        actionFragmentTransition.prepareEntryAnimation(replacedView);
+        if (replacedView != null) {
+            actionFragmentTransition.prepareEntryAnimation(replacedView);
+        }
     }
 
     @OnClick(R.id.btn_cancel)

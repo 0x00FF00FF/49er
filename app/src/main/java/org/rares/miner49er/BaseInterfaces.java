@@ -1,10 +1,19 @@
 package org.rares.miner49er;
 
+import android.view.View;
 import butterknife.Unbinder;
 import io.reactivex.Completable;
 import io.reactivex.annotations.Nullable;
 import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
+import org.rares.miner49er.cache.Cache;
+import org.rares.miner49er.cache.ViewModelCache;
+import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.persistence.dao.AsyncGenericDao;
+import org.rares.miner49er.ui.actionmode.ActionEnforcer.FragmentResultListener;
 
 /**
  * @author rares
@@ -136,5 +145,22 @@ public interface BaseInterfaces {
 
         void showMessage(String message, int actionType, Completable action);
 //        void showMessage(Snackbar snackbar);
+    }
+
+    interface ActionFragmentDependencyProvider {
+        ViewModelCache getCache();
+
+        Cache<ProjectData> getProjectDataCache();
+        Cache<IssueData> getIssueDataCache();
+        Cache<TimeEntryData> getTimeEntryDataCache();
+        Cache<UserData> getUserDataCache();
+
+        AsyncGenericDao<ProjectData> getProjectsDAO();
+        AsyncGenericDao<IssueData> getIssuesDAO();
+        AsyncGenericDao<TimeEntryData> getTimeEntriesDAO();
+        AsyncGenericDao<UserData> getUsersDAO();
+
+        View getReplacedView();
+        FragmentResultListener getResultListener();
     }
 }

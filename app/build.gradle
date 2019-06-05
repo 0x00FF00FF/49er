@@ -54,8 +54,8 @@ android {
     }
     compileOptions {
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility java_version
+        targetCompatibility java_version
     }
 
     sourceSets {
@@ -146,7 +146,6 @@ dependencies {
 //    androidTestImplementation "androidx.test:rules:1.2.0-beta01"
 
     androidTestImplementation "androidx.test:core:$androidxTestCoreVersion"        // - robolectric environment?
-//    androidTestImplementation "androidx.test:rules:$androidxTestRulesVersion"       //
     androidTestImplementation "androidx.test:rules:$androidxTestRulesVersion"
     androidTestImplementation "androidx.test:runner:$androidxTestRunnerVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxTestExtJunitVersion"
@@ -163,6 +162,10 @@ dependencies {
     androidTestImplementation "org.hamcrest:hamcrest-library:$hamcrestLibraryVersion"
     androidTestImplementation "androidx.test.uiautomator:uiautomator:$androidxTestUiAutomatorVersion"
 
+    implementation "androidx.fragment:fragment:$androidxFragmentVersion"
+    implementation "androidx.fragment:fragment-testing:$androidxFragmentTestVersion"
+
+    testImplementation "androidx.test:core:$androidxTestCoreVersion"
     testImplementation "androidx.test:runner:$androidxTestRunnerVersion"
     testImplementation "androidx.test.ext:junit:$androidxTestExtJunitVersion"
     testImplementation "androidx.test.espresso:espresso-intents:$androidxTestEspressoIntentsVersion"
@@ -172,5 +175,4 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
 
     testImplementation "androidx.test:rules:$androidxTestRulesVersion"
-    testImplementation "androidx.test:core:$androidxTestCoreVersion"
 }

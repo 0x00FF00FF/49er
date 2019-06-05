@@ -56,8 +56,8 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
                     cacheUpdatedProcessor
                             .subscribeOn(Schedulers.computation())
                             .onBackpressureBuffer(128,
-//                                    () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
-                                    () -> System.out.println("[ CACHE UPDATE OVERFLOW ]"),
+                                    () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
+//                                    () -> System.out.println("[ CACHE UPDATE OVERFLOW ]"),
                                     BackpressureOverflowStrategy.DROP_OLDEST)
 //                            .map(b -> {
 ////                                Log.i(TAG, "cache update event: \t\t" + b);

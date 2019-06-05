@@ -1,4 +1,4 @@
-package org.rares.miner49er.cache.optimizer.fakes;
+package org.rares.miner49er.fakes;
 
 import com.pushtorefresh.storio3.Optional;
 import io.reactivex.Single;
@@ -53,8 +53,8 @@ public class GenericDaoFake<ET> implements GenericEntityDao<ET> {
     }
 
     @Override
-    public Single<Boolean> update(ET toInsert) {
-        object = toInsert;
+    public Single<Boolean> update(ET toUpdate) {
+        object = toUpdate;
         return Single.just(booleanToReturn);
     }
 

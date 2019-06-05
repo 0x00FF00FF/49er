@@ -36,7 +36,7 @@ public interface Cache<Type> {
 
     int getSize();
 
-    default String translate(Byte code) {
+/*    default String translate(Byte code) {
         switch (code) {
             case 0:
                 return "CACHE_EVENT_UPDATE_PROJECTS    ";
@@ -65,5 +65,5 @@ public interface Cache<Type> {
             default:
                 return "";
         }
-    }
+    }*/
 }
