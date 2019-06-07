@@ -22,6 +22,8 @@ import org.rares.miner49er.ui.actionmode.ActionEnforcer.FragmentResultListener;
 
 public interface BaseInterfaces {
 
+    String DB_NAME = "49er.db";
+
     int MAX_ELEVATION_PROJECTS = 20;
     int MAX_ELEVATION_ISSUES = MAX_ELEVATION_PROJECTS - 4;
     int MAX_ELEVATION_TIME_ENTRIES = MAX_ELEVATION_ISSUES - 4;

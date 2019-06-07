@@ -657,6 +657,10 @@ public class HomeScrollingActivity
         bottomOverlay.setVisibility(View.VISIBLE);
         fab2.setVisibility(View.VISIBLE);
     }
+
+    public void log(String log) {
+        Log.e(TAG, ">>> log: >>> " + log );
+    }
 /*
     @Override
     public void signUp(UserData userData) {

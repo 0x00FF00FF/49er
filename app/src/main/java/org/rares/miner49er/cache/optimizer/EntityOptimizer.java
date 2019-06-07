@@ -83,6 +83,7 @@ public class EntityOptimizer implements Consumer<List<Project>>, Closeable {
     }
 
     private EntityOptimizer() {
+        disposables = new CompositeDisposable();
     }
 
     private EntityOptimizer(Builder builder) {

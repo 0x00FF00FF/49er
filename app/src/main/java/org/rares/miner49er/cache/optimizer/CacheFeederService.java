@@ -3,6 +3,7 @@ package org.rares.miner49er.cache.optimizer;
 import android.app.IntentService;
 import android.content.Intent;
 import androidx.annotation.Nullable;
+import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
@@ -25,6 +26,7 @@ public class CacheFeederService extends IntentService /*implements EntityOptimiz
                 .projectsDao(InMemoryCacheAdapterFactory.ofType(ProjectData.class))
                 .issuesDao(InMemoryCacheAdapterFactory.ofType(IssueData.class))
                 .timeEntriesDao(InMemoryCacheAdapterFactory.ofType(TimeEntryData.class))
+                .cache(ViewModelCacheSingleton.getInstance())
                 .build();
     }
 

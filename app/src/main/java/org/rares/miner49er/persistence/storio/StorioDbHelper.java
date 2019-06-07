@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
 import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
@@ -19,7 +20,7 @@ public class StorioDbHelper extends SQLiteOpenHelper {
      * version 3 added pseudo-deletion columns
      */
     public StorioDbHelper(Context context) {
-        super(context, "49er.db", null, 3);
+        super(context, BaseInterfaces.DB_NAME, null, 3);
     }
 
 
