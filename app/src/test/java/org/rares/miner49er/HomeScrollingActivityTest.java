@@ -2,14 +2,11 @@ package org.rares.miner49er;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.persistence.storio.StorioFactory;
-
-import java.io.IOException;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
@@ -22,9 +19,10 @@ import static org.junit.Assert.assertNull;
 @RunWith(AndroidJUnit4.class)
 public class HomeScrollingActivityTest {
 
-    @After
-    public void cleanup() throws IOException {
-        StorioFactory.INSTANCE.get().close();
+    @Before
+    public void setup() {
+        ViewModelCacheSingleton.getInstance().clear();
+        ViewModelCacheSingleton.getInstance().loggedInUser = null;
     }
 
     /*
@@ -84,4 +82,10 @@ public class HomeScrollingActivityTest {
             });
         }
     }
+
+    /*
+    * java.lang.IllegalStateException: Illegal connection pointer 1. Current pointers for thread Thread
+    * db is not closed properly
+    * robolectric issue
+    */
 }
