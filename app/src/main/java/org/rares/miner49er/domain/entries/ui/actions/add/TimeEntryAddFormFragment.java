@@ -144,7 +144,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
 
         timeEntryData = new TimeEntryData();
 
-        final String snackbarText = successfulAdd;
+        final String snackbarText = successfulAdd;  // // TODO: 10.06.2019 use the activity to show this stuff?
         Snackbar snackbar = Snackbar.make(container, snackbarText, Snackbar.LENGTH_LONG);
 //        Drawable snackbarBackground = getContext().getResources().getDrawable(R.drawable.background_snackbar);
         View snackbarView = snackbar.getView();
@@ -155,7 +155,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
         textView.setTextColor(snackbarTextColor);
 
         snackbar.setAction(R.string.action_undo, v -> {
-            boolean deleted = timeEntriesDAO.delete(toDelete).blockingGet();        //// blocking IO op on android main thread?
+            boolean deleted = timeEntriesDAO.delete(toDelete).blockingGet();
             snackbar.dismiss();
             snackbarView.postDelayed(() -> {
                 snackbar.setText(deleted ? entryRemoved : errNotRemoved);

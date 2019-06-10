@@ -59,6 +59,7 @@ public class AsyncGenericDaoFake<VMT extends AbstractViewModel> implements Async
     @Override
     public Single<Boolean> delete(VMT toDelete) {
         object = toDelete;
+        System.out.println("delete: " + booleanToReturn);
         return Single.just(booleanToReturn);
     }
 

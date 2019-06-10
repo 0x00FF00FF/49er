@@ -4,13 +4,9 @@ package org.rares.miner49er;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.net.Uri;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -18,9 +14,6 @@ import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,13 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.rares.miner49er.util.TextUtils;
-import org.rares.ratv.rotationaware.RotationAwareTextView;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -59,6 +45,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withSubstring;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
+import static org.rares.miner49er.testutils.Matchers.childAtPosition;
+import static org.rares.miner49er.testutils.Matchers.rotationAwareWithText;
+import static org.rares.miner49er.testutils.TestUtil.copyAsset;
+import static org.rares.miner49er.testutils.TestUtil.getResourceString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -279,79 +269,5 @@ public class Miner49er_e2e {
         )));
 
         Thread.sleep(1000);
-    }
-
-    private static Matcher<View> rotationAwareWithText(final Matcher<View> matcher, String text) {
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                matcher.describeTo(description);
-            }
-
-            @Override
-            protected boolean matchesSafely(View item) {
-                return item instanceof RotationAwareTextView && ((RotationAwareTextView) item).getText().equals(text);
-            }
-        };
-    }
-
-    private static Matcher<View> childAtPosition(
-            final Matcher<View> parentMatcher, final int position) {
-
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Child at position " + position + " in parent ");
-                parentMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
-                        && view.equals(((ViewGroup) parent).getChildAt(position));
-            }
-        };
-    }
-
-    private void copyAssets() {
-        AssetManager assetManager = InstrumentationRegistry.getInstrumentation().getContext().getAssets();
-        String[] files = null;
-        try {
-            files = assetManager.list("");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (files != null) {
-            for (String filename : files) {
-                copyAsset(assetManager, filename);
-            }
-        }
-    }
-
-    private File copyAsset(AssetManager assetManager, String filename) {
-        File outFile = new File(InstrumentationRegistry.getInstrumentation().getContext().getExternalFilesDir(null), filename);
-        try (InputStream in = assetManager.open(filename);
-             OutputStream out = new FileOutputStream(outFile);
-        ) {
-            copyFile(in, out);
-        } catch (IOException e) {
-            System.err.println("Failed to copy asset file: " + filename);
-        }
-        System.out.println(">>> " + outFile.getAbsolutePath());
-        return outFile;
-    }
-
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
-        }
-    }
-
-    private String getResourceString(int id) {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        return targetContext.getResources().getString(id);
     }
 }
