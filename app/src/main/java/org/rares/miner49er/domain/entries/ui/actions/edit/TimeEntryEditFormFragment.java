@@ -11,6 +11,7 @@ import butterknife.OnClick;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import org.joda.time.DateTime;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.ui.actions.HoursPerDayValidation;
@@ -32,6 +33,16 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
     }
 
     public TimeEntryEditFormFragment() {
+    }
+
+    public TimeEntryEditFormFragment(BaseInterfaces.ActionFragmentDependencyProvider provider){
+        projectsDAO = provider.getProjectsDAO();
+        issuesDAO = provider.getIssuesDAO();
+        timeEntriesDAO = provider.getTimeEntriesDAO();
+        usersDAO = provider.getUsersDAO();
+        loggedInUser = provider.getCache().loggedInUser;
+        replacedView = provider.getReplacedView();
+        resultListener = provider.getResultListener();
     }
 
     @Override

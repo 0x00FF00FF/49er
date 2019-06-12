@@ -12,7 +12,7 @@ import java.lang.ref.WeakReference;
 
 public class IssueRemoveAction implements YesNoDialogFragment.Listener {
     private WeakReference<ResizeableItemsUiOps> iops;
-    private AsyncGenericDao<IssueData> cache = InMemoryCacheAdapterFactory.ofType(IssueData.class);
+    private AsyncGenericDao<IssueData> dao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
     @Setter
     private long issueId;
 
@@ -20,13 +20,13 @@ public class IssueRemoveAction implements YesNoDialogFragment.Listener {
         iops = new WeakReference<>(ops);
     }
 
-    public void performAction() {
+    private void performAction() {
         if (iops != null && iops.get() != null) {
             iops.get().expandList();
         }
-        Optional<IssueData> issueDataOptional = cache.get(issueId, true).blockingGet();
+        Optional<IssueData> issueDataOptional = dao.get(issueId, true).blockingGet();
         if (issueDataOptional.isPresent()) {
-            cache.delete(issueDataOptional.get());
+            dao.delete(issueDataOptional.get());
         }
     }
 

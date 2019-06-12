@@ -322,7 +322,7 @@ public class TimeEntryAddFormFragmentTest {
         onView(withText(R.string.success_time_entry_add)).check(matches(isCompletelyDisplayed()));
     }
 
-    /*
+    /*          fixme | cannot find the second snackbar
      *  Given   a user saves a time entry with no errors
      *  When    the snackbar is displayed
      *  And     the user presses the undo button on the snackbar
@@ -362,11 +362,14 @@ public class TimeEntryAddFormFragmentTest {
         onView(withText(R.string.action_undo)).perform(click());
 
         // then
+
+//        Thread.sleep(500);
         assertEquals(timeEntryData.id, provider.fakeTEdao.object.id);
-//        onView(withText(R.string.entry_removed)).check(matches(isCompletelyDisplayed()));
+//        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(isCompletelyDisplayed()));
+//        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.entry_removed)));
     }
 
-    /*
+    /*          fixme | cannot find the second snackbar
      *  Given   a user saves a time entry with no errors
      *  When    the snackbar is displayed
      *  And     the user presses the undo button on the snackbar
