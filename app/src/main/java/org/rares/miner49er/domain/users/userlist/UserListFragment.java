@@ -1,37 +1,15 @@
 package org.rares.miner49er.domain.users.userlist;
 
 
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindString;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import com.xwray.groupie.GroupAdapter;
-import com.xwray.groupie.Item;
-import com.xwray.groupie.ViewHolder;
-import de.hdodenhof.circleimageview.CircleImageView;
-import org.rares.miner49er.R;
-import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.domain.projects.ProjectsInterfaces;
-import org.rares.miner49er.domain.projects.model.ProjectData;
-import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.persistence.dao.AsyncGenericDao;
-import org.rares.miner49er.ui.custom.glide.GlideApp;
-import org.rares.miner49er.util.TextUtils;
 
-import java.util.List;
+/*import com.xwray.groupie.GroupAdapter;
+import com.xwray.groupie.Item;
+import com.xwray.groupie.ViewHolder;*/
 
 
 public class UserListFragment extends Fragment {
-
+/*
     public static final String TAG = UserListFragment.class.getSimpleName();
     private long projectId = -1;
     private GroupAdapter<ViewHolder> userAdapter = new GroupAdapter<>();
@@ -147,7 +125,7 @@ public class UserListFragment extends Fragment {
 
         @Override
         public int getLayout() {
-            return /*userData.getName().length() > 24 ? R.layout.item_user_list : */R.layout.item_user_list_v2;
+            return *//*userData.getName().length() > 24 ? R.layout.item_user_list : *//*R.layout.item_user_list_v2;
         }
-    }
+    }*/
 }

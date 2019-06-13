@@ -118,6 +118,8 @@ public class EntityOptimizer implements Consumer<List<Project>>, Closeable {
 
                     successful = userInsert && projectInsert && issueInsert && timeEntryInsert;
 
+                    final int changes = usersToAdd.size() + projectsToAdd.size() + issuesToAdd.size() +timeEntriesToAdd.size();
+
                     if (!successful) {
                         Log.w(TAG, "Problems with inserting entities to database.");
                     } else {
@@ -129,7 +131,7 @@ public class EntityOptimizer implements Consumer<List<Project>>, Closeable {
                     }
 
                     for (DbUpdateFinishedListener listener : listenerList) {
-                        listener.onDbUpdateFinished(successful);
+                        listener.onDbUpdateFinished(successful, changes);
                     }
                 }
         ));
@@ -246,6 +248,6 @@ public class EntityOptimizer implements Consumer<List<Project>>, Closeable {
     }
 
     public interface DbUpdateFinishedListener {
-        void onDbUpdateFinished(boolean result);
+        void onDbUpdateFinished(boolean result, int numberOfChanges);
     }
 }

@@ -604,8 +604,8 @@ public class HomeScrollingActivity
     }
 
     @Override
-    public void onDbUpdateFinished(boolean success) {
-        if (success) {
+    public void onDbUpdateFinished(boolean success, int numberOfChanges) {
+        if (success && numberOfChanges > 0) {
             startCacheUpdate();
         }
     }
@@ -659,7 +659,7 @@ public class HomeScrollingActivity
     }
 
     public void log(String log) {
-        Log.e(TAG, ">>> log: >>> " + log );
+        Log.e(TAG, ">>> log: >>> " + log);
     }
 /*
     @Override

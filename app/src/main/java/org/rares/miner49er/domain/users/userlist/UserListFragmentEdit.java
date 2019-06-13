@@ -320,7 +320,34 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         if (adapter != null) {
             position = adapter.getData().indexOf(usersDAO.get().get(userId, true).blockingGet().get());
         }
-        recyclerView.smoothScrollToPosition(position);
+        // smooth scroll if difference in current position and requested position is small
+        int currentFirstPosition = 0;
+        int currentLastPosition = 0;
+        int childCount = recyclerView.getChildCount();
+
+        View v = recyclerView.getLayoutManager().getChildAt(0);
+        currentFirstPosition = recyclerView.getChildViewHolder(v).getAdapterPosition();
+
+        v = recyclerView.getLayoutManager().getChildAt(childCount - 1);
+        currentLastPosition = recyclerView.getChildViewHolder(v).getAdapterPosition();
+
+        if (position > currentLastPosition) {
+            if (position > currentLastPosition + childCount) {
+                recyclerView.scrollToPosition(position);
+            } else {
+                recyclerView.smoothScrollToPosition(position);
+            }
+        } else {
+            if (position < currentFirstPosition) {
+                if (position < currentFirstPosition - childCount) {
+                    recyclerView.scrollToPosition(position);
+                } else {
+                    recyclerView.smoothScrollToPosition(position);
+                }
+            } else {
+                recyclerView.smoothScrollToPosition(position);
+            }
+        }
     };
 
     private PositionListener plLargeToSmall = userId -> {

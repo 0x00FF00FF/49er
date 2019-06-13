@@ -126,7 +126,7 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glideVersion"
     implementation "com.facebook.stetho:stetho:$stethoVersion"
     implementation "com.facebook.stetho:stetho-okhttp3:$stethoVersion"
-    implementation "com.xwray:groupie:$groupieVersion"
+//    implementation "com.xwray:groupie:$groupieVersion"
     implementation "com.android.support:multidex:$multiDexVersion"
     implementation "de.hdodenhof:circleimageview:$circleImageViewVersion"
     implementation "me.xdrop:fuzzywuzzy:$fuzzySearchVersion"
