@@ -79,7 +79,8 @@ public class Matchers {
             @Override
             public boolean matchesSafely(View view) {
                 ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
+                return parent instanceof ViewGroup
+                        && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
             }
         };
@@ -104,6 +105,37 @@ public class Matchers {
             @Override
             public void describeTo(Description description) {
                 parentMatcher.describeTo(description);
+            }
+        };
+    }
+
+    public static Matcher<View> withElevation(final Matcher<View> parentMatcher, final int elevation) {
+        return new TypeSafeMatcher<View>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(" elevation: " + elevation + " ");
+                parentMatcher.describeTo(description);
+            }
+
+            @Override
+            protected boolean matchesSafely(View item) {
+                return parentMatcher.matches(item) && item.getElevation() == elevation;
+            }
+        };
+    }
+
+    public static Matcher<View> withHashCode(/*final Matcher<View> parentMatcher,*/ final int hashCode) {
+        return new TypeSafeMatcher<View>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(" hashCode: " + hashCode + " ");
+            }
+
+            @Override
+            protected boolean matchesSafely(View item) {
+                return item.hashCode() == hashCode;
             }
         };
     }
