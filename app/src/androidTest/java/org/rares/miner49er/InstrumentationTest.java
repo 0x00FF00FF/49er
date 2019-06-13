@@ -28,7 +28,9 @@ import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
@@ -88,6 +90,33 @@ public class InstrumentationTest {
         scenario.moveToState(State.RESUMED);
     }
 
+    /*
+     *  Given   a new time entry being added
+     *  When    the time entry edit text is clicked
+     *  Then    the date picker is shown
+     */
+    @Test
+    public void testChangeDate() throws InterruptedException {
+        onView(withId(R.id.work_date_edit_text)).perform(click());
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_date_picker_header)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_day_picker_selected_date_layout)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_date_picker_month_and_day)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_date_picker_month)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_date_picker_day)).inRoot(isDialog()).check(matches(isDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_date_picker_year)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_ok)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_cancel)).inRoot(isDialog()).check(matches(isCompletelyDisplayed()));
+        Thread.sleep(3000);
+        onView(withId(R.id.mdtp_cancel)).inRoot(isDialog()).perform(click());
+    }
 
     @Test
     public void testSnackbarFailUndoAdd() throws InterruptedException {

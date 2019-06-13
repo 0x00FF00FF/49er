@@ -1,4 +1,4 @@
-package org.rares.miner49er.domain.entries.ui.actions.add;
+package org.rares.miner49er.domain.entries.ui.actions.edit;
 
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +9,7 @@ import androidx.fragment.app.testing.FragmentScenario;
 import androidx.lifecycle.Lifecycle.State;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.hamcrest.Matcher;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -41,20 +43,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.DATE_PATTERN;
-import static org.rares.miner49er.domain.issues.IssuesInterfaces.KEY_ISSUE_ID;
+import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_TIME_ENTRY_ID;
 import static org.rares.miner49er.testutils.Matchers.textInputLayoutWithError;
 import static org.rares.miner49er.testutils.TestUtil.getResourceInt;
 import static org.rares.miner49er.testutils.TestUtil.getResourceString;
 
 @RunWith(AndroidJUnit4.class)
-public class TimeEntryAddFormFragmentTest {
+public class TimeEntryEditFormFragmentTest {
 
     private ActionFragmentDependencyProviderFake provider;
     private UserData loggedInUser;
     private ProjectData projectData;
     private IssueData issueData;
-    private TEAFF_Factory fragmentFactory;
+    private TimeEntryData timeEntryData;
+    private AFragmentFactory fragmentFactory;
     private String comments;
 
     @Mock
@@ -64,17 +68,8 @@ public class TimeEntryAddFormFragmentTest {
     private final int maxHours = getResourceInt(R.integer.max_hours);
     private final int maxCharacters = getResourceInt(R.integer.comment_max_length);
 
-//    @Rule
-//    public GrantPermissionRule permissionRule = GrantPermissionRule.grant("android.permission.DISABLE_KEYGUARD");
-
     @Before
     public void setup() {
-
-//        KeyguardManager mKeyGuardManager =
-//                (KeyguardManager) InstrumentationRegistry.getInstrumentation()
-//                        .getTargetContext().getSystemService(Context.KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock mLock = mKeyGuardManager.newKeyguardLock("<name>");
-//        mLock.disableKeyguard();
 
         MockitoAnnotations.initMocks(this);
 
@@ -103,23 +98,35 @@ public class TimeEntryAddFormFragmentTest {
         issueData.setOwnerId(loggedInUser.id);
         issueData.parentId = projectData.id;
 
+        timeEntryData = new TimeEntryData();
+        timeEntryData.id = 1L;
+        timeEntryData.setHours(1);
+        timeEntryData.setUserId(loggedInUser.id);
+        timeEntryData.setWorkDate(System.currentTimeMillis());
+        timeEntryData.setDateAdded(System.currentTimeMillis());
+        timeEntryData.setDeleted(false);
+        timeEntryData.setUserName(loggedInUser.getName());
+        timeEntryData.setUserPhoto(loggedInUser.getPicture());
+        timeEntryData.parentId = issueData.id;
+
         provider.fakePdao.object = projectData;
         provider.fakeIdao.object = issueData;
+        provider.fakeTEdao.object = timeEntryData;
         provider.fakeUdao.object = loggedInUser;
 
         Bundle args = new Bundle();
-        args.putLong(KEY_ISSUE_ID, 1);
+        args.putLong(KEY_TIME_ENTRY_ID, timeEntryData.id);
 
-        fragmentFactory = new TEAFF_Factory(provider);
+        fragmentFactory = new AFragmentFactory(provider);
 
-        FragmentScenario<TimeEntryAddFormFragment> scenario =
-                FragmentScenario.launchInContainer(TimeEntryAddFormFragment.class, args, R.style.AppTheme, fragmentFactory);
+        FragmentScenario<TimeEntryEditFormFragment> scenario =
+                FragmentScenario.launchInContainer(TimeEntryEditFormFragment.class, args, R.style.AppTheme, fragmentFactory);
 
         scenario.moveToState(State.RESUMED);
     }
 
     /*
-     *  Given   a new TimeEntryAddFormFragment
+     *  Given   a new TimeEntryEditFormFragment with existing timeEntry data that has no comments
      *  When    correct time entry data is present
      *  And     SAVE action is triggered
      *  Then    the time entry data will be persisted
@@ -128,18 +135,22 @@ public class TimeEntryAddFormFragmentTest {
     public void testSaveTimeEntry() {
 
         // given [setup]
+        assertNull(provider.fakeTEdao.object.getComments());
+        Matcher<View> commentsEditTextById = withId(R.id.comments_edit_text);
+        onView(commentsEditTextById).check(matches(withText("")));
 
         // when
         onView(withId(R.id.project_name_edit_text)).check(matches(withText(projectData.getName())));
         onView(withId(R.id.issue_name_edit_text)).check(matches(withText(issueData.getName())));
 
-        String comments = "I won't be able to see what I write here.";
-        String hours = "1";
+        final String comments = "I won't be able to see what I write here.";
+        final int hours = 1;
+        final String hrs = String.valueOf(hours);
 
-        onView(withId(R.id.hours_edit_text)).perform(replaceText(hours), closeSoftKeyboard());
+        onView(withId(R.id.hours_edit_text)).perform(replaceText(hrs), closeSoftKeyboard());
         onView(withId(R.id.comments_edit_text)).perform(replaceText(comments), closeSoftKeyboard());
 
-        onView(withId(R.id.hours_edit_text)).check(matches(withText(hours)));
+        onView(withId(R.id.hours_edit_text)).check(matches(withText(hrs)));
         onView(withId(R.id.comments_edit_text)).check(matches(withText(comments)));
 
         onView(withId(R.id.btn_add)).perform(click());
@@ -150,12 +161,14 @@ public class TimeEntryAddFormFragmentTest {
         assertNotNull(timeEntryData);
 
         assertEquals(comments, timeEntryData.getComments());
-        assertEquals(Integer.valueOf(hours).intValue(), timeEntryData.getHours());
+        assertEquals(hours, timeEntryData.getHours());
         assertEquals(issueData.id, timeEntryData.parentId);
+
+        assertNotEquals(this.timeEntryData, timeEntryData);
     }
 
     /*
-     *  Given   a new TimeEntryAddFormFragment
+     *  Given   a new TimeEntryEditFormFragment
      *  When    it is ready to use
      *  Then    the projectName is correct, edit text is not enabled
      *  And     the issueName is correct, edit text is not enabled
@@ -180,10 +193,10 @@ public class TimeEntryAddFormFragmentTest {
                 .check(matches(withText(issueData.getName())))
                 .check(matches(not(isEnabled())));
         onView(withId(R.id.owner_edit_text))
-                .check(matches(withText(loggedInUser.getName())))
+                .check(matches(withText(timeEntryData.getUserName())))
                 .check(matches(not(isEnabled())));
         onView(withId(R.id.hours_edit_text))
-                .check(matches(withText("")))
+                .check(matches(withText(String.valueOf(timeEntryData.getHours()))))
                 .check(matches(isEnabled()));
         onView(withId(R.id.comments_edit_text))
                 .check(matches(withText("")))
@@ -197,7 +210,7 @@ public class TimeEntryAddFormFragmentTest {
     }
 
     /*
-     *  Given   a new TimeEntryAddFormFragment with no data in the 'hours worked' field
+     *  Given   a new TimeEntryEditFormFragment with no data in the 'hours worked' field
      *  When    a user attempts to save the time entry
      *  Then    an error message appears [informing that 'hours worked' needs to be completed]
      *  And     the time entry is not saved
@@ -207,12 +220,12 @@ public class TimeEntryAddFormFragmentTest {
         // given [setup]
 
         // when
-        onView(withId(R.id.comments_edit_text)).perform(replaceText(comments), closeSoftKeyboard());
+        onView(withId(R.id.hours_edit_text)).perform(clearText(), closeSoftKeyboard());
         onView(withId(R.id.btn_add)).perform(click());
 
         // then
         TimeEntryData timeEntryData = provider.fakeTEdao.object;
-        assertNull(timeEntryData);
+        assertEquals(this.timeEntryData, timeEntryData);
 
         String error = String.format(getResourceString(R.string.error_time_entry_hours), minHours, maxHours);
 
@@ -237,7 +250,7 @@ public class TimeEntryAddFormFragmentTest {
 
         // then
         TimeEntryData timeEntryData = provider.fakeTEdao.object;
-        assertNull(timeEntryData);
+        assertEquals(this.timeEntryData, timeEntryData);
         String error = String.format(getResourceString(R.string.error_time_entry_hours), minHours, maxHours);
 
         onView(withId(R.id.hours_input_layout)).check(matches(textInputLayoutWithError(withId(R.id.hours_input_layout), error)));
@@ -245,7 +258,8 @@ public class TimeEntryAddFormFragmentTest {
 
     /*
      *  Given   a user with 16 hours already inserted for the day
-     *  When    he tries to add another time entry
+     *  When    he tries to edit one of his time entries so that
+     *          there are more than the max total hours for one day
      *  And     attempts to save the time entry
      *  Then    the time entry form will display an error message
      *  And     the time entry will not be saved
@@ -266,13 +280,13 @@ public class TimeEntryAddFormFragmentTest {
         provider.fakeTEdao.list = list;
 
         // when
-        onView(withId(R.id.comments_edit_text)).perform(replaceText(comments), closeSoftKeyboard());
+        onView(withId(R.id.hours_edit_text)).perform(replaceText(String.valueOf(maxHours * 3 / 4)), closeSoftKeyboard());
         onView(withId(R.id.btn_add)).perform(click());
 
         // then
         TimeEntryData timeEntryData = provider.fakeTEdao.object;
-        assertNull(timeEntryData);
-        String error = String.format(getResourceString(R.string.error_time_entry_hours), minHours, maxHours);
+        assertEquals(this.timeEntryData, timeEntryData);
+        String error = String.format(getResourceString(R.string.error_time_entry_too_many_hours), maxHours);
 
         int viewId = R.id.hours_input_layout;
         onView(withId(viewId)).check(matches(textInputLayoutWithError(withId(viewId), error)));
@@ -297,7 +311,8 @@ public class TimeEntryAddFormFragmentTest {
 
         // then
         TimeEntryData timeEntryData = provider.fakeTEdao.object;
-        assertNull(timeEntryData);
+        assertEquals(this.timeEntryData, timeEntryData);
+        assertNull(this.timeEntryData.getComments());
         String error = String.format(getResourceString(R.string.error_field_number_of_characters), minHours, maxHours);
 
         int viewId = R.id.comments_input_layout;
@@ -336,22 +351,18 @@ public class TimeEntryAddFormFragmentTest {
         assertEquals(issueData.id, timeEntryData.parentId);
 
         // then
-        onView(withText(R.string.success_time_entry_add)).check(matches(isCompletelyDisplayed()));
+        onView(withText(R.string.success_time_entry_save)).check(matches(isCompletelyDisplayed()));
     }
 
-    /*          fixme | cannot find the second snackbar - works in instrumentation test
+    /*          fixme | cannot find the second snackbar
      *  Given   a user saves a time entry with no errors
      *  When    the snackbar is displayed
-     *  And     the user presses the undo button on the snackbar
-     *  Then    the time entry is deleted
-     *  And     another snackbar is displayed informing the user
-     *          about the operation completion status
-     *          [the time entry has been successfully deleted]
+     *  And     the user presses the dismiss button on the snackbar
+     *  Then    snackbar does not exist anymore
      */
     @Test
-    public void testSnackbarUndoAdd() {
-        provider.fakeTEdao.booleanToReturn = true;
-        assertNull(provider.fakeTEdao.object);
+    public void testSnackbarDismiss() {
+        assertEquals(this.timeEntryData, provider.fakeTEdao.object);
 
         // when
         onView(withId(R.id.project_name_edit_text)).check(matches(withText(projectData.getName())));
@@ -374,108 +385,132 @@ public class TimeEntryAddFormFragmentTest {
         assertEquals(comments, timeEntryData.getComments());
         assertEquals(Integer.valueOf(hours).intValue(), timeEntryData.getHours());
         assertEquals(issueData.id, timeEntryData.parentId);
+        assertNotEquals(timeEntryData, this.timeEntryData);
 
-        onView(withText(R.string.success_time_entry_add)).check(matches(isCompletelyDisplayed()));
-        onView(withText(R.string.action_undo)).perform(click());
-
-        // then
-
-//        Thread.sleep(500);
-        assertEquals(timeEntryData.id, provider.fakeTEdao.object.id);
-//        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(isCompletelyDisplayed()));
-//        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.entry_removed)));
-    }
-
-    /*          fixme | cannot find the second snackbar - works in instrumentation test
-     *  Given   a user saves a time entry with no errors
-     *  When    the snackbar is displayed
-     *  And     the user presses the undo button on the snackbar
-     *  And     the dao could not complete the request
-     *  Then    the time entry is not deleted
-     *  And     another snackbar is displayed informing the user
-     *          about the operation completion status
-     *          [the time entry has not been successfully deleted]
-     */
-    @Test
-    public void testSnackbarFailUndoAdd() {
-        provider.fakeTEdao.booleanToReturn = false;
-        assertNull(provider.fakeTEdao.object);
-
-        // when
-        onView(withId(R.id.project_name_edit_text)).check(matches(withText(projectData.getName())));
-        onView(withId(R.id.issue_name_edit_text)).check(matches(withText(issueData.getName())));
-
-        String hours = "1";
-
-        onView(withId(R.id.hours_edit_text)).perform(replaceText(hours), closeSoftKeyboard());
-        onView(withId(R.id.comments_edit_text)).perform(replaceText(comments), closeSoftKeyboard());
-
-        onView(withId(R.id.hours_edit_text)).check(matches(withText(hours)));
-        onView(withId(R.id.comments_edit_text)).check(matches(withText(comments)));
-
-        onView(withId(R.id.btn_add)).perform(click());
-
-        TimeEntryData timeEntryData = provider.fakeTEdao.object;
-
-        assertNotNull(timeEntryData);
-
-        assertEquals(comments, timeEntryData.getComments());
-        assertEquals(Integer.valueOf(hours).intValue(), timeEntryData.getHours());
-        assertEquals(issueData.id, timeEntryData.parentId);
-
-        onView(withText(R.string.success_time_entry_add)).check(matches(isCompletelyDisplayed()));
-        onView(withText(R.string.action_undo)).perform(click());
+        ViewInteraction successLabel = onView(withText(R.string.success_time_entry_save));
+        successLabel.check(matches(isCompletelyDisplayed()));
+        onView(withText(R.string.action_dismiss)).perform(click());
 
         // then
-        assertEquals(timeEntryData.id, provider.fakeTEdao.object.id);
-//        onView(withText(R.string.err_entry_not_removed)).check(matches(isCompletelyDisplayed()));
 
+        successLabel.check(doesNotExist());
     }
 
     /*
-     *  Given   nothing
-     *  When    a TimeEntryAddFormFragment is created using newInstance
+     *  Given   the desire to acquire complete coverage
+     *  When    a TimeEntryEditFormFragment is created using newInstance
      *  Then    a new TimeEntryAddFormFragment is created
      */
     @Test
     public void testNewInstance() {
-        TimeEntryAddFormFragment fragment = TimeEntryAddFormFragment.newInstance();
+        TimeEntryEditFormFragment fragment = TimeEntryEditFormFragment.newInstance();
         final int fragmentHashCode = fragment.hashCode();
-        assertNotEquals(fragmentHashCode, TimeEntryAddFormFragment.newInstance());
+        assertNotEquals(fragmentHashCode, TimeEntryEditFormFragment.newInstance());
     }
 
     /*
      *  Given   nothing
-     *  When    TimeEntryAddFormFragment getTag is called
-     *  Then    "TimeEntryAddFormFragment" is returned.
+     *  When    TimeEntryEditFormFragment getActionTag is called
+     *  Then    "TimeEntryEditFormFragment" is returned.
      */
     @Test
     public void testGetTag() {
-        assertEquals(TimeEntryAddFormFragment.class.getSimpleName(),
-                ((TimeEntryAddFormFragment) fragmentFactory.fragment).getActionTag());
+        assertEquals(TimeEntryEditFormFragment.class.getSimpleName(),
+                ((TimeEntryEditFormFragment) fragmentFactory.fragment).getActionTag());
     }
 
-    /*  fixme | needs instrumentation test
-     *  Given   a new time entry being added
-     *  When    the time entry edit text is clicked
-     *  Then    the date picker is shown
+    /*
+     *  Given   a TimeEntryEditFormFragment with no time entry id set in the bundle
+     *  When    a new instance is created,
+     *  Then    an IllegalStateException is thrown
      */
     @Test
-    public void testChangeDate() {
-//        onView(withId(R.id.hours_edit_text)).perform(click()).perform(pressKey(KeyEvent.KEYCODE_TAB));
-        ViewInteraction workDate = onView(withId(R.id.work_date_edit_text));
-        workDate.check(matches(isDisplayed()));
-        workDate.perform(click());
-//        workDate.check(matches(not(hasFocus())));
-
-//        onView(withId(R.id.mdtp_cancel)).inRoot(isDialog()).perform(click());
+    public void testISE_noTeId() {
+        try {
+            FragmentScenario.launchInContainer(
+                    TimeEntryEditFormFragment.class,
+                    null,
+                    R.style.AppTheme,
+                    fragmentFactory);
+        } catch (Exception x) {
+            assertTrue(x instanceof IllegalStateException);
+        }
     }
 
-    private class TEAFF_Factory extends FragmentFactory {
+    /*
+     *  Given   a logged in user tries to edit another user's time entry
+     *  When    the TimeEntryEditFormFragment is resumed,
+     *  Then    none of the form fields are enabled
+     *  And     onApply nothing changes
+     */
+    @Test
+    public void testEditDisabled() {
+        UserData otherUser = new UserData();
+        otherUser.id = loggedInUser.id + 1;
+        otherUser.setName("Rafaello Contondente");
+
+        timeEntryData = new TimeEntryData();
+        timeEntryData.id = 1L;
+        timeEntryData.setHours(1);
+        timeEntryData.setUserId(otherUser.id);
+        timeEntryData.setWorkDate(System.currentTimeMillis());
+        timeEntryData.setDateAdded(System.currentTimeMillis());
+        timeEntryData.setDeleted(false);
+        timeEntryData.setUserName(otherUser.getName());
+        timeEntryData.setUserPhoto(otherUser.getPicture());
+        timeEntryData.parentId = issueData.id;
+
+        provider.fakePdao.object = projectData;
+        provider.fakeIdao.object = issueData;
+        provider.fakeTEdao.object = timeEntryData;
+        provider.fakeUdao.object = otherUser;
+
+        Bundle args = new Bundle();
+        args.putLong(KEY_TIME_ENTRY_ID, timeEntryData.id);
+
+        fragmentFactory = new AFragmentFactory(provider);
+
+        FragmentScenario<TimeEntryEditFormFragment> scenario =
+                FragmentScenario.launchInContainer(TimeEntryEditFormFragment.class, args, R.style.AppTheme, fragmentFactory);
+
+        scenario.moveToState(State.RESUMED);
+
+        // given, when [setup]
+        String date = DateTime.now().toString(DATE_PATTERN);
+
+        // then
+        onView(withId(R.id.project_name_edit_text))
+                .check(matches(withText(projectData.getName())))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.issue_name_edit_text))
+                .check(matches(withText(issueData.getName())))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.owner_edit_text))
+                .check(matches(withText(timeEntryData.getUserName())))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.hours_edit_text))
+                .check(matches(withText(String.valueOf(timeEntryData.getHours()))))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.comments_edit_text))
+                .check(matches(withText("")))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.work_date_edit_text))
+                .check(matches(withText(date)))
+                .check(matches(not(isEnabled())));
+        onView(withId(R.id.date_added_edit_text))
+                .check(matches(withText(date)))
+                .check(matches(not(isEnabled())));
+
+        ((TimeEntryEditFormFragment)fragmentFactory.fragment).applyAction();
+
+        assertEquals(timeEntryData, provider.fakeTEdao.object);
+    }
+
+    private class AFragmentFactory extends FragmentFactory {
         final ActionFragmentDependencyProvider provider;
         Fragment fragment = null;
 
-        TEAFF_Factory(ActionFragmentDependencyProvider provider) {
+        AFragmentFactory(ActionFragmentDependencyProvider provider) {
             this.provider = provider;
         }
 
@@ -484,8 +519,8 @@ public class TimeEntryAddFormFragmentTest {
         public Fragment instantiate(@NonNull ClassLoader classLoader, @NonNull String className) {
             Class clazz = loadFragmentClass(classLoader, className);
 
-            if (clazz == TimeEntryAddFormFragment.class) {
-                fragment = new TimeEntryAddFormFragment(provider);
+            if (clazz == TimeEntryEditFormFragment.class) {
+                fragment = new TimeEntryEditFormFragment(provider);
             } else {
                 fragment = super.instantiate(classLoader, className);
             }

@@ -3,6 +3,8 @@ package org.rares.miner49er.testutils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.TextView;
+import androidx.appcompat.widget.AppCompatEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -79,6 +81,29 @@ public class Matchers {
                 ViewParent parent = view.getParent();
                 return parent instanceof ViewGroup && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
+    }
+
+    public static Matcher<View> withText(final Matcher<View> parentMatcher, final String text) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                if (item instanceof AppCompatEditText) {
+                    return ((AppCompatEditText) item).getEditableText().toString().equals(text);
+                }
+                if (item instanceof TextView) {
+                    return ((TextView) item).getText().equals(text);
+                }
+                if (item instanceof RotationAwareTextView) {
+                    return ((RotationAwareTextView) item).getText().equals(text);
+                }
+                return false;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                parentMatcher.describeTo(description);
             }
         };
     }

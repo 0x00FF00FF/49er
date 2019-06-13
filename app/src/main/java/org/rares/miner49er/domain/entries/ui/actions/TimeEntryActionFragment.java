@@ -286,6 +286,7 @@ public abstract class TimeEntryActionFragment extends ActionFragment {
     @OnFocusChange(R.id.work_date_edit_text)
     void selectDateOnFocus(boolean focused) {
         if (focused) {
+//            workDateEditText.clearFocus();
             long workDate = timeEntryData == null ? 0 : timeEntryData.getDateAdded();
             DateTime date = workDate == 0 ? DateTime.now() : new DateTime(workDate);
             DatePickerDialog dpd = DatePickerDialog.newInstance(

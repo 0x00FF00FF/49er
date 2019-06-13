@@ -91,8 +91,7 @@ ext {
     robolectricVersion = '4.2.1'
     mockitoCoreVersion = '1.10.19'
 
-    /*
-        jUnitVersion = '4.12'
+     /*   jUnitVersion = '4.12'
     androidxTestRulesVersion = '1.2.0'
 
     // instrumentation
@@ -111,10 +110,11 @@ ext {
     androidxTestUiAutomatorVersion = '2.2.0'
     googleTruthVersion = '0.42'
     hamcrestLibraryVersion = '1.3'
+    androidxFragmentVersion= '1.1.0-beta01'
+    androidxFragmentTestVersion= '1.1.0-beta01'
 
 
     // local
     robolectricVersion = '4.2.1'
-    mockitoCoreVersion = '1.10.19'
-    */
+    mockitoCoreVersion = '1.10.19'*/
 }
