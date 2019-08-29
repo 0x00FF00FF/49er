@@ -18,6 +18,8 @@ public class Project {
     /*@StorIOSQLiteColumn(name = "icon_path")              */       String icon;
     /*@StorIOSQLiteColumn(name = "picture_path")           */       String picture;
     /*@StorIOSQLiteColumn(name = "deleted")                */       int deleted;
+    /*@StorIOSQLiteColumn(name = "archived")               */       int archived;
+    /*@StorIOSQLiteColumn(name = "objectId")               */       String objectId;
 
     User owner;
     List<User> team;

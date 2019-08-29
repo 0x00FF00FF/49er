@@ -18,6 +18,7 @@ public class TimeEntry {
     /*@StorIOSQLiteColumn(name = "hours")                 */        int hours;
     /*@StorIOSQLiteColumn(name = "comments")              */        String comments;
     /*@StorIOSQLiteColumn(name = "deleted")               */        int deleted;
+    /*@StorIOSQLiteColumn(name = "objectId")              */        String objectId;
 
     Issue issue;
     User user;

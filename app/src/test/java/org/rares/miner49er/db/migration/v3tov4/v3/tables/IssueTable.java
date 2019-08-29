@@ -1,4 +1,4 @@
-package org.rares.miner49er.persistence.storio.tables;
+package org.rares.miner49er.db.migration.v3tov4.v3.tables;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -13,8 +13,6 @@ public final class IssueTable {
     public static final String LAST_UPDATED_COLUMN =        "last_updated";
     public static final String NAME_COLUMN =                "issue_name";
     public static final String DELETED_COLUMN =             "deleted";
-    public static final String CLOSED_COLUMN =              "closed";
-    public static final String OBJECT_ID_COLUMN =           "objectId";
 
     public static final String T_ID_COLUMN =            NAME + "." + ID_COLUMN;
     public static final String T_PROJECT_ID_COLUMN =    NAME + "." + PROJECT_ID_COLUMN;
@@ -24,8 +22,6 @@ public final class IssueTable {
     public static final String T_LAST_UPDATED_COLUMN =  NAME + "." + LAST_UPDATED_COLUMN;
     public static final String T_NAME_COLUMN =          NAME + "." + NAME_COLUMN;
     public static final String T_DELETED_COLUMN =       NAME + "." + DELETED_COLUMN;
-    public static final String T_CLOSED_COLUMN =        NAME + "." + CLOSED_COLUMN;
-    public static final String T_OBJECT_ID_COLUMN =     NAME + "." + OBJECT_ID_COLUMN;
 
     public static final String A_ID_COLUMN =            NAME + "_" + ID_COLUMN;
     public static final String A_PROJECT_ID_COLUMN =    NAME + "_" + PROJECT_ID_COLUMN;
@@ -35,10 +31,8 @@ public final class IssueTable {
     public static final String A_LAST_UPDATED_COLUMN =  NAME + "_" + LAST_UPDATED_COLUMN;
     public static final String A_NAME_COLUMN =          NAME + "_" + NAME_COLUMN;
     public static final String A_DELETED_COLUMN =       NAME + "_" + DELETED_COLUMN;
-    public static final String A_CLOSED_COLUMN =        NAME + "_" + CLOSED_COLUMN;
-    public static final String A_OBJECT_ID_COLUMN =     NAME + "_" + OBJECT_ID_COLUMN;
 
-    public static final String COL_ALIAS = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+    public static final String COL_ALIAS = String.format("%s, %s, %s, %s, %s, %s, %s, %s",
             T_ID_COLUMN                 + " as " + A_ID_COLUMN,
             T_PROJECT_ID_COLUMN         + " as " + A_PROJECT_ID_COLUMN,
             T_OWNER_ID_COLUMN           + " as " + A_OWNER_ID_COLUMN,
@@ -46,10 +40,7 @@ public final class IssueTable {
             T_DATE_DUE_COLUMN           + " as " + A_DATE_DUE_COLUMN,
             T_LAST_UPDATED_COLUMN       + " as " + A_LAST_UPDATED_COLUMN,
             T_NAME_COLUMN               + " as " + A_NAME_COLUMN,
-            T_DELETED_COLUMN            + " as " + A_DELETED_COLUMN,
-            T_CLOSED_COLUMN             + " as " + A_CLOSED_COLUMN,
-            T_OBJECT_ID_COLUMN          + " as " + A_OBJECT_ID_COLUMN
-    );
+            T_DELETED_COLUMN            + " as " + A_DELETED_COLUMN);
 
     private IssueTable() {
     }
@@ -59,14 +50,11 @@ public final class IssueTable {
                 + ID_COLUMN + " INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
                 + PROJECT_ID_COLUMN + " INTEGER NOT NULL " +
                     "REFERENCES " + ProjectsTable.TABLE_NAME + "(" + ProjectsTable.COLUMN_ID + ") ON DELETE CASCADE, "
-                + OWNER_ID_COLUMN +             " INTEGER,\n"
-                + DATE_ADDED_COLUMN +           " INTEGER,\n"
-                + DATE_DUE_COLUMN +             " INTEGER,\n"
-                + LAST_UPDATED_COLUMN +         " INTEGER,\n"
-                + NAME_COLUMN +                 " TEXT,\n"
-                + DELETED_COLUMN +              " INTEGER,\n"
-                + OBJECT_ID_COLUMN +            " TEXT,\n"
-                + CLOSED_COLUMN +               " INTEGER\n" +
-                ");");
+                + OWNER_ID_COLUMN + " INTEGER,\n"
+                + DATE_ADDED_COLUMN + " INTEGER,\n"
+                + DATE_DUE_COLUMN + " INTEGER,\n"
+                + LAST_UPDATED_COLUMN + " INTEGER,\n"
+                + NAME_COLUMN + " TEXT,\n"
+                + DELETED_COLUMN + " INTEGER);");
     }
 }

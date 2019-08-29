@@ -1,4 +1,4 @@
-package org.rares.miner49er.persistence.storio.tables;
+package org.rares.miner49er.db.migration.v3tov4.v4.tables;
 
 import android.database.sqlite.SQLiteDatabase;
 

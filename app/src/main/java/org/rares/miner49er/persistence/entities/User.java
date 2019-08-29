@@ -18,4 +18,5 @@ public class User {
     /*@StorIOSQLiteColumn(name = "api_key")               */        String apiKey;
     /*@StorIOSQLiteColumn(name = "role")                  */        int role;
     /*@StorIOSQLiteColumn(name = "active")                */        int active;
+    /*@StorIOSQLiteColumn(name = "objectId")              */        String objectId;
 }

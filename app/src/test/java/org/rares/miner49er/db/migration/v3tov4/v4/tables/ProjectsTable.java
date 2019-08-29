@@ -1,4 +1,4 @@
-package org.rares.miner49er.persistence.storio.tables;
+package org.rares.miner49er.db.migration.v3tov4.v4.tables;
 
 import android.database.sqlite.SQLiteDatabase;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
@@ -76,3 +76,4 @@ public class ProjectsTable {
 
     public static Query AllProjectsQuery = Query.builder().table(ProjectsTable.TABLE_NAME).build();
 }
+//insert into projects ("_user_id", "date_added", "last_updated", "project_name", "project_description","icon_path","picture_path" ) values(4, 1531216541999, 0, "my_project", "my_description", "http://www.example.com/", "www.example.com");

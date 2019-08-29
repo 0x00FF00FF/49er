@@ -32,6 +32,13 @@ import org.rares.miner49er.persistence.storio.resolvers.UserProjectPutResolver;
 import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLiteDeleteResolver;
 import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLiteGetResolver;
 import org.rares.miner49er.persistence.storio.resolvers.UserStorIOSQLitePutResolver;
+import org.rares.miner49er.persistence.storio.tables.IssueTable;
+import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
+import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
+import org.rares.miner49er.persistence.storio.tables.UserTable;
+
+import java.util.Arrays;
 
 public enum StorioFactory {
 
@@ -49,8 +56,19 @@ public enum StorioFactory {
     }
 
     public void setup(Context c) {
+        StorioDbHelper helper = StorioDbHelper.builder()
+                .context(c)
+                .tables(Arrays.asList(
+                        UserTable::createTable,
+                        TimeEntryTable::createTable,
+                        IssueTable::createTable,
+                        ProjectsTable::createTable,
+                        UserProjectTable::createTable))
+                .version(3)
+                .build();
+
         storio = DefaultStorIOSQLite.builder()
-                .sqliteOpenHelper(new StorioDbHelper(c))
+                .sqliteOpenHelper(helper)
 
                 .addTypeMapping(User.class, getUserSQLiteTypeMapping())
                 .addTypeMapping(TimeEntry.class, getTimeEntrySQLiteTypeMapping())

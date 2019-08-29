@@ -325,7 +325,7 @@ public class EntityOptimizerTest {
      */
     @Test
     public void test_entityOptimizer_happy() {
-        DbUpdateFinishedListener listener = Assert::assertTrue;
+        DbUpdateFinishedListener listener = (r,c)->Assert.assertTrue(r);
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
     }
@@ -339,7 +339,7 @@ public class EntityOptimizerTest {
     @Test
     public void test_entityOptimizer_unsuccessfulInsert() {
         Mockito.when(projectDao.insert(Matchers.anyListOf(Project.class))).thenReturn(Single.just(false));
-        DbUpdateFinishedListener listener = Assert::assertFalse;
+        DbUpdateFinishedListener listener = (r,c)->Assert.assertFalse(r);
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
     }
@@ -562,7 +562,7 @@ public class EntityOptimizerTest {
                 .userDao(userDao)
                 .build();
 
-        DbUpdateFinishedListener listener = Assert::assertTrue;
+        DbUpdateFinishedListener listener = (r,c)->Assert.assertTrue(r);
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
 
@@ -771,7 +771,7 @@ public class EntityOptimizerTest {
                 .userDao(userDao)
                 .build();
 
-        DbUpdateFinishedListener listener = Assert::assertTrue;
+        DbUpdateFinishedListener listener = (r,c)->Assert.assertTrue(r);
         entityOptimizer.addDbUpdateFinishedListener(listener);
         entityOptimizer.accept(projects);
 

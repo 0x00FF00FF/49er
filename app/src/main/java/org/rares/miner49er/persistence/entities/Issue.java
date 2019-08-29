@@ -21,6 +21,7 @@ public class Issue {
     /*@StorIOSQLiteColumn(name = "last_updated")        */          long lastUpdated;
     /*@StorIOSQLiteColumn(name = "issue_name")          */          String name;
     /*@StorIOSQLiteColumn(name = "deleted")             */          int deleted;
+    /*@StorIOSQLiteColumn(name = "objectId")            */          String objectId;
 
     User owner;
     Project project;
