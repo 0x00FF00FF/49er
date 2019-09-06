@@ -6,6 +6,7 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver;
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery;
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery;
 import org.rares.miner49er.persistence.entities.User;
+import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 /**
  * Generated resolver for Put Operation.
@@ -29,9 +30,9 @@ public class UserStorIOSQLitePutResolver extends DefaultPutResolver<User> {
     @NonNull
     public UpdateQuery mapToUpdateQuery(@NonNull User object) {
         return UpdateQuery.builder()
-                .table("users")
-                .where("_id = ?")
-                .whereArgs(object.getId())
+                .table(UserTable.NAME)
+                .where(UserTable.OBJECT_ID_COLUMN + " = ? ")
+                .whereArgs(object.getObjectId())
                 .build();
     }
 
@@ -51,6 +52,7 @@ public class UserStorIOSQLitePutResolver extends DefaultPutResolver<User> {
         contentValues.put("photo_path", object.getPhoto());
         contentValues.put("api_key", object.getApiKey());
         contentValues.put("role", object.getRole());
+        contentValues.put("objectid", object.getObjectId());
 
         return contentValues;
     }

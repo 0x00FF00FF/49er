@@ -17,11 +17,11 @@ import org.junit.runner.RunWith;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.HomeScrollingActivity;
 import org.rares.miner49er.R;
-import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.network.NetworkingService;
 
 import java.util.ArrayList;
 import java.util.List;

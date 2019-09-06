@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 /*@StorIOSQLiteType(table = "projects")*/
-public class Project {
+public class Project  implements ObjectIdHolder {
 
     /*@StorIOSQLiteColumn(name = "_id", key = true)        */       Long id;
     /*@StorIOSQLiteColumn(name = "_user_id")               */       Long ownerId;

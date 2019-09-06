@@ -10,4 +10,5 @@ public abstract class AbstractViewModel {
     public long lastUpdated;
     public Long parentId;
     public boolean deleted;
+    public String objectId;
 }

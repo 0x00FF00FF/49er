@@ -27,6 +27,7 @@ private static final String TAG = UserData.class.getSimpleName();
 
     public boolean compareContents(UserData otherData) {
         return (id.equals(otherData.id)) &&
+                (objectId.equals(otherData.objectId)) &&
                 (role == otherData.role) &&
                 (email == null ? "" : email).equals(otherData.email == null ? "" : otherData.email) &&
                 (apiKey == null ? "" : apiKey).equals(otherData.apiKey == null ? "" : otherData.apiKey) &&
@@ -44,6 +45,7 @@ private static final String TAG = UserData.class.getSimpleName();
         password = newUserData.password;
         picture = newUserData.picture;
         apiKey = newUserData.apiKey;
+        objectId = newUserData.objectId;
     }
 
     public UserData clone() {

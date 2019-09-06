@@ -213,6 +213,7 @@ public class SignUpFragment extends Fragment {
                                 userData.setName(userName);
                                 userData.setEmail(userEmail);
                                 userData.setActive(true);
+                                userData.setObjectId("0000-0000-0A0B0C0D0E0F0F0F");
                                 disposables.add(
                                         // TODO: service call
                                         usersDao.insert(userData)

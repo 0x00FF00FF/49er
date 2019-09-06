@@ -25,6 +25,7 @@ public class TimeEntryConverter implements DaoConverter<TimeEntry, TimeEntryData
         dbModel.setHours(viewModel.getHours());
         dbModel.setUserId(viewModel.getUserId());
         dbModel.setDeleted(viewModel.isDeleted() ? 1 : 0);
+        dbModel.setObjectId(viewModel.getObjectId());
 
         return dbModel;
     }
@@ -45,6 +46,7 @@ public class TimeEntryConverter implements DaoConverter<TimeEntry, TimeEntryData
         viewModel.setHours(databaseModel.getHours());
         viewModel.setUserId(databaseModel.getUserId());
         viewModel.setDeleted(databaseModel.getDeleted() != 0);
+        viewModel.setObjectId(databaseModel.getObjectId());
         if (databaseModel.getUser() != null) {
             viewModel.setUserPhoto(databaseModel.getUser().getPhoto());
             viewModel.setUserName(databaseModel.getUser().getName());

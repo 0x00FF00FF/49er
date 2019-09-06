@@ -3,6 +3,7 @@ package org.rares.miner49er.persistence.dao;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.LazyProjectGetResolver;
 
 import java.util.List;
+import java.util.Map;
 
 public class ProjectsDao implements GenericEntityDao<Project> {
     private StorIOSQLite storio = StorioFactory.INSTANCE.get();
@@ -100,6 +102,36 @@ public class ProjectsDao implements GenericEntityDao<Project> {
                 .map(res -> res.results().size() == toDelete.size());
     }
 
+    @Override
+    public Flowable<Project> insertWithResult(List<Project> toInsert) {
+        return storio.put()
+                .objects(toInsert)
+                .prepare()
+                .asRxSingle()
+                .subscribeOn(Schedulers.io())
+                .flatMapPublisher(putResult -> {
+                    Map<Project, PutResult> resultMap = putResult.results();
+                    return Flowable
+                            .fromArray(resultMap.keySet().toArray(new Project[0]))
+                            .map(p -> {
+                                PutResult result = resultMap.get(p);
+                                if (result != null && result.insertedId() != null) {
+                                    p.setId(result.insertedId());
+                                }
+                                return p;
+                            });
+                })
+                .map(project -> {
+                    System.out.println("project after saving: " + project);
+                    return project;
+                })
+                .doOnError(Throwable::printStackTrace);
+    }
+
+    @Override
+    public Flowable<Project> getByObjectIdIn(List<String> objectIds) {
+        return getResolver.getByObjectIdAsync(storio, objectIds);
+    }
 /*    @Override
     public Single<Boolean> wipe() {
         return storio.delete()
@@ -112,6 +144,7 @@ public class ProjectsDao implements GenericEntityDao<Project> {
 
     @Getter
     private final static ProjectsDao instance = new ProjectsDao(); // lombok will create getINSTANCE method if the name is not lowercase
+
     private ProjectsDao() {
     }
 }

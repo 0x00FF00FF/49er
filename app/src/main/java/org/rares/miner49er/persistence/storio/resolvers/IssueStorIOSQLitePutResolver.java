@@ -6,6 +6,7 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver;
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery;
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery;
 import org.rares.miner49er.persistence.entities.Issue;
+import org.rares.miner49er.persistence.storio.tables.IssueTable;
 
 /**
  * Generated resolver for Put Operation.
@@ -21,8 +22,9 @@ public class IssueStorIOSQLitePutResolver extends DefaultPutResolver<Issue> {
     @NonNull
     public InsertQuery mapToInsertQuery(@NonNull Issue object) {
         return InsertQuery.builder()
-                                        .table("issues")
-                                        .build();}
+                .table("issues")
+                .build();
+    }
 
     /**
      * {@inheritDoc}
@@ -31,10 +33,11 @@ public class IssueStorIOSQLitePutResolver extends DefaultPutResolver<Issue> {
     @NonNull
     public UpdateQuery mapToUpdateQuery(@NonNull Issue object) {
         return UpdateQuery.builder()
-                                        .table("issues")
-                                        .where("_id = ?")
-                                        .whereArgs(object.getId())
-                                        .build();}
+                .table("issues")
+                .where(IssueTable.OBJECT_ID_COLUMN + " = ?")
+                .whereArgs(object.getObjectId())
+                .build();
+    }
 
     /**
      * {@inheritDoc}
@@ -63,6 +66,7 @@ public class IssueStorIOSQLitePutResolver extends DefaultPutResolver<Issue> {
         contentValues.put("date_due", object.getDateDue());
         contentValues.put("last_updated", object.getLastUpdated());
         contentValues.put("issue_name", object.getName());
+        contentValues.put("objectid", object.getObjectId());
 
         return contentValues;
     }

@@ -4,6 +4,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 public final class IssueTable {
 
+    private static final String TAG = "IssueTable";
+
     public static final String NAME =                       "issues";
     public static final String ID_COLUMN =                  "_id";
     public static final String PROJECT_ID_COLUMN =          "_project_id";
@@ -55,18 +57,20 @@ public final class IssueTable {
     }
 
     public static void createTable(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + NAME + " ("
+        String createInstruction = "CREATE TABLE " + NAME + " ("
                 + ID_COLUMN + " INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
                 + PROJECT_ID_COLUMN + " INTEGER NOT NULL " +
-                    "REFERENCES " + ProjectsTable.TABLE_NAME + "(" + ProjectsTable.COLUMN_ID + ") ON DELETE CASCADE, "
+                "REFERENCES " + ProjectsTable.TABLE_NAME + "(" + ProjectsTable.COLUMN_ID + ") ON DELETE CASCADE, "
                 + OWNER_ID_COLUMN +             " INTEGER,\n"
                 + DATE_ADDED_COLUMN +           " INTEGER,\n"
                 + DATE_DUE_COLUMN +             " INTEGER,\n"
                 + LAST_UPDATED_COLUMN +         " INTEGER,\n"
                 + NAME_COLUMN +                 " TEXT,\n"
                 + DELETED_COLUMN +              " INTEGER,\n"
-                + OBJECT_ID_COLUMN +            " TEXT,\n"
+                + OBJECT_ID_COLUMN +            " TEXT UNIQUE NOT NULL,\n"
                 + CLOSED_COLUMN +               " INTEGER\n" +
-                ");");
+                ");";
+//        Log.i(TAG, "createTable: " + createInstruction);
+        db.execSQL(createInstruction);
     }
 }

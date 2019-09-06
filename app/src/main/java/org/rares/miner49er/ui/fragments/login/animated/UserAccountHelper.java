@@ -67,7 +67,10 @@ public class UserAccountHelper {
         return true;
     }
 
-    public void createAccount(@NonNull final UserData userData, final Consumer<Long> onSuccess, final Consumer<Throwable> onError) {
+    public void createAccount(
+            @NonNull final UserData userData,
+            final Consumer<Long> onSuccess,
+            final Consumer<Throwable> onError) {
         disposables.add(
                 ((UserSpecificDao) usersDao).getByEmail(userData.getEmail())
                         .observeOn(AndroidSchedulers.mainThread())

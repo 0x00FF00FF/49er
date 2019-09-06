@@ -4,11 +4,13 @@ import android.database.Cursor;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.Queries;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.storio.tables.IssueTable;
@@ -42,6 +44,7 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
         issue.setDateDue(cursor.getLong(cursor.getColumnIndex("date_due")));
         issue.setLastUpdated(cursor.getLong(cursor.getColumnIndex("last_updated")));
         issue.setName(cursor.getString(cursor.getColumnIndex("issue_name")));
+        issue.setObjectId(cursor.getString(cursor.getColumnIndex(IssueTable.OBJECT_ID_COLUMN)));
 
         return issue;
     }
@@ -65,6 +68,19 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
         return _getAll(storIOSQLite, projectId)
                 .asRxSingle();       //// storio will get data from the database for each subscriber subscribed to this single.
 //                .doOnSubscribe((x) -> Log.i(TAG, "[] getAllAsync: " + x.hashCode() + " " + Thread.currentThread().getName()));
+    }
+
+    public Flowable<Issue> getByObjectIdInAsync(StorIOSQLite storIOSQLite, List<String> objectIds){
+        return storIOSQLite.get()
+                .listOfObjects(Issue.class)
+                .withQuery(Query.builder()
+                        .table(IssueTable.NAME)
+                        .where(IssueTable.OBJECT_ID_COLUMN + " in ("+ Queries.placeholders(objectIds.size()) +")")
+                        .whereArgs(objectIds.toArray())
+                        .build())
+                .prepare()
+                .asRxSingle()
+                .flatMapPublisher(Flowable::fromIterable);
     }
 
 

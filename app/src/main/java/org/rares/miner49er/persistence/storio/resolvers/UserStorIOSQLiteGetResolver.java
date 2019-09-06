@@ -3,12 +3,14 @@ package org.rares.miner49er.persistence.storio.resolvers;
 import android.database.Cursor;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.Queries;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
@@ -37,6 +39,7 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
         user.setPhoto(cursor.getString(cursor.getColumnIndex("photo_path")));
         user.setApiKey(cursor.getString(cursor.getColumnIndex("api_key")));
         user.setRole(cursor.getInt(cursor.getColumnIndex("role")));
+        user.setObjectId(cursor.getString(cursor.getColumnIndex(UserTable.OBJECT_ID_COLUMN)));
 
         return user;
     }
@@ -90,6 +93,16 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
 
     public Single<Optional<User>> getByEmailAsync(StorIOSQLite storIOSQLite, String term) {
         return _getByEmail(storIOSQLite, term).asRxSingle();
+    }
+
+    public Flowable<User> getByObjectIdInAsync(StorIOSQLite storIOSQLite, List<String> objectIds) {
+        // in a perfect world, PreparedOperation/SQLite
+        // should return a flowable by default
+        // and not get all results in memory
+        // and then transform into a flowable
+        return _getByIdObjectIdIn(storIOSQLite, objectIds)
+                .asRxSingle()
+                .flatMapPublisher(Flowable::fromIterable);
     }
 
     ////
@@ -184,6 +197,19 @@ public class UserStorIOSQLiteGetResolver extends DefaultGetResolver<User> {
                                 .table(UserTable.NAME)
                                 .where(UserTable.EMAIL_COLUMN + " = ? ")
                                 .whereArgs(term)
+                                .build())
+                .prepare();
+    }
+
+    private PreparedGetListOfObjects<User> _getByIdObjectIdIn(StorIOSQLite storIOSQLite, List<String> objectIds) {
+        return storIOSQLite
+                .get()
+                .listOfObjects(User.class)
+                .withQuery(
+                        Query.builder()
+                                .table(UserTable.NAME)
+                                .where(UserTable.OBJECT_ID_COLUMN + " in (" + Queries.placeholders(objectIds.size()) + ") ")
+                                .whereArgs(objectIds.toArray())
                                 .build())
                 .prepare();
     }

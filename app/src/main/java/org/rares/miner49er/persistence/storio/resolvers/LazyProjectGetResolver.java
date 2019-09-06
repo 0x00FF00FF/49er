@@ -3,11 +3,13 @@ package org.rares.miner49er.persistence.storio.resolvers;
 import android.database.Cursor;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.Queries;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
@@ -39,6 +41,7 @@ public class LazyProjectGetResolver extends DefaultGetResolver<Project> {
         project.setDescription(cursor.getString(cursor.getColumnIndex("project_description")));
         project.setIcon(cursor.getString(cursor.getColumnIndex("icon_path")));
         project.setPicture(cursor.getString(cursor.getColumnIndex("picture_path")));
+        project.setObjectId(cursor.getString(cursor.getColumnIndex(ProjectsTable.COLUMN_OBJECT_ID)));
 
         return project;
     }
@@ -63,6 +66,20 @@ public class LazyProjectGetResolver extends DefaultGetResolver<Project> {
     public Single<Optional<Project>> getByIdAsync(StorIOSQLite storIOSQLite, long id) {
         return _getById(storIOSQLite, id)
                 .asRxSingle();
+    }
+
+    public Flowable<Project> getByObjectIdAsync(StorIOSQLite storIOSQLite, List<String> objectIds) {
+        return storIOSQLite.get()
+                .listOfObjects(Project.class)
+                .withQuery(
+                        Query.builder()
+                                .table(ProjectsTable.TABLE_NAME)
+                                .where(ProjectsTable.COLUMN_OBJECT_ID + " in (" + Queries.placeholders(objectIds.size()) + ")")
+                                .whereArgs(objectIds.toArray())
+                                .build())
+                .prepare()
+                .asRxSingle()
+                .flatMapPublisher(Flowable::fromIterable);
     }
 
     ////

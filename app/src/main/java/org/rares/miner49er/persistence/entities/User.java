@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 /*@StorIOSQLiteType(table = "users")*/
-public class User {
+public class User implements ObjectIdHolder {
 
     /*@StorIOSQLiteColumn(name = "_id", key = true)       */        Long id;
     /*@StorIOSQLiteColumn(name = "last_updated")          */        long lastUpdated;

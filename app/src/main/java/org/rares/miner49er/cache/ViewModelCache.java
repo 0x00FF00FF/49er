@@ -185,7 +185,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
 
     LruCache<Long, TimeEntryData> getTimeEntriesLruCache() {
         if (timeEntriesCache == null) {
-            timeEntriesCache = new LruCache<>(10000);
+            timeEntriesCache = new LruCache<>(30000);
         }
         return timeEntriesCache;
     }

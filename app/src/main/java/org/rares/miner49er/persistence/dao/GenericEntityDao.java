@@ -2,6 +2,7 @@ package org.rares.miner49er.persistence.dao;
 
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.Issue;
 import org.rares.miner49er.persistence.entities.Project;
@@ -14,6 +15,7 @@ import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
 import org.rares.miner49er.persistence.storio.tables.UserTable;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface GenericEntityDao<EntityType> {
@@ -40,6 +42,18 @@ public interface GenericEntityDao<EntityType> {
     Single<Boolean> delete(EntityType toDelete);
 
     Single<Boolean> delete(List<EntityType> toDelete);
+
+    default Single<EntityType> insertWithResult(EntityType toInsert) {
+        return Single.just(toInsert);
+    }
+
+    default Flowable<EntityType> insertWithResult(List<EntityType> toInsert) {
+        return Flowable.fromIterable(toInsert);
+    }
+
+    default Flowable<EntityType> getByObjectIdIn(List<String> objectIds) {
+        return Flowable.fromIterable(Collections.emptyList());
+    }
 
     default Single<Boolean> wipe() {
         return StorioFactory.INSTANCE.get()

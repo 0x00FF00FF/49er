@@ -11,7 +11,7 @@ import java.util.List;
 // to the 'resolvers' package for further editing
 
 /*@StorIOSQLiteType(table = "issues")*/
-public class Issue {
+public class Issue implements ObjectIdHolder  {
 
     /*@StorIOSQLiteColumn(name = "_id", key = true)     */          Long id;
     /*@StorIOSQLiteColumn(name = "_project_id")         */          Long projectId;

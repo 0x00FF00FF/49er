@@ -4,6 +4,10 @@ import android.database.sqlite.SQLiteDatabase;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
 
 public class ProjectsTable {
+    private static final String TAG = "ProjectsTable";
+
+    /* /!\ remember to update the storio resolvers */
+
     public static final String TABLE_NAME =                         "projects";
 
     public static final String COLUMN_ID =                          "_id";
@@ -57,21 +61,23 @@ public class ProjectsTable {
     );
 
     public static void createTable(SQLiteDatabase db) {
-        db.execSQL(
+        String createInstruction =
                 "CREATE TABLE " +
-                    TABLE_NAME + "(" +
-                    COLUMN_ID                           + " INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_USER_ID                      + " INTEGER NOT NULL REFERENCES " + UserTable.NAME + "(" + UserTable.ID_COLUMN + "), " +
-                    COLUMN_DATE_ADDED                   + " INTEGER NOT NULL, " +
-                    COLUMN_DATE_LAST_UPDATED            + " INTEGER NOT NULL, " +
-                    COLUMN_PROJECT_NAME                 + " TEXT NOT NULL, " +
-                    COLUMN_PROJECT_DESCRIPTION          + " TEXT, " +
-                    COLUMN_ICON_PATH                    + " TEXT NOT NULL, " +
-                    COLUMN_PICTURE_PATH                 + " TEXT NOT NULL, " +
-                    COLUMN_DELETED                      + " INTEGER, " +
-                    COLUMN_OBJECT_ID                    + " TEXT, " +
-                    COLUMN_ARCHIVED                     + " INTEGER " +
-                        ");");
+                        TABLE_NAME + "(" +
+                        COLUMN_ID                           + " INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMN_USER_ID                      + " INTEGER NOT NULL REFERENCES " + UserTable.NAME + "(" + UserTable.ID_COLUMN + "), " +
+                        COLUMN_DATE_ADDED                   + " INTEGER NOT NULL, " +
+                        COLUMN_DATE_LAST_UPDATED            + " INTEGER NOT NULL, " +
+                        COLUMN_PROJECT_NAME                 + " TEXT NOT NULL, " +
+                        COLUMN_PROJECT_DESCRIPTION          + " TEXT, " +
+                        COLUMN_ICON_PATH                    + " TEXT NOT NULL, " +
+                        COLUMN_PICTURE_PATH                 + " TEXT NOT NULL, " +
+                        COLUMN_DELETED                      + " INTEGER, " +
+                        COLUMN_OBJECT_ID                    + " TEXT UNIQUE NOT NULL, " +
+                        COLUMN_ARCHIVED                     + " INTEGER " +
+                        ");";
+//        Log.i(TAG, "createTable: " + createInstruction);
+        db.execSQL(createInstruction);
     }
 
     public static Query AllProjectsQuery = Query.builder().table(ProjectsTable.TABLE_NAME).build();

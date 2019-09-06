@@ -6,6 +6,7 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver;
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery;
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery;
 import org.rares.miner49er.persistence.entities.TimeEntry;
+import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
 
 /**
  * Generated resolver for Put Operation.
@@ -27,8 +28,8 @@ public class TimeEntryStorIOSQLitePutResolver extends DefaultPutResolver<TimeEnt
     public UpdateQuery mapToUpdateQuery(@NonNull TimeEntry object) {
         return UpdateQuery.builder()
                 .table("time_entries")
-                .where("_id = ?")
-                .whereArgs(object.getId())
+                .where(TimeEntryTable.OBJECT_ID_COLUMN + " = ?")
+                .whereArgs(object.getObjectId())
                 .build();
     }
 
@@ -54,6 +55,7 @@ public class TimeEntryStorIOSQLitePutResolver extends DefaultPutResolver<TimeEnt
         contentValues.put("last_updated", object.getLastUpdated());
         contentValues.put("hours", object.getHours());
         contentValues.put("comments", object.getComments());
+        contentValues.put("objectid", object.getObjectId());
 
         return contentValues;
     }

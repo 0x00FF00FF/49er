@@ -1,10 +1,12 @@
 package org.rares.miner49er.persistence.dao;
 
+import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
 import com.pushtorefresh.storio3.sqlite.queries.RawQuery;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
@@ -15,6 +17,7 @@ import org.rares.miner49er.persistence.storio.tables.UserProjectTable;
 import org.rares.miner49er.persistence.storio.tables.UserTable;
 
 import java.util.List;
+import java.util.Map;
 
 public class UsersDao implements GenericEntityDao<User> {
 
@@ -118,7 +121,55 @@ public class UsersDao implements GenericEntityDao<User> {
                 .map(deleteResult -> deleteResult.results().size() == toDelete.size());
     }
 
-/*    @Override
+    @Override
+    public Single<User> insertWithResult(User toInsert) {
+        return storio.put()
+                .object(toInsert)
+                .prepare()
+                .asRxSingle()
+                .subscribeOn(Schedulers.io())
+                .map(putResult -> {
+                    toInsert.setId(putResult.insertedId());
+                    return toInsert;
+                });
+    }
+
+    @Override
+    public Flowable<User> insertWithResult(List<User> toInsert) {
+        return storio.put()
+                .objects(toInsert)
+                .prepare()
+                .asRxSingle()
+                .subscribeOn(Schedulers.io())
+                .flatMapPublisher(putResult -> {
+                    Map<User, PutResult> resultMap = putResult.results();
+                    return Flowable
+                            .fromArray(resultMap.keySet().toArray(new User[0]))
+                            .map(u -> {
+                                PutResult result = resultMap.get(u);
+                                if (result != null && result.insertedId() != null) {
+                                    u.setId(result.insertedId());
+                                }
+                                return u;
+                            });
+                })
+                .map(user -> {
+                    System.out.println("user after saving: " + user);
+                    return user;
+                })
+                .doOnError(Throwable::printStackTrace);
+    }
+
+    public Flowable<User> getByObjectIdIn(List<String> objectIds) {
+        Log.d("TAG", "getByObjectIdIn() called with: objectIds = [" + objectIds + "]");
+        return userGetResolver.getByObjectIdInAsync(storio, objectIds)
+                .flatMap(u -> {
+                    System.out.println("user by oids: " + u);
+                    return Flowable.just(u);
+                });
+    }
+
+    /*    @Override
     public Single<Boolean> wipe() {
         return storio.delete()
                 .byQuery(DeleteQuery.builder().table(UserTable.NAME).build())
@@ -130,5 +181,7 @@ public class UsersDao implements GenericEntityDao<User> {
 
     @Getter
     private final static UsersDao instance = new UsersDao();
-    private UsersDao(){}
+
+    private UsersDao() {
+    }
 }

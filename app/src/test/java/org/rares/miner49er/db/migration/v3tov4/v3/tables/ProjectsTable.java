@@ -4,6 +4,9 @@ import android.database.sqlite.SQLiteDatabase;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
 
 public class ProjectsTable {
+
+    /* /!\ remember to update the storio [put] resolvers */
+
     public static final String TABLE_NAME =                         "projects";
 
     public static final String COLUMN_ID =                          "_id";

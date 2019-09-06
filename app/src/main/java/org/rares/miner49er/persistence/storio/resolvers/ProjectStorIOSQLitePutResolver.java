@@ -6,6 +6,7 @@ import com.pushtorefresh.storio3.sqlite.operations.put.DefaultPutResolver;
 import com.pushtorefresh.storio3.sqlite.queries.InsertQuery;
 import com.pushtorefresh.storio3.sqlite.queries.UpdateQuery;
 import org.rares.miner49er.persistence.entities.Project;
+import org.rares.miner49er.persistence.storio.tables.ProjectsTable;
 
 /**
  * Generated resolver for Put Operation.
@@ -21,8 +22,9 @@ public class ProjectStorIOSQLitePutResolver extends DefaultPutResolver<Project> 
     @NonNull
     public InsertQuery mapToInsertQuery(@NonNull Project object) {
         return InsertQuery.builder()
-                                        .table("projects")
-                                        .build();}
+                .table("projects")
+                .build();
+    }
 
     /**
      * {@inheritDoc}
@@ -31,10 +33,11 @@ public class ProjectStorIOSQLitePutResolver extends DefaultPutResolver<Project> 
     @NonNull
     public UpdateQuery mapToUpdateQuery(@NonNull Project object) {
         return UpdateQuery.builder()
-                                        .table("projects")
-                                        .where("_id = ?")
-                                        .whereArgs(object.getId())
-                                        .build();}
+                .table("projects")
+                .where(ProjectsTable.COLUMN_OBJECT_ID + " = ?")
+                .whereArgs(object.getObjectId())
+                .build();
+    }
 
     /**
      * {@inheritDoc}
@@ -58,6 +61,8 @@ public class ProjectStorIOSQLitePutResolver extends DefaultPutResolver<Project> 
         contentValues.put("project_description", object.getDescription());
         contentValues.put("icon_path", object.getIcon());
         contentValues.put("picture_path", object.getPicture());
+        contentValues.put("objectid", object.getObjectId());
+        contentValues.put("archived", object.getArchived());
 
         return contentValues;
     }

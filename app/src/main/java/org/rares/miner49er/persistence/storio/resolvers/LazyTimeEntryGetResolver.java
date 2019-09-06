@@ -4,11 +4,13 @@ import android.database.Cursor;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.Optional;
+import com.pushtorefresh.storio3.Queries;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.get.DefaultGetResolver;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetListOfObjects;
 import com.pushtorefresh.storio3.sqlite.operations.get.PreparedGetObject;
 import com.pushtorefresh.storio3.sqlite.queries.Query;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.storio.tables.TimeEntryTable;
@@ -42,6 +44,7 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
         timeEntry.setLastUpdated(cursor.getLong(cursor.getColumnIndex("last_updated")));
         timeEntry.setHours(cursor.getInt(cursor.getColumnIndex("hours")));
         timeEntry.setComments(cursor.getString(cursor.getColumnIndex("comments")));
+        timeEntry.setObjectId(cursor.getString(cursor.getColumnIndex(TimeEntryTable.OBJECT_ID_COLUMN)));
 
         return timeEntry;
     }
@@ -98,6 +101,19 @@ public class LazyTimeEntryGetResolver extends DefaultGetResolver<TimeEntry> {
             StorIOSQLite storIOSQLite, long issueId, long userId, long startDate, long endDate) {
         return _getMatching(storIOSQLite, issueId, userId, startDate, endDate)
                 .asRxSingle();
+    }
+
+    public Flowable<TimeEntry> getByObjectIdInAsync(StorIOSQLite storIOSQLite, List<String> objectIds) {
+        return storIOSQLite.get()
+                .listOfObjects(TimeEntry.class)
+                .withQuery(Query.builder()
+                        .table(TimeEntryTable.NAME)
+                        .where(TimeEntryTable.OBJECT_ID_COLUMN + " in ("+ Queries.placeholders(objectIds.size())+")")
+                        .whereArgs(objectIds.toArray())
+                        .build())
+                .prepare()
+                .asRxSingle()
+                .flatMapPublisher(Flowable::fromIterable);
     }
 
     ////

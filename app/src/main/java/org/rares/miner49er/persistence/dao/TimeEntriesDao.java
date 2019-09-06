@@ -3,6 +3,7 @@ package org.rares.miner49er.persistence.dao;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.LazyTimeEntryGetResolver;
 
 import java.util.List;
+import java.util.Map;
 
 public class TimeEntriesDao implements GenericEntityDao<TimeEntry> {
 
@@ -101,7 +103,33 @@ public class TimeEntriesDao implements GenericEntityDao<TimeEntry> {
                 .map(res -> res.results().size() == toDelete.size());
     }
 
-/*    @Override
+    @Override
+    public Flowable<TimeEntry> insertWithResult(List<TimeEntry> toInsert) {
+        return storio
+                .put()
+                .objects(toInsert)
+                .prepare()
+                .asRxSingle()
+                .flatMapPublisher(putResult->{
+                    Map<TimeEntry, PutResult> resultMap = putResult.results();
+                    return Flowable
+                            .fromArray(resultMap.keySet().toArray(new TimeEntry[0]))
+                            .map(p -> {
+                                PutResult result = resultMap.get(p);
+                                if (result != null && result.insertedId() != null) {
+                                    p.setId(result.insertedId());
+                                }
+                                return p;
+                            });
+                });
+    }
+
+    @Override
+    public Flowable<TimeEntry> getByObjectIdIn(List<String> objectIds) {
+        return getResolver.getByObjectIdInAsync(storio, objectIds);
+    }
+
+    /*    @Override
     public Single<Boolean> wipe() {
         return storio.delete()
                 .byQuery(DeleteQuery.builder().table(TimeEntryTable.NAME).build())

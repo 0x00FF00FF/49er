@@ -46,6 +46,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
 
         return
                 parentId.equals(other.getParentId()) &&
+                        objectId.equals(other.objectId) &&
                         (name == null ? "" : name).equals((other.getName() == null ? "" : other.name)) &&
                         timeEntriesEqual &&
                         color == other.color &&
@@ -67,6 +68,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
         owner = newData.owner;
         ownerId = newData.ownerId;
         deleted = newData.deleted;
+        objectId = newData.objectId;
     }
 
     public IssueData clone(boolean shallow) {

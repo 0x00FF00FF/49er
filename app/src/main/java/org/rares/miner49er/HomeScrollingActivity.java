@@ -30,12 +30,10 @@ import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import org.rares.miner49er.BaseInterfaces.Messenger;
-import org.rares.miner49er._abstract.AbstractAdapter;
-import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.optimizer.CacheFeederService;
-import org.rares.miner49er.cache.optimizer.EntityOptimizer;
+import org.rares.miner49er.cache.optimizer.DtoToModelConverter;
 import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
@@ -49,6 +47,14 @@ import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
+import org.rares.miner49er.network.NetworkingService;
+import org.rares.miner49er.network.dto.converter.IssueConverter;
+import org.rares.miner49er.network.dto.converter.TimeEntryConverter;
+import org.rares.miner49er.persistence.dao.GenericEntityDao;
+import org.rares.miner49er.persistence.entities.Issue;
+import org.rares.miner49er.persistence.entities.Project;
+import org.rares.miner49er.persistence.entities.TimeEntry;
+import org.rares.miner49er.persistence.entities.User;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.custom.mask.OverlayMask;
 import org.rares.miner49er.ui.fragments.login.animated.LoginLandingConstraintSetFragment;
@@ -130,6 +136,16 @@ public class HomeScrollingActivity
 //    private SignInFragment signInFragment = null;
 //    private SignUpFragment signUpFragment = null;
 
+
+    private DtoToModelConverter dtoConverter = DtoToModelConverter.builder()
+            .userDao(GenericEntityDao.Factory.of(User.class))
+            .projectDao(GenericEntityDao.Factory.of(Project.class))
+            .issueDao(GenericEntityDao.Factory.of(Issue.class))
+            .timeEntryDao(GenericEntityDao.Factory.of(TimeEntry.class))
+            .issueConverter(IssueConverter.builder().userDao(GenericEntityDao.Factory.of(User.class)).build())  // should be internal
+            .timeEntryConverter(TimeEntryConverter.builder().userDao(GenericEntityDao.Factory.of(User.class)).build())
+            .build();
+
     Unbinder unbinder;
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
@@ -142,9 +158,13 @@ public class HomeScrollingActivity
         if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
             startCacheUpdate();
         }
-        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
-        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
-        entityOptimizer.addDbUpdateFinishedListener(this);
+//        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
+//        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
+
+        dtoConverter.addDbUpdateFinishedListener(this);
+//        dtoConverter.updateProjects();
+
+//        entityOptimizer.addDbUpdateFinishedListener(this);
 
         px2dp = UiUtil.dpFromPx(this, 100);
         dp2px = UiUtil.pxFromDp(this, 100);
@@ -204,9 +224,10 @@ public class HomeScrollingActivity
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
-                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
-                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
-                projectsUiOps.refreshData(false);
+                dtoConverter.updateProjects();
+//                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
+//                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
+//                projectsUiOps.refreshData(false);
 
 //                ViewModelCache.getInstance().dump();
 

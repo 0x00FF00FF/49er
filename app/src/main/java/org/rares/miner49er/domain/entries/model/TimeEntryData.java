@@ -34,6 +34,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
 
     public boolean compareContents(@NonNull TimeEntryData otherTimeEntry) {
         return id.equals(otherTimeEntry.id) &&
+                objectId.equals(otherTimeEntry.objectId) &&
                 parentId.equals(otherTimeEntry.parentId) &&
                 hours == otherTimeEntry.hours &&
                 workDate == otherTimeEntry.workDate &&
@@ -70,6 +71,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
         color = newData.color;
         hours = newData.hours;
         deleted = newData.deleted;
+        objectId = newData.objectId;
     }
 
     public TimeEntryData clone() {

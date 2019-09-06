@@ -61,6 +61,7 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
         }
 
         return (lastUpdated == otherData.lastUpdated) &&
+                objectId.equals(otherData.objectId) &&
                 (color == otherData.color) &&
                 (deleted == otherData.deleted) &&
                 (dateAdded == otherData.dateAdded) &&
@@ -87,6 +88,7 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
         parentId = projectData.parentId;
         id = projectData.id;
         lastUpdated = projectData.lastUpdated;
+        objectId = projectData.objectId;
     }
 
     public ProjectData clone(boolean shallow) {

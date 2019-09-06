@@ -5,6 +5,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import org.rares.miner49er.network.NetworkingService;
 import org.rares.miner49er.persistence.entities.Project;
 
 import java.util.List;

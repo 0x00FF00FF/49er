@@ -65,7 +65,7 @@ public final class TimeEntryTable {
                 + HOURS_COLUMN +                " INTEGER,\n"
                 + COMMENTS_COLUMN +             " TEXT,\n"
                 + DELETED_COLUMN +              " INTEGER,\n"
-                + OBJECT_ID_COLUMN +            " TEXT"
+                + OBJECT_ID_COLUMN +            " TEXT UNIQUE NOT NULL"
                 + ");");
     }
 }

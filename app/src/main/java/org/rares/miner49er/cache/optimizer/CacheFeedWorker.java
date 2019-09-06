@@ -8,7 +8,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
-import org.rares.miner49er._abstract.NetworkingService;
 import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
@@ -16,6 +15,7 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.network.NetworkingService;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 

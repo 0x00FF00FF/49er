@@ -3,6 +3,7 @@ package org.rares.miner49er.persistence.dao;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.rares.miner49er.persistence.storio.StorioFactory;
 import org.rares.miner49er.persistence.storio.resolvers.LazyIssueGetResolver;
 
 import java.util.List;
+import java.util.Map;
 
 public class IssuesDao implements GenericEntityDao<Issue> {
     private StorIOSQLite storio = StorioFactory.INSTANCE.get();
@@ -100,7 +102,34 @@ public class IssuesDao implements GenericEntityDao<Issue> {
                 .map(res -> res.results().size() == toDelete.size());
     }
 
-/*    @Override
+    @Override
+    public Flowable<Issue> insertWithResult(List<Issue> toInsert) {
+        return storio.put()
+                .objects(toInsert)
+                .prepare()
+                .asRxSingle()
+                .subscribeOn(Schedulers.io())
+                .flatMapPublisher(putResult -> {
+                    Map<Issue, PutResult> resultMap = putResult.results();
+                    return Flowable.fromArray(resultMap.keySet().toArray(new Issue[0]))
+                            .map(i -> {
+                                PutResult result = resultMap.get(i);
+                                if (result != null && result.insertedId() != null) {
+                                    i.setId(result.insertedId());
+                                }
+                                return i;
+                            });
+                })
+                .doOnError(Throwable::printStackTrace)
+                ;
+    }
+
+    @Override
+    public Flowable<Issue> getByObjectIdIn(List<String> objectIds) {
+        return getResolver.getByObjectIdInAsync(storio, objectIds);
+    }
+
+    /*    @Override
     public Single<Boolean> wipe() {
         return storio.delete()
                 .byQuery(DeleteQuery.builder().table(IssueTable.NAME).build())  // TODO: 3/8/19 WHERE lastModified NOT 0
@@ -112,5 +141,7 @@ public class IssuesDao implements GenericEntityDao<Issue> {
 
     @Getter
     private final static IssuesDao instance = new IssuesDao();
-    private IssuesDao() {}
+
+    private IssuesDao() {
+    }
 }

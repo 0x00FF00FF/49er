@@ -14,7 +14,6 @@ public class UserConverter implements DaoConverter<User, UserData> {
         if (viewModel == null) {
             return null;
         }
-
         User user = new User();
         user.setName(viewModel.getName());
         user.setId(viewModel.getId());
@@ -23,6 +22,7 @@ public class UserConverter implements DaoConverter<User, UserData> {
         user.setPhoto(viewModel.getPicture());
         user.setRole(viewModel.getRole());
         user.setLastUpdated(viewModel.getLastUpdated());
+        user.setObjectId(viewModel.getObjectId());
         user.setActive(viewModel.isActive() ? 1 : 0);
         return user;
     }
@@ -42,6 +42,7 @@ public class UserConverter implements DaoConverter<User, UserData> {
         converted.setRole(databaseModel.getRole());
         converted.setLastUpdated(databaseModel.getLastUpdated());
         converted.setActive(databaseModel.getActive() == 1);
+        converted.setObjectId(databaseModel.getObjectId());
 
         return converted;
     }

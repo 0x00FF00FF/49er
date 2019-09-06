@@ -315,6 +315,7 @@ public class LoginLandingConstraintSetFragment extends Fragment {
         userData.setName(userNameEditText.getEditableText().toString());
         userData.setEmail(userEmailEditText.getEditableText().toString());
         userData.setPassword(userPasswordEditText.getEditableText().toString());
+        userData.setObjectId("0000-A88A-ABCDXXXXFFFF0000");
 
         if (userAccountHelper.validateUserData(userData)) {
             disableAll();

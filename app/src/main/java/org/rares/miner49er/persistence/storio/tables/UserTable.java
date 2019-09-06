@@ -21,15 +21,15 @@ public final class UserTable {
 
     public static void createTable(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE users ("
-                + ID_COLUMN +                       " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,\n"
+                + ID_COLUMN +                       " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\n"
                 + LAST_UPDATED_COLUMN +             " INTEGER,\n"
                 + NAME_COLUMN +                     " TEXT,\n"
                 + PWD_COLUMN +                      " TEXT,\n"
-                + EMAIL_COLUMN +                    " TEXT,\n"
+                + EMAIL_COLUMN +                    " TEXT UNIQUE NOT NULL,\n"
                 + PHOTO_COLUMN +                    " TEXT,\n"
-                + API_KEY_COLUMN +                  " TEXT,\n"
+                + API_KEY_COLUMN +                  " TEXT UNIQUE,\n"
                 + ROLE_COLUMN +                     " INTEGER,\n"
-                + OBJECT_ID_COLUMN +                " TEXT,\n"
+                + OBJECT_ID_COLUMN +                " TEXT UNIQUE NOT NULL,\n"
                 + ACTIVE_COLUMN +                   " INTEGER(1)" + " DEFAULT 1"
                 + ");");
     }
