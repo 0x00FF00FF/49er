@@ -19,12 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ENTRY;
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRIES;
-import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
-
 public class TimeEntriesRepository extends Repository {
 
     private static final String TAG = TimeEntriesRepository.class.getSimpleName();
@@ -47,12 +41,12 @@ public class TimeEntriesRepository extends Repository {
                 disposables.add(
                         ((EventBroadcaster) asyncDao).getBroadcaster()
                                 .onBackpressureLatest()
-                                .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
-                                        CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
-                                        CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
-                                        CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
-                                        CACHE_EVENT_REMOVE_PROJECT.equals(b)
-                                )
+//                                .filter(b -> CACHE_EVENT_UPDATE_ENTRIES.equals(b) ||
+//                                        CACHE_EVENT_UPDATE_ENTRY.equals(b) ||
+//                                        CACHE_EVENT_REMOVE_ENTRY.equals(b) ||
+//                                        CACHE_EVENT_REMOVE_ISSUE.equals(b) ||
+//                                        CACHE_EVENT_REMOVE_PROJECT.equals(b)
+//                                )
 //                                .doOnNext(b -> {
 //                                    if (b.equals(CACHE_EVENT_REMOVE_ENTRY)) {
 //                                        Log.v(TAG, "TimeEntriesRepository: <<<< CACHE_EVENT_REMOVE_ENTRY");

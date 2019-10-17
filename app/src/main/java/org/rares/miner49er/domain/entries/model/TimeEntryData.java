@@ -53,11 +53,29 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
         return id + " | " + getUserName() + " | " + getHours() + " | " + entryDate + " | " + comments;
     }
 
-    public String toString() {
+    public String toShortString() {
         DateTime dateTime = new DateTime(getWorkDate());
         String pattern = "dd MMM" + (dateTime.year().get() < DateTime.now().year().get() ? " yyyy" : "");
         String entryDate = dateTime.toString(pattern);
         return TextUtils.extractInitials(getUserName()) + " | " + getHours() + " | " + entryDate;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "\nTimeEntry: " +
+            "parentId=[" + parentId +
+            "] dateAdded=[" + dateAdded +
+            "] workDate=[" + workDate +
+            "] comments=[" + comments +
+            "] userId=[" + userId +
+            "] userName=[" + userName +
+            "] userPhoto=[" + userPhoto +
+            "] color=[" + color +
+            "] hours=[" + hours +
+            "] deleted=[" + deleted +
+            "] objectId=[" + objectId +
+            "]";
     }
 
     public void updateData(TimeEntryData newData) {

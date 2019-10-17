@@ -77,7 +77,7 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
 
     @Override
     public String resolveData(int position, boolean forceFullData) {
-        return data.get(position).toString();
+        return data.get(position).toShortString();
     }
 
     @Override

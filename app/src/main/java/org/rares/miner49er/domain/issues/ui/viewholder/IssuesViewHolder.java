@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.ViewCompat;
 import butterknife.BindString;
 import butterknife.BindView;
 import io.reactivex.Single;
@@ -22,7 +23,6 @@ import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
-import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
@@ -74,10 +74,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         holderData = (IssueData) o;
-        shortTitle = !holderData.getName().contains(" ") ?
-                TextUtils.extractVowels(holderData.getName()) :
-                TextUtils.extractInitials(holderData.getName());
-
+        String dataName = holderData.objectId;
+        if (dataName != null) {
+          shortTitle = !dataName.contains(" ") ?
+              TextUtils.extractVowels(holderData.getName()) :
+              TextUtils.extractInitials(holderData.getName());
+        }
 
         longTitle = TextUtils.capitalize(holderData.getName());
 
@@ -410,7 +412,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         textColor = UiUtil.getBrighterColor(textColor, 0.1F);
 
         infoLabel = new TextView(itemView.getContext());
-        infoLabelId = NumberUtils.generateViewId();
+        infoLabelId = ViewCompat.generateViewId();
         infoLabel.setId(infoLabelId);
 
         infoLabel.setTypeface(customTypeface);

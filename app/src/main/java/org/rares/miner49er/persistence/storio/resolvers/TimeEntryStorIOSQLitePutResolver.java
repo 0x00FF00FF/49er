@@ -36,7 +36,8 @@ public class TimeEntryStorIOSQLitePutResolver extends DefaultPutResolver<TimeEnt
     @Override
     @NonNull
     public ContentValues mapToContentValues(@NonNull TimeEntry object) {
-        ContentValues contentValues = new ContentValues(8);
+
+        ContentValues contentValues = new ContentValues(9);
 
         long issueId = object.getIssueId(), userId = object.getUserId();
 //        if (object.getIssue() != null) {

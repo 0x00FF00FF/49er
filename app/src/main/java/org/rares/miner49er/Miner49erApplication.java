@@ -48,6 +48,14 @@ public class Miner49erApplication extends MultiDexApplication {
 
 //      remember to use the following in the view that needs to be watched:
         /*Miner49erApplication.getRefWatcher(itemView.getContext()).watch(itemView);*/
+
+//        StrictMode.VmPolicy policy = new StrictMode.VmPolicy.Builder() // detect leaked open cursors
+//            .detectLeakedClosableObjects()
+//            .detectLeakedSqlLiteObjects()
+//            .penaltyDeath()
+//            .penaltyLog()
+//            .build();
+//        StrictMode.setVmPolicy(policy);
     }
 
     public static boolean isRoboUnitTest() {

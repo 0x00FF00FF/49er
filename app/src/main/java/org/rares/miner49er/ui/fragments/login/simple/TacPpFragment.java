@@ -13,6 +13,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import org.rares.miner49er.R;
 
+@Deprecated
 public class TacPpFragment extends Fragment {
     private Unbinder unbinder;
 

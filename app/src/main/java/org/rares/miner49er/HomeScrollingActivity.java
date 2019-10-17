@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -33,8 +34,10 @@ import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.optimizer.CacheFeederService;
-import org.rares.miner49er.cache.optimizer.DtoToModelConverter;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
+import org.rares.miner49er.cache.optimizer.DataUpdater.DataUpdatedListener;
 import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
+import org.rares.miner49er.domain.agnostic.SelectedEntityManager;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
@@ -48,6 +51,7 @@ import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
 import org.rares.miner49er.network.NetworkingService;
+import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
 import org.rares.miner49er.network.dto.converter.IssueConverter;
 import org.rares.miner49er.network.dto.converter.TimeEntryConverter;
 import org.rares.miner49er.persistence.dao.GenericEntityDao;
@@ -70,6 +74,8 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
+        DataUpdatedListener,
+        SelectedEntityManager,
 //        LandingListener,
         SignInListener,
 //        SignUpListener,
@@ -97,6 +103,8 @@ public class HomeScrollingActivity
 
     @BindView(R.id.fab2)
     FloatingActionButton fab2;
+    @BindView(R.id.fabx)
+    FloatingActionButton fabx;
 
 //    @BindView(R.id.fab)
 //    FloatingActionButton fab;
@@ -137,7 +145,7 @@ public class HomeScrollingActivity
 //    private SignUpFragment signUpFragment = null;
 
 
-    private DtoToModelConverter dtoConverter = DtoToModelConverter.builder()
+    private DataUpdater dtoConverter = DataUpdater.builder()
             .userDao(GenericEntityDao.Factory.of(User.class))
             .projectDao(GenericEntityDao.Factory.of(Project.class))
             .issueDao(GenericEntityDao.Factory.of(Issue.class))
@@ -162,6 +170,7 @@ public class HomeScrollingActivity
 //        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
 
         dtoConverter.addDbUpdateFinishedListener(this);
+        dtoConverter.addUpdateListener(this);
 //        dtoConverter.updateProjects();
 
 //        entityOptimizer.addDbUpdateFinishedListener(this);
@@ -224,7 +233,13 @@ public class HomeScrollingActivity
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
-                dtoConverter.updateProjects();
+
+                if (getSelectedEntityProvider() != null) {
+                    getSelectedEntityProvider().updateEntity(dtoConverter);
+                } else {
+                    dtoConverter.lightUpdate();
+//                    dtoConverter.updateAll();
+                }
 //                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
 //                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
 //                projectsUiOps.refreshData(false);
@@ -260,6 +275,12 @@ public class HomeScrollingActivity
         });*/
 
     }
+
+    @OnClick(R.id.fabx)
+    public void dumpCache(){
+        cache.dumpCaches();
+    }
+
 
     //    @OnClick(R.id.fab)
     public void onClick(View view) {
@@ -368,6 +389,7 @@ public class HomeScrollingActivity
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
         timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
         timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
+        timeEntriesUiOps.setSelectedEntityManager(this);
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
@@ -392,6 +414,7 @@ public class HomeScrollingActivity
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
         issuesUiOps.setFragmentManager(getSupportFragmentManager());
+        issuesUiOps.setSelectedEntityManager(this);
 
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);
@@ -399,6 +422,7 @@ public class HomeScrollingActivity
         projectsUiOps = new ProjectsUiOps(projectsRV);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
+        projectsUiOps.setSelectedEntityManager(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
         projectsAdapter.setUnbinderHost(projectsUiOps);
@@ -631,6 +655,12 @@ public class HomeScrollingActivity
         }
     }
 
+    @Override
+    public void dataUpdated(Class cls, List data) {
+        //noinspection unchecked
+        cache.getCache(cls).putData(data, true);
+    }
+
     private void startCacheUpdate() {
         Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
         startService(cacheFeederServiceIntent);
@@ -666,6 +696,7 @@ public class HomeScrollingActivity
     @Override
     public void signIn(UserData userData) {
         cache.loggedInUser = userData;
+      RestServiceGenerator.INSTANCE.getAuthIntercept().setAuthToken(userData.getApiKey());
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.item_animation_simple_alpha_in, R.anim.item_animation_simple_alpha_out)

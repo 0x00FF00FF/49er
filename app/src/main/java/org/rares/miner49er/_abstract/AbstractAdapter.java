@@ -20,86 +20,90 @@ import java.util.List;
  */
 
 public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemViewHolder, T extends AbstractViewModel>
-        extends RecyclerView.Adapter<ExtendedViewHolder>
-        implements Consumer<List> {
+    extends RecyclerView.Adapter<ExtendedViewHolder>
+    implements Consumer<List> {
 
-    public static final String TAG = AbstractAdapter.class.getSimpleName();
+  public static final String TAG = AbstractAdapter.class.getSimpleName();
 
-    @Getter
-    @Setter
-    private int maxElevation = 0;
+  @Getter
+  @Setter
+  private int maxElevation = 0;
 
-    @Getter
-    @Setter
-    private int parentColor = Color.parseColor("#cbbeb5");
+  @Getter
+  @Setter
+  private int parentColor = Color.parseColor("#cbbeb5");
 
-    @Getter
-    @Setter
-    private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
+  @Getter
+  @Setter
+  private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
 
-    protected ListItemEventListener eventListener;
+  protected ListItemEventListener eventListener;
 
-    @Setter
-    protected BaseInterfaces.UnbinderHost unbinderHost = null;
+  @Setter
+  protected BaseInterfaces.UnbinderHost unbinderHost = null;
 
-    /**
-     * disable (custom=non {@link RecyclerView.ItemAnimator}) animation
-     * and return true;
-     */
-    @Override
-    public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
-        // todo: disable animation
-        Log.e(TAG, "onFailedToRecycleView: WELL... " + holder.hashCode());
-        return true;
-    }
+  /**
+   * disable (custom=non {@link RecyclerView.ItemAnimator}) animation
+   * and return true;
+   */
+  @Override
+  public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
+    // todo: disable animation
+    Log.e(TAG, "onFailedToRecycleView: WELL... " + holder.hashCode());
+    return true;
+  }
 
-    @Override
-    public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
+  @Override
+  public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
 //        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
-    }
+  }
 
-    @Override
-    public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
+  @Override
+  public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
 //        Log.e(TAG, "onViewDetachedFromWindow() called with: holder = [" + holder.hashCode() + "]");
-        // for when the view is animating and is scrolled out of the visible area
-        if (holder.getAnimator() != null && holder.getAnimator().isRunning()) {
-            holder.getAnimator().end();
-        }
-        holder.disposables.clear();
+    // for when the view is animating and is scrolled out of the visible area
+    if (holder.getAnimator() != null && holder.getAnimator().isRunning()) {
+      holder.getAnimator().end();
     }
+    holder.disposables.clear();
+  }
 
-    @Override
-    public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
+  @Override
+  public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
 //        if (holder instanceof ProjectsViewHolder) {
 //            ProjectsViewHolder projectsViewHolder = (ProjectsViewHolder) holder;
 //            projectsViewHolder.clearImages();
 //        }
 //        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
-        holder.disposables.clear();
-    }
+    holder.disposables.clear();
+  }
 
-    @Override
-    public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
-        if (holder instanceof ItemViewAnimator) {
+  @Override
+  public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
+    if (holder instanceof ItemViewAnimator) {
 
 //            Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemText());
 
-            ((ItemViewAnimator) holder).validateItem(
-                    getLastSelectedPosition() != -1,
-                    holder.getAdapterPosition() == getLastSelectedPosition());
-        }
-//        Log.i(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
+      ((ItemViewAnimator) holder).validateItem(
+          getLastSelectedPosition() != -1,
+          holder.getAdapterPosition() == getLastSelectedPosition());
     }
+//        Log.i(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
+  }
 
-    public abstract void clearData();
+  public T getSelected() {
+    return getData().get(getLastSelectedPosition());
+  }
 
-    public abstract String resolveData(int position, boolean forceFullData);
+  public abstract void clearData();
 
-    public abstract T getDisplayData(int adapterPosition);
+  public abstract String resolveData(int position, boolean forceFullData);
 
-    public abstract List<T> getData();
+  public abstract T getDisplayData(int adapterPosition);
 
-    public abstract String getToolbarData(Context context, int position);
+  public abstract List<T> getData();
 
-    public abstract boolean canRemoveItem(int position);
+  public abstract String getToolbarData(Context context, int position);
+
+  public abstract boolean canRemoveItem(int position);
 }

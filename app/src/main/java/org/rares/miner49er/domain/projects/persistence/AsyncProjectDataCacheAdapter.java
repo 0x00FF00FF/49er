@@ -108,7 +108,7 @@ public class AsyncProjectDataCacheAdapter
                 dao.insert(toInsert).subscribeOn(Schedulers.io())
                         .subscribe(id -> {
                             toInsert.id = id;
-                            projectDataCache.putData(toInsert, true);
+                            projectDataCache.putData(toInsert, false);
                             singleSubject.onSuccess(id);
                         }));
         return singleSubject;

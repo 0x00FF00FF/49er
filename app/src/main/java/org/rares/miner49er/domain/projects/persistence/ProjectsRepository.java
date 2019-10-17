@@ -2,9 +2,11 @@ package org.rares.miner49er.domain.projects.persistence;
 
 import android.util.Log;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
@@ -74,7 +76,7 @@ public class ProjectsRepository extends Repository {
 //                                    }
 //                                    Log.i(TAG, "setup: " + asyncDao.getAll(true).blockingGet().size());
 //                                })
-//                                .throttleLast(500, TimeUnit.MILLISECONDS)
+                                .throttleLast(500, TimeUnit.MILLISECONDS)
                                 .subscribe(o -> refreshData(true)));
             }
         }
@@ -105,28 +107,30 @@ public class ProjectsRepository extends Repository {
     public void registerSubscriber(Consumer<List> consumer) {
         disposables.add(
 //                Flowable.merge(
-                userActionsObservable
-                        .onBackpressureBuffer()
-                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-                        .map(action -> getData())       // todo: [getFromCache|getFromDB]|getFromNetwork -> take 1 ->
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(consumer));
+            userActionsObservable
+                .onBackpressureBuffer()
+                .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+                .concatMapSingle(action -> getData())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(consumer));
     }
 
-    private List<ProjectData> getData() {
-        List<ProjectData> toReturn = asyncDao.getAll(true)
+    private Single<List<ProjectData>> getData() {
+        return asyncDao.getAll(true)
                 .timeout(250, TimeUnit.MILLISECONDS)   // should be enough to get data (from cache)
                 .doOnError(e -> Log.e(TAG, "getData: setup timeout? ", e))
                 .onErrorReturnItem(Collections.emptyList())
                 // something gets stuck when there is no data in the db
                 // and data is being transferred
-                .blockingGet();
-        List<ProjectData> clones = new ArrayList<>();
-        for (ProjectData prd : toReturn) {
-            if (!prd.deleted) {
-                clones.add(prd.clone(false));
-            }
-        }
-        return clones;
+                .map(list-> {
+                    List<ProjectData> clones = new ArrayList<>();
+                    for (ProjectData prd : list) {
+                        if (!prd.deleted) {
+                            clones.add(prd.clone(false));
+                        }
+                    }
+                    return clones;
+                });
     }
 }

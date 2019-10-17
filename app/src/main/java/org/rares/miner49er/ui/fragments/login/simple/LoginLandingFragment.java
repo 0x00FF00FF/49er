@@ -15,6 +15,7 @@ import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import org.rares.miner49er.R;
 
+@Deprecated
 public class LoginLandingFragment extends Fragment {
 
     public static final String TAG = LoginLandingFragment.class.getSimpleName();

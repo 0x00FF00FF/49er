@@ -75,6 +75,8 @@ public class TouchHelperCallback<VH extends ResizeableItemViewHolder, VM extends
         final VM vm = adapter.getDisplayData(viewHolder.getAdapterPosition());
         vm.setDeleted(true);
 
+        // FIXME: <view model> code in <view>
+        //  TODO: create swipeDelete() method in a viewModel and just call that from here.
         final CompositeDisposable disposables = new CompositeDisposable();
         final Disposable pseudoDeleteDisposable = dao.update(vm)
                 .observeOn(AndroidSchedulers.mainThread())

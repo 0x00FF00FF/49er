@@ -25,9 +25,12 @@ import org.rares.miner49er.BaseInterfaces.ColorAnimation;
 import org.rares.miner49er.BaseInterfaces.SelectableItemsManager;
 import org.rares.miner49er.BaseInterfaces.SetValues;
 import org.rares.miner49er.R;
+import org.rares.miner49er.domain.agnostic.SelectedEntityManager;
+import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.layoutmanager.ItemAnimationDto;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.util.ArgbEvaluator;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
@@ -42,6 +45,7 @@ import java.util.List;
 
 public abstract class ResizeableItemsUiOps
         implements
+        SelectedEntityProvider,
         BaseInterfaces.ListItemEventListener,
         BaseInterfaces.SelectableItemsManager,
         ResizePostProcessor.PostProcessorConsumer,
@@ -58,6 +62,9 @@ public abstract class ResizeableItemsUiOps
     private int rvCollapsedWidth;
 
     protected List<Unbinder> unbinderList = new ArrayList<>();
+
+    @Setter
+    private SelectedEntityManager selectedEntityManager;
 
     @Getter
     @Setter
@@ -103,6 +110,12 @@ public abstract class ResizeableItemsUiOps
 
         int adapterPosition = holder.getAdapterPosition();  /// if holder ==null ???
         boolean enlarge = selectItem(adapterPosition);
+
+      if (enlarge) {
+        selectedEntityManager.deregisterProvider(this);
+      } else {
+        selectedEntityManager.registerProvider(this);
+      }
 
         domainLink.onParentSelected(holder.getItemProperties(), enlarge);
 
@@ -694,6 +707,13 @@ public abstract class ResizeableItemsUiOps
         }
         clearBindings();
     }
+
+    @Override
+    public AbstractViewModel getSelectedEntity() {
+        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+        return adapter == null ? null : adapter.getSelected();
+    }
+
 
     protected abstract AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties);
 

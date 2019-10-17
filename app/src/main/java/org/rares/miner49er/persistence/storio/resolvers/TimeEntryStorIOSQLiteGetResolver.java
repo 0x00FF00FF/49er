@@ -1,7 +1,6 @@
 package org.rares.miner49er.persistence.storio.resolvers;
 
 import android.database.Cursor;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import org.rares.miner49er.persistence.entities.TimeEntry;
@@ -14,7 +13,7 @@ import org.rares.miner49er.persistence.storio.StorioFactory;
 public class TimeEntryStorIOSQLiteGetResolver extends LazyTimeEntryGetResolver {
 
     protected LazyTimeEntryGetResolver getInstance() {
-        Log.i("TimeEntryGetResolver", "getInstance: ");
+//        Log.i("TimeEntryGetResolver", "getInstance: ");
         return this;
     }
 

@@ -13,11 +13,14 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
+import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesViewHolder;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 
 /**
@@ -146,5 +149,18 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         touchHelperCallback.setAdapter(teAdapter);
 
         return teAdapter;
+    }
+
+    @Override
+    public int getEntityType() {
+        return SelectedEntityProvider.ET_TIME_ENTRY;
+    }
+
+    @Override
+    public void updateEntity(DataUpdater dataUpdater) {
+        AbstractViewModel vmData = getSelectedEntity();
+        if (vmData != null) {
+            dataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId);
+        }
     }
 }

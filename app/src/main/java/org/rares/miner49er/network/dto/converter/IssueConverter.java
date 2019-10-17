@@ -28,7 +28,8 @@ public class IssueConverter {
             timeEntries.add(te);
         }
         issue.setTimeEntries(timeEntries);
-        return new Issue();
+        issue.setObjectId(issueDto.getId());
+        return issue;
     }
 
     public Single<Issue> toModelAsync(final IssueDto issueDto) {

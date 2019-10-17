@@ -115,4 +115,20 @@
             android:visibility="visible"
     />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="32dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginRight="36dp"
+            app:srcCompat="@drawable/icon_path_eye"
+            app:backgroundTint="@color/indigo_100_blacked"
+            app:tint="@color/pureWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fab2"
+            android:visibility="visible"
+    />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

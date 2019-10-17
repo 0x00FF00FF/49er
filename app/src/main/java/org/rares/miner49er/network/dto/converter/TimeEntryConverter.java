@@ -11,26 +11,35 @@ import java.util.Collections;
 
 @Builder
 public class TimeEntryConverter {
-    private final GenericEntityDao<User> userDao;   // use cache
+  private final GenericEntityDao<User> userDao;   // use cache
 
-    public TimeEntry toModel(TimeEntryDto timeEntryDto) {
-        return new TimeEntry();
-    }
+  public TimeEntry toModel(TimeEntryDto timeEntryDto) {
+    TimeEntry te = new TimeEntry();
+    User user = userDao.getByObjectIdIn(Collections.singletonList(timeEntryDto.getOwnerId())).blockingFirst();
+    te.setUserId(user.getId());
+    te.setUser(user);
+    te.setComments(timeEntryDto.getComments());
+    te.setHours(timeEntryDto.getHours());
+    te.setWorkDate(timeEntryDto.getWorkDate());
+    te.setDateAdded(timeEntryDto.getDateAdded());
+    te.setObjectId(timeEntryDto.getId());
+    return te;
+  }
 
-    public Single<TimeEntry> toModelAsync(TimeEntryDto timeEntryDto) {
-        return Single.just(new TimeEntry())
-                .flatMap(te -> userDao
-                        .getByObjectIdIn(Collections.singletonList(timeEntryDto.getOwnerId()))
-                        .firstOrError()
-                        .flatMap(user -> {
-                            te.setUserId(user.getId());
-                            te.setUser(user);
-                            te.setComments(timeEntryDto.getComments());
-                            te.setHours(timeEntryDto.getHours());
-                            te.setWorkDate(timeEntryDto.getWorkDate());
-                            te.setDateAdded(timeEntryDto.getDateAdded());
-                            te.setObjectId(timeEntryDto.getId());
-                            return Single.just(te);
-                        }));
-    }
+  public Single<TimeEntry> toModelAsync(TimeEntryDto timeEntryDto) {
+    return Single.just(new TimeEntry())
+        .flatMap(te -> userDao
+            .getByObjectIdIn(Collections.singletonList(timeEntryDto.getOwnerId()))
+            .firstOrError()
+            .flatMap(user -> {
+              te.setUserId(user.getId());
+              te.setUser(user);
+              te.setComments(timeEntryDto.getComments());
+              te.setHours(timeEntryDto.getHours());
+              te.setWorkDate(timeEntryDto.getWorkDate());
+              te.setDateAdded(timeEntryDto.getDateAdded());
+              te.setObjectId(timeEntryDto.getId());
+              return Single.just(te);
+            }));
+  }
 }

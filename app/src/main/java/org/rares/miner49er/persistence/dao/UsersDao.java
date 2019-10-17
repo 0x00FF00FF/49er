@@ -1,6 +1,5 @@
 package org.rares.miner49er.persistence.dao;
 
-import android.util.Log;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.operations.put.PutResult;
@@ -35,12 +34,12 @@ public class UsersDao implements GenericEntityDao<User> {
     }
 
     @Override
-    public Single<List<User>> getAll(long parentId) {
+    public Single<List<User>> getAll(long projectId) {
         return storio.get()
                 .listOfObjects(User.class)
                 .withQuery(RawQuery.builder().query(
                         "SELECT " + UserTable.NAME + ".* FROM " + UserTable.NAME + ", " + UserProjectTable.NAME +
-                                " WHERE " + UserProjectTable.PROJECT_ID_COLUMN + " = ?").args(parentId).build())
+                                " WHERE " + UserProjectTable.PROJECT_ID_COLUMN + " = ?").args(projectId).build())
                 .prepare()
                 .asRxSingle()
                 .subscribeOn(Schedulers.io());
@@ -160,14 +159,15 @@ public class UsersDao implements GenericEntityDao<User> {
                 .doOnError(Throwable::printStackTrace);
     }
 
-    public Flowable<User> getByObjectIdIn(List<String> objectIds) {
-        Log.d("TAG", "getByObjectIdIn() called with: objectIds = [" + objectIds + "]");
-        return userGetResolver.getByObjectIdInAsync(storio, objectIds)
-                .flatMap(u -> {
-                    System.out.println("user by oids: " + u);
+  public Flowable<User> getByObjectIdIn(List<String> objectIds) {
+//        Log.d("TAG", Thread.currentThread().getName() + " getByObjectIdIn() called with: objectIds = [" + objectIds + "]");
+    return userGetResolver.getByObjectIdInAsync(storio, objectIds)
+/*                .flatMap(u -> {
+//                    System.out.println("user by oids: " + u);
                     return Flowable.just(u);
-                });
-    }
+                })*/
+        ;
+  }
 
     /*    @Override
     public Single<Boolean> wipe() {

@@ -50,7 +50,6 @@ public class IssueDataCache implements Cache<IssueData> {
                 if (projectData != null) {
                     List<IssueData> issues = projectData.getIssues();
                     if (issues != null) {
-
                         IssueData toReplace = null;
                         for (IssueData issueData : issues) {
                             if (issueData.id.equals(issue.id)) {

@@ -17,6 +17,7 @@ import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class IssuesRepository extends Repository {
 
@@ -89,7 +90,7 @@ public class IssuesRepository extends Repository {
 //                                        CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
 //                                        CACHE_EVENT_UPDATE_ENTRY.equals(e)
 //                                )
-//                                .throttleLatest(1, TimeUnit.SECONDS)
+                                .throttleLatest(1, TimeUnit.SECONDS)
                                 .subscribe(o -> refreshData(true)));
             }
         }

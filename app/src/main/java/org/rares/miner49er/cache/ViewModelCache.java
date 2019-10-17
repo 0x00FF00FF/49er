@@ -240,4 +240,21 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
     private PublishProcessor<Byte> cacheUpdatedProcessor;
     private Flowable<Byte> cacheUpdateFlowable;
     private CompositeDisposable disposables = new CompositeDisposable();
+
+    public void dumpCaches(){
+        Log.e(TAG, "dumpCaches: -------------------------------- (start)");
+        Log.i(TAG, "dumpCaches: projects:");
+        Log.v(TAG, "dumpCaches: " + getProjectsLruCache().toString());
+        Log.v(TAG, "dumpCaches: " + getProjectsLruCache().snapshot().toString());
+        Log.i(TAG, "dumpCaches: users:");
+        Log.v(TAG, "dumpCaches: " + getUsersLruCache().toString());
+        Log.v(TAG, "dumpCaches: " + getUsersLruCache().snapshot().toString());
+        Log.i(TAG, "dumpCaches: issues:");
+        Log.v(TAG, "dumpCaches: " + getIssuesLruCache().toString());
+        Log.v(TAG, "dumpCaches: " + getIssuesLruCache().snapshot().toString());
+        Log.i(TAG, "dumpCaches: time entries:");
+        Log.v(TAG, "dumpCaches: " + getTimeEntriesLruCache().toString());
+        Log.v(TAG, "dumpCaches: " + getTimeEntriesLruCache().snapshot().toString());
+        Log.e(TAG, "dumpCaches: -------------------------------- (end)");
+    }
 }

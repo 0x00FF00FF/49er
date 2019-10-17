@@ -18,6 +18,8 @@ import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
+import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces;
@@ -27,6 +29,7 @@ import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.domain.projects.ui.actions.remove.ProjectRemoveAction;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig;
@@ -52,229 +55,243 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
  */
 
 public class ProjectsUiOps
-        extends ResizeableItemsUiOps
-        implements
-        ToolbarActionManager.MenuActionListener,
-        ResizeableLayoutManager.PreloadSizeConsumer,
-        SwipeDeletedListener {
+    extends ResizeableItemsUiOps
+    implements
+    SelectedEntityProvider,
+    ToolbarActionManager.MenuActionListener,
+    ResizeableLayoutManager.PreloadSizeConsumer,
+    SwipeDeletedListener {
 
-    @Setter
-    private ProjectsInterfaces.ProjectsResizeListener projectsListResizeListener;
+  @Setter
+  private ProjectsInterfaces.ProjectsResizeListener projectsListResizeListener;
 
-    private static final String TAG = ProjectsUiOps.class.getSimpleName();
+  private static final String TAG = ProjectsUiOps.class.getSimpleName();
 
-    private ProjectsRepository projectsRepository;
+  private ProjectsRepository projectsRepository;
 
-    private ToolbarActionManager toolbarManager = null;
+  private ToolbarActionManager toolbarManager = null;
 
-    private ProjectMenuActionsProvider menuActionsProvider;
+  private ProjectMenuActionsProvider menuActionsProvider;
 
-    private boolean requireActionMode = false;
+  private boolean requireActionMode = false;
 
-    @Getter
-    @Setter
-    private long menuActionEntityId;
-    private TouchHelperCallback<ProjectsViewHolder, ProjectData> touchHelperCallback = new TouchHelperCallback<>();
-    private ItemTouchHelper itemTouchHelper;
+  @Getter
+  @Setter
+  private long menuActionEntityId;
+  private TouchHelperCallback<ProjectsViewHolder, ProjectData> touchHelperCallback = new TouchHelperCallback<>();
+  private ItemTouchHelper itemTouchHelper;
 
-    public ProjectsUiOps(RecyclerView rv) {
+  public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
-        setRv(rv);
-        projectsRepository = new ProjectsRepository();
-        repository = projectsRepository;
+    setRv(rv);
+    projectsRepository = new ProjectsRepository();
+    repository = projectsRepository;
 
-        selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
+    selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
 
-        if (rv.getLayoutManager() instanceof ResizeableLayoutManager) {
-            ((ResizeableLayoutManager) rv.getLayoutManager()).addMeasureCompleteListener(this);
-        }
-
-        glidePreloadModelProvider = new ProjectDataModelProvider(getRv().getContext(), ViewModelCacheSingleton.getInstance());
-
-        MultipleListPreloader<String> projectListPreloader = new MultipleListPreloader<>(
-                GlideApp.with(getRv()),
-                glidePreloadModelProvider,
-                sizeProvider,
-                10);
-        RecyclerToListViewScrollListener scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
-        getRv().addOnScrollListener(scrollListener);
-
-        itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
-        itemTouchHelper.attachToRecyclerView(getRv());
-        touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(ProjectData.class));
-        touchHelperCallback.setDeletedListener(this);
-
-        startDisposable = new CompositeDisposable();
+    if (rv.getLayoutManager() instanceof ResizeableLayoutManager) {
+      ((ResizeableLayoutManager) rv.getLayoutManager()).addMeasureCompleteListener(this);
     }
 
-    /**
-     * Should be called on activity start.
-     */
-    public void setupRepository() {
+    glidePreloadModelProvider = new ProjectDataModelProvider(getRv().getContext(), ViewModelCacheSingleton.getInstance());
+
+    MultipleListPreloader<String> projectListPreloader = new MultipleListPreloader<>(
+        GlideApp.with(getRv()),
+        glidePreloadModelProvider,
+        sizeProvider,
+        10);
+    RecyclerToListViewScrollListener scrollListener = new RecyclerToListViewScrollListener(projectListPreloader);
+    getRv().addOnScrollListener(scrollListener);
+
+    itemTouchHelper = new ItemTouchHelper(touchHelperCallback);
+    itemTouchHelper.attachToRecyclerView(getRv());
+    touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(ProjectData.class));
+    touchHelperCallback.setDeletedListener(this);
+
+    startDisposable = new CompositeDisposable();
+  }
+
+  /**
+   * Should be called on activity start.
+   */
+  public void setupRepository() {
 //        Log.e(TAG, "setupRepository() called");
-        projectsRepository.setup();
-        projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
-        touchHelperCallback.setAdapter((ProjectsAdapter) getRv().getAdapter());
+    projectsRepository.setup();
+    projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
+    touchHelperCallback.setAdapter((ProjectsAdapter) getRv().getAdapter());
+  }
+
+  @Override
+  public boolean onListItemClick(ResizeableItemViewHolder holder) {
+    boolean enlarge = super.onListItemClick(holder);
+
+    if (toolbarManager == null) {
+      provideToolbarActionManager();
     }
 
-    @Override
-    public boolean onListItemClick(ResizeableItemViewHolder holder) {
-        boolean enlarge = super.onListItemClick(holder);
-
-        if (toolbarManager == null) {
-            provideToolbarActionManager();
-        }
-
-        if (enlarge) {
-            requireActionMode = false;
-            toolbarManager.unregisterActionListener(this);
-            itemTouchHelper.attachToRecyclerView(getRv());
-        } else {
-            requireActionMode = true;
-            menuActionEntityId = holder.getItemProperties().getId();
+    if (enlarge) {
+      requireActionMode = false;
+      toolbarManager.unregisterActionListener(this);
+      itemTouchHelper.attachToRecyclerView(getRv());
+    } else {
+      requireActionMode = true;
+      menuActionEntityId = holder.getItemProperties().getId();
 //            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
-            toolbarManager.registerActionListener(this);
-            itemTouchHelper.attachToRecyclerView(null);
-        }
-
-        return enlarge;
+      toolbarManager.registerActionListener(this);
+      itemTouchHelper.attachToRecyclerView(null);
     }
 
-    @Override
-    public void onListItemChanged(ItemViewProperties ivp) {
-        super.onListItemChanged(ivp);
-        toolbarManager.refreshActionMode();
+    return enlarge;
+  }
+
+  @Override
+  public void onListItemChanged(ItemViewProperties ivp) {
+    super.onListItemChanged(ivp);
+    toolbarManager.refreshActionMode();
+  }
+
+  @Override
+  public boolean onToolbarBackPressed() {
+    ResizeableItemViewHolder vh = getSelectedViewHolder();
+    if (vh != null) {
+      onListItemClick(vh);
+    }
+    return vh == null; // toolbarManager should not unregister this component if there is something selected
+  }
+
+  @Override
+  public void configureCustomActionMenu(MenuConfig config) {
+    ProjectsAdapter adapter = (ProjectsAdapter) getRv().getAdapter();
+    config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
+    config.requireActionMode = requireActionMode;
+
+    if (adapter == null || adapter.getLastSelectedPosition() == -1) {
+      return;
     }
 
-    @Override
-    public boolean onToolbarBackPressed() {
-        ResizeableItemViewHolder vh = getSelectedViewHolder();
-        if (vh != null) {
-            onListItemClick(vh);
-        }
-        return vh == null; // toolbarManager should not unregister this component if there is something selected
+    ProjectData projectData = adapter.getData().get(adapter.getLastSelectedPosition());
+
+    config.menuId = R.menu.menu_generic_actions;
+    config.additionalMenuId = R.menu.menu_additional_projects;
+    config.createGenericMenu = true;
+    config.titleRes = 0;
+    config.subtitleRes = 0;
+
+    config.overrideGenericMenuResources = new int[3][5];
+    config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
+    config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
+    config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+    config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
+    config.overrideGenericMenuResources[0][ENABLED] = PermissionsUtil.canAddIssue(projectData) ? 1 : 0;
+
+    config.overrideGenericMenuResources[1][ITEM_ID] = R.id.action_edit;
+    config.overrideGenericMenuResources[1][ICON_ID] = R.drawable.icon_path_edit;
+    config.overrideGenericMenuResources[1][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+    config.overrideGenericMenuResources[1][ITEM_NAME] = 0;
+    config.overrideGenericMenuResources[1][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
+
+    config.overrideGenericMenuResources[2][ITEM_ID] = R.id.action_remove;
+    config.overrideGenericMenuResources[2][ICON_ID] = R.drawable.icon_path_remove;
+    config.overrideGenericMenuResources[2][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+    config.overrideGenericMenuResources[2][ITEM_NAME] = 0;
+    config.overrideGenericMenuResources[2][ENABLED] = PermissionsUtil.canRemoveProject(projectData) ? 1 : 0;
+
+    config.additionalResources = new int[1][5];
+    config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
+    config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
+    config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
+    config.additionalResources[0][ITEM_NAME] = 0;
+    config.additionalResources[0][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
+
+    config.title = projectData.getName();
+    config.subtitle = adapter.getToolbarData(getRv().getContext(), adapter.getLastSelectedPosition());
+  }
+
+
+  @Override
+  public GenericMenuActions getMenuActionsProvider() {
+    return menuActionsProvider;
+  }
+
+  @Override
+  protected void configureMenuActionsProvider(FragmentManager fm) {
+    if (toolbarManager == null) {
+      provideToolbarActionManager();
     }
-
-    @Override
-    public void configureCustomActionMenu(MenuConfig config) {
-        ProjectsAdapter adapter = (ProjectsAdapter) getRv().getAdapter();
-
-        config.menuId = 0;      // set this to 0 to end action mode when add project menu has ended.
-        config.requireActionMode = requireActionMode;
-
-        if (adapter == null || adapter.getLastSelectedPosition() == -1) {
-            return;
-        }
-
-        ProjectData projectData = adapter.getData().get(adapter.getLastSelectedPosition());
-
-        config.menuId = R.menu.menu_generic_actions;
-        config.additionalMenuId = R.menu.menu_additional_projects;
-        config.createGenericMenu = true;
-        config.titleRes = 0;
-        config.subtitleRes = 0;
-
-        config.overrideGenericMenuResources = new int[3][5];
-        config.overrideGenericMenuResources[0][ITEM_ID] = R.id.action_add;
-        config.overrideGenericMenuResources[0][ICON_ID] = R.drawable.icon_path_add;
-        config.overrideGenericMenuResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-        config.overrideGenericMenuResources[0][ITEM_NAME] = R.string.action_add_issue;
-        config.overrideGenericMenuResources[0][ENABLED] = PermissionsUtil.canAddIssue(projectData) ? 1 : 0;
-
-        config.overrideGenericMenuResources[1][ITEM_ID] = R.id.action_edit;
-        config.overrideGenericMenuResources[1][ICON_ID] = R.drawable.icon_path_edit;
-        config.overrideGenericMenuResources[1][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-        config.overrideGenericMenuResources[1][ITEM_NAME] = 0;
-        config.overrideGenericMenuResources[1][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
-
-        config.overrideGenericMenuResources[2][ITEM_ID] = R.id.action_remove;
-        config.overrideGenericMenuResources[2][ICON_ID] = R.drawable.icon_path_remove;
-        config.overrideGenericMenuResources[2][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-        config.overrideGenericMenuResources[2][ITEM_NAME] = 0;
-        config.overrideGenericMenuResources[2][ENABLED] = PermissionsUtil.canRemoveProject(projectData) ? 1 : 0;
-
-        config.additionalResources = new int[1][5];
-        config.additionalResources[0][ITEM_ID] = R.id.action_add_user;
-        config.additionalResources[0][ICON_ID] = R.drawable.icon_path_add_user;
-        config.additionalResources[0][FLAGS] = MenuItem.SHOW_AS_ACTION_NEVER;
-        config.additionalResources[0][ITEM_NAME] = 0;
-        config.additionalResources[0][ENABLED] = PermissionsUtil.canEditProject(projectData) ? 1 : 0;
-
-        config.title = projectData.getName();
-        config.subtitle = adapter.getToolbarData(getRv().getContext(), adapter.getLastSelectedPosition());
+    if (menuActionsProvider == null) {
+      menuActionsProvider = new ProjectMenuActionsProvider(fragmentManager, toolbarManager, new ProjectRemoveAction(this));
     }
+    toolbarManager.registerActionListener(this);
+  }
 
+  private void provideToolbarActionManager() {
+    // TODO: 12/4/18 have the toolbar supplied, do not "grab"
+    Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
 
-    @Override
-    public GenericMenuActions getMenuActionsProvider() {
-        return menuActionsProvider;
+    if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
+      toolbarManager = new ToolbarActionManager(t);
+      t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
+    } else {
+      toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
     }
+  }
 
-    @Override
-    protected void configureMenuActionsProvider(FragmentManager fm) {
-        if (toolbarManager == null) {
-            provideToolbarActionManager();
-        }
-        if (menuActionsProvider == null) {
-            menuActionsProvider = new ProjectMenuActionsProvider(fragmentManager, toolbarManager, new ProjectRemoveAction(this));
-        }
-        toolbarManager.registerActionListener(this);
-    }
+  /**
+   * Should be called on activity stop.
+   */
+  public void shutdown() {
+    projectsRepository.shutdown();
+    startDisposable.dispose();
+  }
 
-    private void provideToolbarActionManager() {
-        // TODO: 12/4/18 have the toolbar supplied, do not "grab"
-        Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
+  @Override
+  protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
+    return null;
+  }
 
-        if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
-            toolbarManager = new ToolbarActionManager(t);
-            t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
-        } else {
-            toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
-        }
-    }
-
-    /**
-     * Should be called on activity stop.
-     */
-    public void shutdown() {
-        projectsRepository.shutdown();
-        startDisposable.dispose();
-    }
-
-    @Override
-    protected AbstractAdapter createNewAdapter(ItemViewProperties itemViewProperties) {
-        return null;
-    }
-
-    @Override
-    public void onMeasureComplete(int[] dimensions) {
+  @Override
+  public void onMeasureComplete(int[] dimensions) {
 //        Log.d(TAG, "onMeasureComplete() called with: dimensions = [" + Arrays.toString(dimensions) + "]");
-        if (dimensions.length < 2) {
-            return;
-        }
-        for (int i = 0; i < dimensions.length; i += 2) {
-            sizeProvider.addSizes(dimensions[i], dimensions[i + 1]);
-        }
+    if (dimensions.length < 2) {
+      return;
     }
-
-    private CompositeDisposable getDisposable(CompositeDisposable d) {
-        if (d == null || d.isDisposed()) {
-            d = new CompositeDisposable();
-        }
-        return d;
+    for (int i = 0; i < dimensions.length; i += 2) {
+      sizeProvider.addSizes(dimensions[i], dimensions[i + 1]);
     }
+  }
 
-    @Override
-    public void onItemDeleted(ViewHolder vh) {
+  private CompositeDisposable getDisposable(CompositeDisposable d) {
+    if (d == null || d.isDisposed()) {
+      d = new CompositeDisposable();
+    }
+    return d;
+  }
+
+  @Override
+  public void onItemDeleted(ViewHolder vh) {
 //        toolbarManager.refreshActionMode();
-    }
+  }
 
-    @Override
-    public void onItemPseudoDeleted(ViewHolder vh) {
-        toolbarManager.refreshActionMode();
-    }
+  @Override
+  public void onItemPseudoDeleted(ViewHolder vh) {
+    toolbarManager.refreshActionMode();
+  }
 
-    private ProjectDataModelProvider glidePreloadModelProvider;
-    private MultipleFixedSizeProvider<String> sizeProvider = new MultipleFixedSizeProvider<>();
-    private CompositeDisposable startDisposable;
+  @Override
+  public int getEntityType() {
+    return SelectedEntityProvider.ET_PROJECT;
+  }
+
+
+  @Override
+  public void updateEntity(DataUpdater dataUpdater) {
+    AbstractViewModel projectData = getSelectedEntity();
+    if (projectData != null) {
+      dataUpdater.fullyUpdateProjects(projectData.objectId);
+    }
+  }
+
+  private ProjectDataModelProvider glidePreloadModelProvider;
+  private MultipleFixedSizeProvider<String> sizeProvider = new MultipleFixedSizeProvider<>();
+  private CompositeDisposable startDisposable;
 }

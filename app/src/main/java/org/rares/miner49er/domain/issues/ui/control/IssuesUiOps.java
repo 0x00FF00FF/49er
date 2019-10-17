@@ -16,6 +16,8 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
+import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
 import org.rares.miner49er.domain.issues.adapter.IssuesAdapter;
@@ -23,6 +25,7 @@ import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.domain.issues.ui.actions.remove.IssueRemoveAction;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.PermissionsUtil;
@@ -288,5 +291,18 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     @Override
     public void onItemPseudoDeleted(ViewHolder vh) {
         toolbarManager.refreshActionMode();
+    }
+
+    @Override
+    public int getEntityType() {
+        return SelectedEntityProvider.ET_ISSUE;
+    }
+
+    @Override
+    public void updateEntity(DataUpdater dataUpdater) {
+        AbstractViewModel vmData = getSelectedEntity();
+        if (vmData != null) {
+            dataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId);
+        }
     }
 }

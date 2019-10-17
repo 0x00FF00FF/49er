@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 
 import static android.app.Activity.RESULT_OK;
 
+@Deprecated
 public class SignUpFragment extends Fragment {
 
     public static final String TAG = SignUpFragment.class.getSimpleName();

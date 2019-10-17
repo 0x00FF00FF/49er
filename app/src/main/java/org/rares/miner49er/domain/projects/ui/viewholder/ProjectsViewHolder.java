@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.ViewCompat;
 import butterknife.BindString;
 import butterknife.BindView;
 import com.bumptech.glide.request.target.ImageViewTarget;
@@ -31,7 +32,6 @@ import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
-import org.rares.miner49er.util.NumberUtils;
 import org.rares.miner49er.util.UiUtil;
 import org.rares.ratv.rotationaware.RotationAwareTextView;
 import org.rares.ratv.rotationaware.animation.AnimationDTO;
@@ -59,7 +59,7 @@ public class ProjectsViewHolder
     @BindView(R.id.project_image)
     CircleImageView projectImage;
 
-    private TextView infoLabel = null;
+    TextView infoLabel = null;
 
     @BindString(R.string._projects_info_template)
     String infoTemplate;
@@ -486,7 +486,7 @@ public class ProjectsViewHolder
         textColor = UiUtil.getBrighterColor(textColor, 0.1F);
 
         infoLabel = new TextView(itemView.getContext());
-        infoLabelId = NumberUtils.generateViewId();
+        infoLabelId = ViewCompat.generateViewId();
         infoLabel.setId(infoLabelId);
 
         infoLabel.setTypeface(customTypeface);

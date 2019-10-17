@@ -129,6 +129,22 @@ public class ProjectsDao implements GenericEntityDao<Project> {
     }
 
     @Override
+    public Single<Project> insertWithResult(Project toInsert) {
+        return storio.put()
+            .object(toInsert)
+            .prepare()
+            .asRxSingle()
+            .subscribeOn(Schedulers.io())
+            .map(putResult -> {
+                if (putResult != null && putResult.insertedId() != null) {
+                    toInsert.setId(putResult.insertedId());
+                }
+                System.out.println("project after saving: " + toInsert);
+                return toInsert;
+            });
+    }
+
+    @Override
     public Flowable<Project> getByObjectIdIn(List<String> objectIds) {
         return getResolver.getByObjectIdAsync(storio, objectIds);
     }

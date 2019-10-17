@@ -11,7 +11,6 @@ import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import java.util.List;
 
 public class PermissionsUtil {
-
     private static AsyncGenericDao<UserData> usersDao = InMemoryCacheAdapterFactory.ofType(UserData.class);
     private static AsyncGenericDao<ProjectData> projectsDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
     private static AsyncGenericDao<IssueData> issuesDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
@@ -25,6 +24,8 @@ public class PermissionsUtil {
     }
 
     public static boolean canEditProject(ProjectData projectData) {
+//        Thread.dumpStack();
+//        Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
         return loggedInUser.id.equals(projectData.getOwner().id) || isResponsible;
     }
 

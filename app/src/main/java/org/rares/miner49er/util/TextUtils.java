@@ -66,6 +66,10 @@ public class TextUtils {
     }
 
     public static String extractVowels(String str) {
+        if (str == null) {
+            return "";
+        }
+
         String vowels = "[aeiouAEIOU\u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]";
         String punctuation = "[`~!@#$%^&*()_+|=\\[\\]{};':\",/<>?\\-.]";
         String processed = str
@@ -77,6 +81,9 @@ public class TextUtils {
     }
 
     public static String capitalize(String str) {
+        if (str == null) {
+            return "";
+        }
         if (str.length() == 0) {
             return str;
         }

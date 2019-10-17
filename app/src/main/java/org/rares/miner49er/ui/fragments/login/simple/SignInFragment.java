@@ -36,6 +36,7 @@ import org.rares.miner49er.util.UiUtil;
 import java.util.concurrent.TimeUnit;
 
 
+@Deprecated
 public class SignInFragment extends Fragment {
 
     public static final String TAG = SignInFragment.class.getSimpleName();
@@ -113,16 +114,6 @@ public class SignInFragment extends Fragment {
             }
             return false;
         });
-
-        // perhaps store the email/id in a preference file and populate from that
-/*        disposables.add(usersDao.get(12, true)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(u -> {
-                    if (u.isPresent()) {
-                        userData = u.get();
-                        populateFields(userData);
-                    }
-                }));*/
     }
 
     @Override

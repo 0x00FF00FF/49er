@@ -1,11 +1,14 @@
 package org.rares.miner49er.domain.issues.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListUpdateCallback;
 import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
@@ -59,7 +62,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
 
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
-//        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+        Log.i(TAG, "onBindViewHolder: old data: " + holder.getItemText());
         super.onBindViewHolder(holder, position);
         IssueData issueData = data.get(position);
 //        List<TimeEntryData> tedata = issueData.getTimeEntries();
@@ -115,7 +119,27 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
         data = newData;
         diffResult.dispatchUpdatesTo(this);
-//        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {});
+        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
+            @Override
+            public void onInserted(int position, int count) {
+                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+            }
+
+            @Override
+            public void onRemoved(int position, int count) {
+                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
+            }
+
+            @Override
+            public void onMoved(int fromPosition, int toPosition) {
+                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+            }
+
+            @Override
+            public void onChanged(int position, int count, @Nullable Object payload) {
+                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
+            }
+        });
     }
 
 

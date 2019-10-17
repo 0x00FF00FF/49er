@@ -11,6 +11,7 @@
     <string name="create_user_failed_no_password">Please enter a password (5+ letters or symbols).</string>
     <string name="create_user_failed_no_user_name">Please enter your name.</string>
     <string name="create_user_failed_no_email">Please enter a valid email address.</string>
+    <string name="create_user_failed_no_internet">You need an active internet connection to create an account.\n You can access the app in offline mode after that.</string>
 
     <string name="login_text">Login</string>
     <string name="create_account_text">Create account</string>
