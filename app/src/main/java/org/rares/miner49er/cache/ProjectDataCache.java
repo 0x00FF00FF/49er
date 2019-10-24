@@ -42,6 +42,10 @@ public class ProjectDataCache implements Cache<ProjectData> {
         if (getSize() == projectsCache.maxSize() && getData(projectData.id) == null) {
             projectsCache = cache.increaseProjectsCacheSize(getSize() + 10);
         }
+//        Log.v(TAG, "putData: " + projectData.getId() + projectData.getPicture());
+//        for (IssueData issue : projectData.getIssues()) {
+//            Log.d(TAG, "putData: " + issue.getTimeEntries());
+//        }
         projectsCache.put(projectData.id, projectData);
         cache.sendEvent(CACHE_EVENT_UPDATE_PROJECT);
     }

@@ -40,7 +40,7 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
     public void bindData(Object data, boolean shortVersion, boolean selected) {
         TimeEntryData entryData = (TimeEntryData) data;
 //        itemView.setBackgroundColor(entryData.getColor());
-
+//        Log.i(TAG, "bindData: " + entryData);
         Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
             d.mutate();

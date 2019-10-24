@@ -122,6 +122,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 //            } else {
                 getRv().setAdapter(createNewAdapter(viewProperties));
                 itemTouchHelper.attachToRecyclerView(getRv());
+                repository.refreshData(true);
 //            }
         }
     }

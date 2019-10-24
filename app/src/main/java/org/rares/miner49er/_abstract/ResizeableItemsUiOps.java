@@ -64,7 +64,7 @@ public abstract class ResizeableItemsUiOps
     protected List<Unbinder> unbinderList = new ArrayList<>();
 
     @Setter
-    private SelectedEntityManager selectedEntityManager;
+    protected SelectedEntityManager selectedEntityManager;
 
     @Getter
     @Setter
@@ -110,12 +110,6 @@ public abstract class ResizeableItemsUiOps
 
         int adapterPosition = holder.getAdapterPosition();  /// if holder ==null ???
         boolean enlarge = selectItem(adapterPosition);
-
-      if (enlarge) {
-        selectedEntityManager.deregisterProvider(this);
-      } else {
-        selectedEntityManager.registerProvider(this);
-      }
 
         domainLink.onParentSelected(holder.getItemProperties(), enlarge);
 

@@ -2,8 +2,10 @@ package org.rares.miner49er.domain.entries.persistence;
 
 import android.util.Log;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
@@ -17,13 +19,14 @@ import org.rares.miner49er.persistence.dao.EventBroadcaster;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class TimeEntriesRepository extends Repository {
 
     private static final String TAG = TimeEntriesRepository.class.getSimpleName();
 
     private AsyncGenericDao<TimeEntryData> asyncDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
+
+    private Disposable adapterDisposable = null;
 
     public TimeEntriesRepository() {
     }
@@ -62,7 +65,7 @@ public class TimeEntriesRepository extends Repository {
 //                                        Log.v(TAG, "TimeEntriesRepository: <<<< OTHER....");
 //                                    }
 //                                })
-                                .throttleLatest(1, TimeUnit.SECONDS)
+//                                .throttleLatest(500, TimeUnit.MILLISECONDS)
                                 .subscribe(o -> refreshData(true)));
             }
         }
@@ -71,33 +74,36 @@ public class TimeEntriesRepository extends Repository {
 
     @Override
     public void registerSubscriber(Consumer<List> consumer) {
-        disposables.add(
-                userActionsObservable
-//                        .map(c -> getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-//                        .startWith(getDbItems(getTimeEntriesQuery(), TimeEntry.class))
-                        .map(c -> {
-                            Log.i(TAG, "registerSubscriber: MAP");
-                            return getDbItems();
-                        })
-                        .startWith(getDbItems())
-//                        .map(list -> db2vm(list, true))
-                        .onBackpressureDrop()
-                        .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
-                        .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(consumer));
-
-
+//      Log.d(TAG, "registerSubscriber() called with: consumer = [" + consumer + "]");
+      if (adapterDisposable != null && !adapterDisposable.isDisposed()) {
+        adapterDisposable.dispose();
+      }
+      adapterDisposable = userActionsObservable
+          .flatMapSingle(c -> {
+//            Log.i(TAG, "registerSubscriber: MAP");
+            return Single.just(getDbItems());
+          })
+//          .startWith(getDbItems())
+          .onBackpressureBuffer()
+          .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+          .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(consumer);
     }
 
     @Override
     public void shutdown() {
-        userActionProcessor.onComplete();
-        disposables.dispose();
+      userActionProcessor.onComplete();
+      if (adapterDisposable != null) {
+        adapterDisposable.dispose();
+      }
+      disposables.clear();
     }
 
     @Override
     public void refreshData(boolean onlyLocal) {
+//      Thread.dumpStack();
+//      Log.w(TAG, "refreshData: []");
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 

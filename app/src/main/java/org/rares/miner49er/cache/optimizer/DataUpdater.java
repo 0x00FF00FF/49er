@@ -232,7 +232,17 @@ public class DataUpdater {
         })
         .subscribe(projects -> {
           if (projects.size() > 0) {
+            List<TimeEntryData> tEntries = new ArrayList<>();
+            List<IssueData> issues = new ArrayList<>();
+            for (ProjectData project : projects) {
+              issues.addAll(project.getIssues());
+              for(IssueData i: project.getIssues()){
+                tEntries.addAll(i.getTimeEntries());
+              }
+            }
             notifyListeners(ProjectData.class, projects);
+            notifyListeners(IssueData.class, issues);
+            notifyListeners(TimeEntryData.class, tEntries);
           }
         });
     disposables.add(d);
@@ -388,6 +398,7 @@ public class DataUpdater {
         .subscribe(x -> pingListeners());
   }
 
+  @Deprecated
   public void updateAll() {
 // also update users because someone needs to add a [new] user to a project.
     Disposable d = updateUsers()

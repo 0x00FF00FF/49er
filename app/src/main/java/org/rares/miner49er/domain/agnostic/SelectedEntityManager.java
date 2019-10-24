@@ -16,13 +16,22 @@ public interface SelectedEntityManager {
   }
 
   default void deregisterProvider(SelectedEntityProvider provider) {
-    if(!providerStack.peek().equals(provider)){
-      Log.w(TAG, "deregisterProvider: SOMEBODY ACCIDENTALLY THE STACK!" );
+    if (!providerStack.peek().equals(provider)) {
+      dumpStack();
+      Log.w(TAG, "deregisterProvider: SOMEBODY ACCIDENTALLY THE STACK!");
     }
     providerStack.pop();
   }
 
   default SelectedEntityProvider getSelectedEntityProvider() {
     return providerStack.empty() ? null : providerStack.peek();
+  }
+
+  default void dumpStack(){
+    Log.e(TAG, "dumpStack: ---------------dump");
+    for (SelectedEntityProvider selectedEntityProvider : providerStack) {
+      Log.e(TAG, "dumpStack: \t" + selectedEntityProvider.toString());
+    }
+    Log.e(TAG, "dumpStack: ---------------dump");
   }
 }

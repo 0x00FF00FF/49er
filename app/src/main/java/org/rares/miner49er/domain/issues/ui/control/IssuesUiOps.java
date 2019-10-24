@@ -85,10 +85,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
+            selectedEntityManager.deregisterProvider(this);
             itemTouchHelper.attachToRecyclerView(getRv());
         } else {
             menuActionEntityId = holder.getItemProperties().getId();
             toolbarManager.registerActionListener(this);
+            selectedEntityManager.registerProvider(this);
             itemTouchHelper.attachToRecyclerView(null);
         }
 

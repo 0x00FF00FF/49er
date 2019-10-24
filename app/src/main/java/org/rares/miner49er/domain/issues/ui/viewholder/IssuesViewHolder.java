@@ -74,7 +74,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
         holderData = (IssueData) o;
-        String dataName = holderData.objectId;
+        String dataName = holderData.getName();
         if (dataName != null) {
           shortTitle = !dataName.contains(" ") ?
               TextUtils.extractVowels(holderData.getName()) :
@@ -103,7 +103,9 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 //            infoLabel.setAlpha(0);
 //        }
 
+//        Log.i(TAG, "bindData: >> before validation: " + issueName.getText());
         validateItem(shortVersion, selected);
+//        Log.v(TAG, "bindData: >> " + longTitle + " " + shortTitle + " " + issueName.getText());
     }
 
     @Override
@@ -162,7 +164,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         if (getAnimator() != null && getAnimator().isRunning()) {
             shouldValidate = false; // do not validate anything if the animator is running
         }
-
+//        Log.i(TAG, "validateItem: shouldValidate: " + shouldValidate);
         if (shouldValidate) {
             toggleItemText(collapsed);
 

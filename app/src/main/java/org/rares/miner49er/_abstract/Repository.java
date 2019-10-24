@@ -17,7 +17,7 @@ public abstract class Repository {
     private NetworkingService ns = NetworkingService.INSTANCE;
     protected CompositeDisposable disposables = null;
     protected PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
-    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
+    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io()).share();
 
     protected abstract void setup();
 

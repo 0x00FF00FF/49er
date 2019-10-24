@@ -132,12 +132,14 @@ public class ProjectsUiOps
     if (enlarge) {
       requireActionMode = false;
       toolbarManager.unregisterActionListener(this);
+      selectedEntityManager.deregisterProvider(this);
       itemTouchHelper.attachToRecyclerView(getRv());
     } else {
       requireActionMode = true;
       menuActionEntityId = holder.getItemProperties().getId();
 //            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
       toolbarManager.registerActionListener(this);
+      selectedEntityManager.registerProvider(this);
       itemTouchHelper.attachToRecyclerView(null);
     }
 

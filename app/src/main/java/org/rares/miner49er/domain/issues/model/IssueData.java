@@ -129,7 +129,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
         "] name=[" + name +
         "] dateAdded=[" + dateAdded +
         "] dateDue=[" + dateDue +
-//        "] timeEntries=[" + timeEntries +
+        "] timeEntries=[" + timeEntries +
         "] color=[" + color +
         "] owner=[" + owner +
         "] ownerId=[" + ownerId +

@@ -60,6 +60,7 @@ public class ToolbarActionManager
      */
     @Override
     public void registerActionListener(MenuActionListener listener) {
+//        Log.w(TAG, "registerActionListener() called with: listener = [" + listener + "]");
         if (actionListenerStack.isEmpty() || !actionListenerStack.peek().equals(listener)) {
 
             if (actionListenerStack.contains(listener)) {
@@ -81,6 +82,7 @@ public class ToolbarActionManager
      */
     @Override
     public boolean unregisterActionListener(MenuActionListener listener) {
+//        Log.w(TAG, "unregisterActionListener() called with: listener = [" + listener + "]");
         if (listener != null && listener.equals(actionListenerStack.peek())) {
             if (actionListenerStack.size() > 1) {
                 actionListenerStack.remove(listener);

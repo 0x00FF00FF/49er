@@ -1,14 +1,11 @@
 package org.rares.miner49er.domain.issues.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListUpdateCallback;
 import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er.R;
@@ -62,8 +59,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
 
     @Override
     public void onBindViewHolder(@NonNull IssuesViewHolder holder, int position) {
-        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
-        Log.i(TAG, "onBindViewHolder: old data: " + holder.getItemText());
+//        Log.i(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+//        Log.i(TAG, "onBindViewHolder: old data: " + holder.getItemText());
         super.onBindViewHolder(holder, position);
         IssueData issueData = data.get(position);
 //        List<TimeEntryData> tedata = issueData.getTimeEntries();
@@ -117,9 +114,8 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
 
     private void updateData(List<IssueData> newData) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
-        data = newData;
         diffResult.dispatchUpdatesTo(this);
-        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
+/*        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
                 Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
@@ -139,16 +135,21 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
             public void onChanged(int position, int count, @Nullable Object payload) {
                 Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
             }
-        });
+        });*/
+        data = newData;
     }
 
 
     @Override
     public void accept(List list) throws Exception {
-//        Log.d(TAG, "accept() called with: list = [" + list + "]");
+//        Log.w(TAG, "accept() called with: list = [" + list + "]");
 //        for (int i = 0; i < list.size(); i++) {
 //            IssueData issueData = (IssueData) list.get(i);
-//            Log.d(TAG, "accept: " + issueData.getName());
+//            Log.w(TAG, "new data: " + issueData.getName());
+//        }
+//        for (int i = 0; i < data.size(); i++) {
+//            IssueData issueData = (IssueData) data.get(i);
+//            Log.v(TAG, "old data: " + issueData.getName());
 //        }
         updateData(list);
     }
