@@ -48,8 +48,8 @@ public class IssueDataCache implements Cache<IssueData> {
             synchronized (projectsCache.get(issue.parentId)) {
                 ProjectData projectData = projectsCache.get(issue.parentId);
                 if (projectData != null) {
-                    List<IssueData> issues = projectData.getIssues();
-                    if (issues != null) {
+                    if (projectData.getIssues() != null) {
+                        List<IssueData> issues = new ArrayList<>(projectData.getIssues());
                         IssueData toReplace = null;
                         for (IssueData issueData : issues) {
                             if (issueData.id.equals(issue.id)) {
@@ -59,17 +59,14 @@ public class IssueDataCache implements Cache<IssueData> {
                             }
                         }
                         if (toReplace == null) {
-                            if (issues.equals(Collections.emptyList())) {
-                                issues = new ArrayList<>();
-                            }
                             issues.add(issue);
-                            projectData.setIssues(issues);
                         } else {
                             issues.remove(toReplace);
                             issues.add(issue);
                         }
+                        projectData.setIssues(issues);
                     } else {
-                        issues = new ArrayList<>();
+                        List<IssueData> issues = new ArrayList<>();
                         issues.add(issue);
                         projectData.setIssues(issues);
                     }
@@ -86,8 +83,8 @@ public class IssueDataCache implements Cache<IssueData> {
             synchronized (projectsCache.get(issue.parentId)) {
                 ProjectData projectData = projectsCache.get(issue.parentId);
                 if (projectData != null) {
-                    List<IssueData> projectIssues = projectData.getIssues();
-                    if (projectIssues != null) {
+                    if (projectData.getIssues() != null) {
+                        List<IssueData> projectIssues = projectData.getIssues();
                         for (int i = 0; i < projectIssues.size(); i++) {
                             IssueData issueData = projectIssues.get(i);
                             if (issueData.id.equals(issue.id)) {
@@ -95,6 +92,7 @@ public class IssueDataCache implements Cache<IssueData> {
                                 break;
                             }
                         }
+                        projectData.setIssues(projectIssues);
                     }
                 }
             }
@@ -111,8 +109,8 @@ public class IssueDataCache implements Cache<IssueData> {
     @Override
     public List<IssueData> getData(Optional<Long> parentId) {
         if (parentId.isPresent()) {
-            ProjectData projectData = projectsCache.get(parentId.get());
-            if (projectData != null) {
+            if (projectsCache.get(parentId.get()) != null) {
+                ProjectData projectData = projectsCache.get(parentId.get());
                 List<IssueData> issues = projectData.getIssues();
                 if (issues == null) {
 //                    return Collections.emptyList();

@@ -24,6 +24,7 @@ import org.rares.miner49er.util.UiUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_DESCRIPTION;
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_ICON;
@@ -105,7 +106,7 @@ public class ProjectAddFormFragment extends ProjectActionFragment {
 
 
     private boolean addProject() {
-
+        projectData.setObjectId(UUID.randomUUID().toString());
         final long projectDataId = projectsDAO.insert(projectData).blockingGet(); //
 
         projectData.setId(projectDataId);

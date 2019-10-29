@@ -108,6 +108,7 @@ public class IssueEditFormFragment extends IssueActionFragment {
                         Log.i(TAG, "validateForm: " + entities);
                         return entities.isEmpty();
                     }, issueNameInputLayout, errExists)
+                .validate(IssueData::getObjectId, oid-> oid!=null, projectNameInputLayout, "no oid :|")
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = contentContainer.getHeight();

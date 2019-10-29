@@ -122,7 +122,7 @@ public class ProjectsDao implements GenericEntityDao<Project> {
                             });
                 })
                 .map(project -> {
-                    System.out.println("project after saving: " + project);
+//                    System.out.println("project after saving: " + project);
                     return project;
                 })
                 .doOnError(Throwable::printStackTrace);
@@ -139,7 +139,7 @@ public class ProjectsDao implements GenericEntityDao<Project> {
                 if (putResult != null && putResult.insertedId() != null) {
                     toInsert.setId(putResult.insertedId());
                 }
-                System.out.println("project after saving: " + toInsert);
+//                System.out.println("project after saving: " + toInsert);
                 return toInsert;
             });
     }

@@ -22,6 +22,7 @@ import org.rares.miner49er.util.UiUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.rares.miner49er.domain.projects.ProjectsInterfaces.KEY_PROJECT_ID;
 
@@ -105,6 +106,7 @@ public class IssueAddFormFragment extends IssueActionFragment {
     }
 
     private boolean addIssue() {
+        issueData.setObjectId(UUID.randomUUID().toString());
         issueData.id = issuesDAO.insert(issueData).blockingGet();
         IssueData toDelete = issueData.clone(true);
         issueData = new IssueData();

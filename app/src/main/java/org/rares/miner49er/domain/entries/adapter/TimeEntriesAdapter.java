@@ -95,42 +95,11 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
     private void updateList(List<TimeEntryData> newData) {
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new TimeEntryDiff(this.data, newData));
         diffResult.dispatchUpdatesTo(this);
-        /*diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
-            @Override
-            public void onInserted(int position, int count) {
-                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
-            }
-
-            @Override
-            public void onRemoved(int position, int count) {
-                Log.d(TAG, "onRemoved() called with: position = [" + position + "], count = [" + count + "]");
-            }
-
-            @Override
-            public void onMoved(int fromPosition, int toPosition) {
-                Log.d(TAG, "onMoved() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-            }
-
-            @Override
-            public void onChanged(int position, int count, @Nullable Object payload) {
-                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
-            }
-        });*/
         data = newData;
     }
 
     @Override
     public void accept(List list) {
-//        Log.d(TAG, "accept! called with: list = [" + list + "]");
-/*        Log.w(TAG, "accept() called with: list = [" + list + "]");
-        for (int i = 0; i < list.size(); i++) {
-            TimeEntryData issueData = (TimeEntryData) list.get(i);
-            Log.w(TAG, "new data: " + issueData.getId());
-        }
-        for (int i = 0; i < data.size(); i++) {
-            TimeEntryData issueData = (TimeEntryData) data.get(i);
-            Log.v(TAG, "old data: " + issueData.getId());
-        }*/
         updateList(list);
     }
 

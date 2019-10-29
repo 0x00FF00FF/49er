@@ -211,6 +211,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 //            } else {
             getRv().setAdapter(createNewIssuesAdapter(projectProperties));
             itemTouchHelper.attachToRecyclerView(getRv());
+            // fixme:
+            //  have a callback mechanism call refresh
+            //  the adapter must be registered asap
+            //  the refresh call must happen after the subscription
+            // (on fast machines the refresh may happen before subscribing)
+            repository.refreshData(true);
 //            }
         }
         getRv().scrollToPosition(0);
@@ -257,12 +263,14 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
         IssuesAdapter issuesAdapter = new IssuesAdapter(this);
+        issuesRepository.setup();
+        issuesRepository.registerSubscriber(issuesAdapter);
+        // ^ the adapter must be registered asap
+        // the refresh call must happen after the subscription
+        issuesRepository.setParentProperties(projectViewProperties);
+
         issuesAdapter.setUnbinderHost(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
-        issuesRepository.setup();
-        issuesRepository.setParentProperties(projectViewProperties);
-        issuesRepository.registerSubscriber(issuesAdapter);
-
         touchHelperCallback.setAdapter(issuesAdapter);
         return issuesAdapter;
     }

@@ -119,6 +119,7 @@ public class ProjectEditFormFragment extends ProjectActionFragment {
                     .validate(ProjectData::getOwner, o -> o != null, inputLayoutProjectOwner, errRequired)
                     .validate(ProjectData::getDescription, d -> !d.contains("#"), inputLayoutProjectDescription, errCharacters)
                     .validate(ProjectData::getIcon, d -> !d.contains("#"), inputLayoutProjectIcon, errCharacters)
+                    .validate(ProjectData::getObjectId, oid-> oid!=null, inputLayoutProjectName, "no oid :|")
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = container.getHeight();

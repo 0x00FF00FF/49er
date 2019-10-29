@@ -120,6 +120,7 @@ public class TimeEntryEditFormFragment extends TimeEntryActionFragment {
                     .validate(TimeEntryData::getComments, d -> d.length() <= maxCommentCharacters, commentsInputLayout, errCharactersNumber)
                     .validate(TimeEntryData::getHours, d -> d >= minHours && d <= maxHours,
                             hoursWorkedInputLayout, String.format(errTimeEntryIncorrectHours, minHours, maxHours))
+                    .validate(TimeEntryData::getObjectId, oid -> oid != null, projectNameInputLayout, "no oid :|")
                     .get();
         } catch (FormValidationException e) {
             int scrollToY = container.getHeight();

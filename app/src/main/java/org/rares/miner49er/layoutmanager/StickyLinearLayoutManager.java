@@ -601,6 +601,11 @@ public class StickyLinearLayoutManager
 
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
                     addView(item);
+                    // FIXME:
+                    //  ^ IllegalStateException:
+                    //      Added View has RecyclerView as parent
+                    //      but view is not a real child.
+                    //      Unfiltered index:8
                 } else {
                     // when the first item in the list is
                     // selected and sticky, add items after it.

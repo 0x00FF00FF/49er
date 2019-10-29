@@ -236,7 +236,7 @@ public class DataUpdater {
             List<IssueData> issues = new ArrayList<>();
             for (ProjectData project : projects) {
               issues.addAll(project.getIssues());
-              for(IssueData i: project.getIssues()){
+              for (IssueData i : project.getIssues()) {
                 tEntries.addAll(i.getTimeEntries());
               }
             }
@@ -276,6 +276,7 @@ public class DataUpdater {
         .subscribe(issue -> {
           if (!issue.getId().equals(defaultIssue.getId())) {
             notifyListeners(IssueData.class, Collections.singletonList(issue));
+            notifyListeners(TimeEntryData.class, new ArrayList<>(issue.getTimeEntries()));
           }
         });
     disposables.add(d);
@@ -341,16 +342,28 @@ public class DataUpdater {
                 prj.setIssues(newIssues);
                 return prj;
               })
-              // threaded save to database
-              // - perhaps a better idea would
-              // be to collect the issues from all
-              // the projects and them buffered
-              // save them? (if there are too
-              // many requests?)
-              .flatMap(prj -> insertEntityList(prj.getIssues(), issueDao, defaultIssue), maxThreads)
+              .concatMapSingle(prj -> insertEntityList(prj.getIssues(), issueDao, defaultIssue)
+                  .toList()
+                  .map(il -> {
+                    prj.setIssues(il);
+//                    System.out.println("project issues: " + prj.getIssues());
+                    return projectDbToVmConverter.dmToVm(prj);
+                  }))
               .toList()
-//              .map(issueDbToVmConverter::dmToVm)
-              .subscribe(/*savedIssues -> notifyListeners(IssueData.class, savedIssues)*/l -> pingListeners());
+              .subscribe(savedProjects -> {
+                List<IssueData> issList = new ArrayList<>();
+                disposables.add(
+                    Flowable.fromIterable(savedProjects)
+                        .map(ProjectData::getIssues)
+                        .reduce(issList, (aggregate, newItems) -> {
+                          aggregate.addAll(newItems);
+                          return aggregate;
+                        })
+                        .subscribe(issues -> {
+                          notifyListeners(IssueData.class, issues);
+                          notifyListeners(ProjectData.class, savedProjects);
+                        }));
+              });
           disposables.add(ud);
         });
     disposables.add(d);
@@ -451,9 +464,6 @@ public class DataUpdater {
     }
   }
 
-  //todo:
-  // make sure that related entities are saved correctly into their own caches
-  // e.g. time entries when an issue is updated
   private void notifyListeners(Class cls, List<? extends AbstractViewModel> data) {
     Log.d(TAG, "notifyListeners() called with: cls = [" + cls + "], data = [" + data.size() + "]" + updateListeners.size());
     for (DataUpdatedListener updateListener : updateListeners) {
@@ -513,7 +523,7 @@ public class DataUpdater {
     return Flowable.fromIterable(entities)
         .buffer(maxDbParams)
         .flatMap(entityList -> {
-          Log.i(TAG, "saveEntityList: " + entityList.get(0).getClass().getSimpleName() + " " + entityList.size());
+//          Log.i(TAG, "saveEntityList: " + entityList.get(0).getClass().getSimpleName() + " " + entityList.size());
           List<ObjectIdHolder> teOih = new ArrayList<>(entityList);
           return dao.getByObjectIdIn(getObjectIds(teOih))
               .defaultIfEmpty(defaultEntity)
@@ -535,10 +545,10 @@ public class DataUpdater {
                 return Flowable.fromIterable(newEntities);
               });
         }, maxThreads)
-        .map(t -> {
-          Log.i(TAG, "saveEntityList: " + t);
-          return t;
-        })
+//        .map(t -> {
+//          Log.i(TAG, "saveEntityList: " + t);
+//          return t;
+//        })
         .toList()
         .flatMapPublisher(dao::insertWithResult)
         ;
@@ -568,7 +578,7 @@ public class DataUpdater {
     return Flowable.fromIterable(entities)
         .buffer(maxDbParams)
         .flatMap(entityList -> {
-          Log.i(TAG, "insertEntityList: " + entityList.get(0).getClass().getSimpleName() + " " + entityList.size());
+//          Log.i(TAG, "insertEntityList: " + entityList.get(0).getClass().getSimpleName() + " " + entityList.size());
           List<ObjectIdHolder> teOih = new ArrayList<>(entityList);
           return dao.getByObjectIdIn(getObjectIds(teOih))
               .defaultIfEmpty(defaultEntity)
@@ -585,36 +595,49 @@ public class DataUpdater {
                 for (T existingE : existingEntities) {
                   boolean found = false;
                   for (T newE : newEntities) {
-                    if (existingE.getObjectId().equals(newE.getObjectId())) {
+                    if (existingE.getObjectId().equals(newE.getObjectId())) { // && ee.getUpdateTime < ne.getUpdateTime
                       notToUpdate.add(newE);
                       found = true;
                     }
                   }
                   if (!found) {
                     toDelete.add(existingE);
+                  } else {
+                    newEntities.add(existingE);
                   }
                 }
                 newEntities.removeAll(notToUpdate);
-                Log.d(TAG, "insertEntityList: to:delete: " + toDelete.size());
+//                Log.d(TAG, "insertEntityList: to:delete: " + toDelete.size());
                 disposables.add(dao.delete(toDelete)
                     .subscribeOn(Schedulers.io())
                     .doOnError(Throwable::printStackTrace).subscribe(b -> {
                       if (b != null && b) {
-                        Log.i(TAG, String.format("insertEntityList: delete succeeded.(%s)", toDelete.size()));
+//                        Log.i(TAG, String.format("insertEntityList: delete succeeded.(%s)", toDelete.size()));
                       } else {
-                        Log.w(TAG, String.format("insertEntityList: delete failed.(%s)", toDelete.size()));
+//                        Log.w(TAG, String.format("insertEntityList: delete failed.(%s)", toDelete.size()));
                       }
                     }));
-                Log.i(TAG, "insertEntityList: " + newEntities.size() + " " + notToUpdate.size());
+//                Log.i(TAG, "insertEntityList: " + newEntities.size() + " " + notToUpdate.size());
                 return Flowable.fromIterable(newEntities);
               });
         }, maxThreads)
-        .map(p -> {
-          Log.i(TAG, "insertEntityList: " + p);
-          return p;
-        })
+//        .map(p -> {
+//          Log.i(TAG, "insertEntityList: " + p);
+//          return p;
+//        })
         .toList()
-        .flatMapPublisher(dao::insertWithResult)
+        .flatMapPublisher(ts -> {
+          List<T> toInsert = new ArrayList<>();
+          List<T> notToUpdate = new ArrayList<>();
+          for (T t : ts) {
+            if (t.getId() == null || t.getId() <= 0) {
+              toInsert.add(t);
+            } else {
+              notToUpdate.add(t);
+            }
+          }
+          return dao.insertWithResult(toInsert).concatWith(Flowable.fromIterable(notToUpdate));
+        })
         ;
   }
 

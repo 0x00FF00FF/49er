@@ -136,7 +136,7 @@ public class ProjectData extends AbstractViewModel implements Cloneable {
       return true;
     }
     if (list1.size() == list2.size()) {
-      Comparator<IssueData> c = (te1, te2) -> te1.id > te2.id ? 1 : te1.id.equals(te2.id) ? 0 : -1;
+      Comparator<IssueData> c = (i1, i2) -> i1.id > i2.id ? 1 : i1.id.equals(i2.id) ? 0 : -1;
       Collections.sort(list1, c);
       Collections.sort(list2, c);
       for (int i = 0; i < list1.size(); i++) {

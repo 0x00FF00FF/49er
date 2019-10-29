@@ -1,7 +1,6 @@
 package org.rares.miner49er.network;
 
 import android.util.Log;
-import com.facebook.stetho.okhttp3.StethoInterceptor;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.PublishProcessor;
@@ -9,7 +8,6 @@ import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import okhttp3.logging.HttpLoggingInterceptor.Level;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.network.dto.ProjectDto;
@@ -45,8 +43,8 @@ public enum NetworkingService {
     private OkHttpClient httpClient =
         new OkHttpClient.Builder()
             .addInterceptor(authIntercept)
-            .addInterceptor(loggingInterceptor.setLevel(Level.BODY))
-            .addNetworkInterceptor(new StethoInterceptor())
+//            .addInterceptor(loggingInterceptor.setLevel(Level.BODY))
+//            .addNetworkInterceptor(new StethoInterceptor())
             .readTimeout(5, TimeUnit.SECONDS)
             .connectTimeout(5, TimeUnit.SECONDS)
             .build();

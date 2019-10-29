@@ -25,6 +25,7 @@ import org.rares.miner49er.ui.custom.validation.FormValidator;
 import org.rares.miner49er.util.UiUtil;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.DATE_PATTERN;
 import static org.rares.miner49er.domain.entries.TimeEntriesInterfaces.KEY_COMMENTS;
@@ -137,7 +138,7 @@ public class TimeEntryAddFormFragment extends TimeEntryActionFragment {
 
 
     private boolean addTimeEntry() {
-
+        timeEntryData.objectId = UUID.randomUUID().toString();
         timeEntryData.id = timeEntriesDAO.insert(timeEntryData).blockingGet(); //
 
         final TimeEntryData toDelete = timeEntryData.clone();

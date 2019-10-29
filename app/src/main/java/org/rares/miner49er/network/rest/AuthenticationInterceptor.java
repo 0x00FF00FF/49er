@@ -26,6 +26,9 @@ public class AuthenticationInterceptor implements Interceptor {
     usersDao = dao;
   }
 
+  private final int retryCount = 4;
+  private int retries = 0;
+
   @Override
   public Response intercept(Chain chain) throws IOException {
     Log.d(TAG, "intercept() called. [" + authToken + "]");
@@ -49,21 +52,29 @@ public class AuthenticationInterceptor implements Interceptor {
     Log.d(TAG, "intercept: " + response.code());
 
     if (loggedInUser != null) {
-//      if (401 == response.code()) {
-      if (!response.isSuccessful()) {
-        Log.w(TAG, "intercept: ->  should invalidate API KEY and retry login.");
+      if (401 == response.code() || 500 == response.code()) { // invalid session throws 500
+//        if (!response.isSuccessful()) {
+        if (retries++ < retryCount) {
+          Log.w(TAG, "intercept: ->  should invalidate API KEY and retry login.");
 
-        authToken = "";
-        Log.v(TAG, "intercept: before: " + authToken);
-        ViewModelCacheSingleton.getInstance().loggedInUser =
-            NetworkUserAccountService.login(loggedInUser, usersDao) // FIXME: inject non-static NetworkUserAccountService
-                .subscribeOn(Schedulers.io())
-                .blockingGet();
+          authToken = "";
+          Log.v(TAG, "intercept: before: " + authToken);
+          ViewModelCacheSingleton.getInstance().loggedInUser =
+              NetworkUserAccountService.login(loggedInUser, usersDao) // FIXME: inject non-static NetworkUserAccountService
+                  .subscribeOn(Schedulers.io())
+                  .blockingGet();
 
-        loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
+          loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
 
-        authToken = loggedInUser.getApiKey();
-        Log.i(TAG, "intercept: after: " + authToken);
+          authToken = loggedInUser.getApiKey();
+          Log.i(TAG, "intercept: after: " + authToken);
+        } else {
+          Log.i(TAG, "intercept: max retries reached, enough is enough.");
+          retries = 0;
+        }
+      }
+      if (response.isSuccessful()) {
+        retries = 0;
       }
     }
 

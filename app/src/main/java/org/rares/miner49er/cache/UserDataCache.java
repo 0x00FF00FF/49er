@@ -76,17 +76,19 @@ public class UserDataCache implements Cache<UserData>, Closeable {
                                     team.add(userData);
                                 }
                                 if (issues != null) {
-                                    for (IssueData i : issues) {
-                                        if (i.getOwnerId().equals(userData.id) && i.getOwner() != null) {
-                                            // TODO: should the owner be added regardless?
-                                            i.setOwner(userData);
-                                        }
-                                        List<TimeEntryData> entries = i.getTimeEntries();
-                                        if (entries != null) {
-                                            for (TimeEntryData ted : entries) {
-                                                if (ted.getUserId().equals(userData.id)) {
-                                                    ted.setUserPhoto(userData.getPicture());
-                                                    ted.setUserName(userData.getName());
+                                    synchronized (projectCache.get(projectData.id).getIssues()) {
+                                        for (IssueData i : issues) {
+                                            if (i.getOwnerId().equals(userData.id) && i.getOwner() != null) {
+                                                // TODO: should the owner be added regardless?
+                                                i.setOwner(userData);
+                                            }
+                                            if (i.getTimeEntries() != null) {
+                                                List<TimeEntryData> entries = new ArrayList<>(i.getTimeEntries());
+                                                for (TimeEntryData ted : entries) {
+                                                    if (ted.getUserId().equals(userData.id)) {
+                                                        ted.setUserPhoto(userData.getPicture());
+                                                        ted.setUserName(userData.getName());
+                                                    }
                                                 }
                                             }
                                         }
@@ -98,6 +100,7 @@ public class UserDataCache implements Cache<UserData>, Closeable {
                     })
                     .sequential()
                     .count()
+                    .doOnError(x-> System.err.println("ERROR IN USER DATA CACHE PUT USER."))
                     .subscribe(number -> cache.sendEvent(CACHE_EVENT_UPDATE_USER))); //
         } else {
             cache.sendEvent(CACHE_EVENT_UPDATE_USER);

@@ -1,7 +1,6 @@
 package org.rares.miner49er.persistence.storio;
 
 import android.content.Context;
-import com.pushtorefresh.storio3.LoggingInterceptor;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite;
 import lombok.Getter;
@@ -76,7 +75,7 @@ public enum StorioFactory {
                 .addTypeMapping(Project.class, getProjectSQLiteTypeMapping())
                 .addTypeMapping(Issue.class, getIssueSQLiteTypeMapping())
 
-                .addInterceptor(LoggingInterceptor.defaultLogger())
+//                .addInterceptor(LoggingInterceptor.defaultLogger())
                 .build();
     }
 

@@ -17,7 +17,13 @@ public abstract class Repository {
     private NetworkingService ns = NetworkingService.INSTANCE;
     protected CompositeDisposable disposables = null;
     protected PublishProcessor<Byte> userActionProcessor = PublishProcessor.create();
-    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io()).share();
+    // ^ static/singleton? if so, remember that concrete classes have userActionProcessor.onComplete in shutdown()
+    protected Flowable<Byte> userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io())
+//        .doOnSubscribe(x-> System.out.println("repo subscribe " + userActionProcessor.hasSubscribers()))
+//        .doOnNext(x-> System.out.println("repo next"))
+//        .doOnComplete(()->System.err.println("repo complete"))
+//        .doOnError(x-> System.err.println("repo error"))
+        .share();
 
     protected abstract void setup();
 
@@ -51,5 +57,11 @@ public abstract class Repository {
      */
     public boolean isDisposed() {
         return disposables.isDisposed();
+    }
+
+    protected void slowDown() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("..." + System.currentTimeMillis() / .6688866688866699 / .448854684798794 * .444444444444444);
+        }
     }
 }

@@ -165,6 +165,12 @@ class CacheFeedWorker {
                         .parallel(4)
                         .runOn(Schedulers.computation())
                         .map(mapTimeEntryToIssueData)
+                        .doOnError(x -> {
+                            System.err.println("ERROR IN MAP TIME ENTRY TO ISSUE DATA [CACHE FEED WORKER]");
+                            System.err.println("------------"  + Thread.currentThread().getName());
+                            x.printStackTrace();
+                            System.err.println("------------"  + Thread.currentThread().getName());
+                        })
                         .sequential()
                         // in this case doOnComplete should be
                         // faster and more memory efficient
@@ -175,6 +181,7 @@ class CacheFeedWorker {
                                     .parallel(4)
                                     .runOn(Schedulers.computation())
                                     .map(mapIssueToProjectData)
+                                    .doOnError(x-> System.err.println("ERROR IN MAP ISSUE TO PROJECT DATA [CACHE FEED WORKER]"))
                                     .sequential()
                                     .doOnComplete(() -> {
                                         Log.v(TAG, "linkData: start work on projects");
@@ -182,6 +189,7 @@ class CacheFeedWorker {
                                                 .parallel(4)
                                                 .runOn(Schedulers.computation())
                                                 .map(mapToProjectData)
+                                                .doOnError(x-> System.err.println("ERROR IN MAP TO PROJECT DATA [CACHE FEED WORKER]"))
                                                 .sequential()
                                                 .delay(51, TimeUnit.MILLISECONDS)
                                                 .doOnComplete(projectsLinkedAction)
