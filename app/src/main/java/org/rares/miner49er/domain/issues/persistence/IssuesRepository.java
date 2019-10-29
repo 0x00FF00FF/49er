@@ -119,7 +119,9 @@ public class IssuesRepository extends Repository {
   @Override
   public void shutdown() {
     userActionProcessor.onComplete();
-    adapterDisposable.dispose();
+    if (adapterDisposable != null && !adapterDisposable.isDisposed()) {
+      adapterDisposable.dispose();
+    }
     disposables.clear();
   }
 
