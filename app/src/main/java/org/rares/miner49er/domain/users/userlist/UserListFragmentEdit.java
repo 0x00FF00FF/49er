@@ -319,6 +319,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
         int position = -1;
         if (adapter != null) {
             position = adapter.getData().indexOf(usersDAO.get().get(userId, true).blockingGet().get());
+            System.err.println(position+"]]]");
         }
         // smooth scroll if difference in current position and requested position is small
         int currentFirstPosition = 0;

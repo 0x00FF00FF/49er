@@ -325,6 +325,7 @@ public class DataUpdater {
 
   public void lightUpdate() {
     users.clear();
+    updateUsers().subscribe();
     List<ProjectDto> projects = new ArrayList<>();
     // saved initial projects to have a reference
     // to the projects' issues because i thought
