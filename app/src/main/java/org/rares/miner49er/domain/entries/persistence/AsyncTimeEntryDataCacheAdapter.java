@@ -56,7 +56,7 @@ public class AsyncTimeEntryDataCacheAdapter
         SingleSubject<List<TimeEntryData>> singleSubject = SingleSubject.create();
         final IssueData parentIssue = issueDataCache.getData(parentId);
         final List<TimeEntryData> cachedTimeEntries = parentIssue.getTimeEntries();// timeEntryDataCache.getData(parentIssue);
-        if (cachedTimeEntries != null) {
+        if (cachedTimeEntries != null && !cachedTimeEntries.isEmpty()) {
             return Single.just(cachedTimeEntries);
         } else {
             Single<List<TimeEntryData>> dataSingle = dao.getAll(parentId, lazy).subscribeOn(Schedulers.io());

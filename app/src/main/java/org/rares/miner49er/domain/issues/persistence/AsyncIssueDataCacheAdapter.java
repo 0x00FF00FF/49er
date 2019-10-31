@@ -49,7 +49,7 @@ public class AsyncIssueDataCacheAdapter
     public Single<List<IssueData>> getAll(long parentId, boolean lazy) {
         SingleSubject<List<IssueData>> singleSubject = SingleSubject.create();
         final List<IssueData> cachedIssues = issueDataCache.getData(Optional.of(parentId));
-        if (cachedIssues != null) {
+        if (cachedIssues != null && !cachedIssues.isEmpty()) {
             return Single.just(cachedIssues);
         } else {
 //            Log.d(TAG, " >> >> getAll() called with: parentId = [" + parentId + "], lazy = [" + lazy + "] " + Thread.currentThread().getName());

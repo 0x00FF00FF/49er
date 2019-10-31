@@ -54,7 +54,7 @@ public class AsyncUserDataCacheAdapter
         SingleSubject<List<UserData>> singleSubject = SingleSubject.create();
         ProjectData projectData = projectDataCache.getData(parentId);
         List<UserData> cachedUsers = projectData.getTeam();
-        if (cachedUsers != null) {
+        if (cachedUsers != null && !cachedUsers.isEmpty()) {
             return Single.just(cachedUsers);
         }
 
