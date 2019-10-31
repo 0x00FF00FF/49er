@@ -342,6 +342,7 @@ public class UserListFragmentEdit extends UserListFragmentPureRv {
                 if (position < currentFirstPosition - childCount) {
                     recyclerView.scrollToPosition(position);
                 } else {
+                    System.out.println(position);
                     recyclerView.smoothScrollToPosition(position);
                 }
             } else {

@@ -89,7 +89,7 @@ public class DataUpdater {
       if (count == 0) {
         if (projectObjectIds.length == 0) {
           // update all projects
-          projectUpdates = ns.getProjects();
+          projectUpdates = getProjects();
         } else {
           if (projectObjectIds.length < 16) {
             // update projects in projectObjectsIds
@@ -121,6 +121,21 @@ public class DataUpdater {
       }
     }
     return projectUpdates;
+  }
+
+  public Flowable<ProjectDto> getProjects() {
+    return
+        ns.projectsService
+            .getProjectsAsSingleList()
+            .retry(1)
+            .flatMapPublisher(Flowable::fromIterable)
+            .onTerminateDetach()
+            .doOnError(e -> Log.e(TAG, "[doOnError] getProjects: ERROR " + e))
+            .onErrorResumeNext(x -> {
+              Log.i(TAG, "getProjects: returning empty list.");
+              return Flowable.fromIterable(Collections.emptyList());
+            })
+            .subscribeOn(Schedulers.io());
   }
 
   public Flowable<Project> updateProjects(Flowable<ProjectDto> projectUpdateCall) {
@@ -367,48 +382,6 @@ public class DataUpdater {
           disposables.add(ud);
         });
     disposables.add(d);
-  }
-
-  @Deprecated
-  public void lightUpdate_() {
-    users.clear();
-    Disposable d = createProjectUpdateCall(0, 0)
-        .subscribeOn(Schedulers.io())
-        .map(projectConverter::toModel)
-        .map(p -> {
-          users.addAll(p.getTeam());
-          users.add(p.getOwner());
-          return p;
-        })
-        .buffer(maxDbParams)
-        .flatMap(projects ->
-            this.saveEntityList(new ArrayList<>(users), userDao, defaultUser)
-                .map(newUser -> {
-                  Log.i(TAG, "lightUpdate_: new user id: " + newUser.getId());
-                  populateUserIds(projects, newUser);
-                  return newUser;
-                })
-                .toList()
-                .flatMapPublisher(userList -> Flowable.fromIterable(projects)))
-        .flatMapSingle(p -> projectDao
-            .insertWithResult(p)
-            .flatMap(sp -> {
-                  sp.setIssues(p.getIssues());
-                  Log.d(TAG, "lightUpdate: sp.id " + sp.getId());
-                  return Single.just(sp);
-                }
-            ))
-        .map(p -> {
-          for (Issue i : p.getIssues()) {
-            i.setOwnerId(p.getOwnerId()); //set a default issue owner
-            i.setProjectId(p.getId());
-            i.setName("New Issue");
-          }
-          return p;
-        })
-        .flatMap(p -> insertEntityList(p.getIssues(), issueDao, defaultIssue), maxThreads)
-        .count()
-        .subscribe(x -> pingListeners());
   }
 
   @Deprecated

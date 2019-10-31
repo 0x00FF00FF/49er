@@ -1,16 +1,12 @@
 package org.rares.miner49er.network;
 
 import android.util.Log;
-import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.processors.PublishProcessor;
-import io.reactivex.schedulers.Schedulers;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
-import org.rares.miner49er.network.dto.ProjectDto;
 import org.rares.miner49er.network.rest.AuthenticationInterceptor;
 import org.rares.miner49er.network.rest.IssuesService;
 import org.rares.miner49er.network.rest.ProjectsService;
@@ -20,7 +16,6 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 //import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -80,97 +75,41 @@ public enum NetworkingService {
   public final UserService userService = RestServiceGenerator.INSTANCE.generateService(UserService.class);
 
 
-  public Flowable<ProjectDto> getProjects() {
-
-    Log.i(TAG, "getProjects: " + this.hashCode() + "|" + this.toString());
-
-    long ctm = System.currentTimeMillis();
-
-    Log.w(TAG, "create projects service: ----------------- " + (System.currentTimeMillis() - ctm));
-
-    return
-        projectsService
-            .getProjectsAsSingleList()
-            .retry(1)
-            .flatMapPublisher(Flowable::fromIterable)
-//                        .getProjectsAsFlowable()
-            .map(p -> {
-              System.err.println("---->>>>>> " + p.getName());
-              return p;
-            })
-            .onTerminateDetach()
-            .doOnError(e -> Log.e(TAG, "[doOnError] getProjects: ERROR " + e))
-            .doOnError(Throwable::printStackTrace)
-            .onErrorResumeNext(x -> {
-              Log.i(TAG, "getProjects: returning empty list.");
-              return Flowable.fromIterable(Collections.emptyList());
-            })
-            .subscribeOn(Schedulers.io());
-  }
-
-  private PublishProcessor<Long> onDemandPublisher = PublishProcessor.create();
-  private Flowable<Long> onDemandFlowable = onDemandPublisher.subscribeOn(Schedulers.io());
-  private Flowable<Long> timerFlowable;// = Flowable.interval(60L, TimeUnit.SECONDS).share();
+//  private PublishProcessor<Long> onDemandPublisher = PublishProcessor.create();
+//  private Flowable<Long> onDemandFlowable = onDemandPublisher.subscribeOn(Schedulers.io());
+//  private Flowable<Long> timerFlowable;// = Flowable.interval(60L, TimeUnit.SECONDS).share();
 
   private CompositeDisposable disposables = new CompositeDisposable();
 
-  private Flowable<ProjectDto> projectsFlowable = getProjects();
+//    private Flowable<ProjectDto> projectsFlowable = getProjects();
 //    private Single<List<Issue>> issuesObs = getIssues(111);
 //    private Single<List<TimeEntry>> timeEntriesObs = getTimeEntries(111);
 
-  private void cleanDisposables() {
-    Log.i(TAG, "cleanDisposables: " + disposables.size());
-    disposables.dispose();
+  private void clearDisposables() {
+    Log.i(TAG, "clearDisposables: " + disposables.size());
+    disposables.clear();
   }
 
   public void start() {
     disposables = new CompositeDisposable();
-    setTimerInterval(60000);
+//    setTimerInterval(60000);
   }
 
   public void end() {
-    cleanDisposables();
+    clearDisposables();
 //        timerFlowable = null;
   }
 
-//    public void registerProjectsConsumer(Consumer<Project> consumer) {
-//        // subscribe a [get projects] event to each timer tick.
-//        Log.i(TAG, "registerProjectsConsumer: >>>> " + consumer);
-//        disposables.add(
-//                timerFlowable.subscribe(
-//                        timer -> disposables.add(projectsFlowable.subscribe(consumer)))
-//                // this is designed to function with only one consumer.
-//                // if we register multiple consumers, the project service
-//                // will fetch data for each subscribe(consumer) call.
-//        );
-//    }
+//  public void setTimerInterval(long seconds) {
+//    Log.w(TAG, "setTimerInterval: " + seconds + " seconds.");
+//    timerFlowable = Flowable.merge(onDemandFlowable, Flowable.interval(seconds, TimeUnit.SECONDS)).share()
+//        .subscribeOn(Schedulers.io())
+//        .doOnNext(x -> Log.i(TAG, ">TICK!<"));
+//  }
 
-//    public void registerIssuesConsumer(Consumer<List<Issue>> consumer) {
-////        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
-//        disposables.add(
-//                timerFlowable.subscribe(
-//                        timer -> disposables.add(issuesObs.subscribe(consumer)))
-//        );
-//    }
-//
-//    public void registerTimeEntriesConsumer(Consumer<List<TimeEntry>> consumer) {
-////        Log.d(TAG, "registerProjectsConsumer() called with: consumer = [" + consumer + "]");
-//        disposables.add(
-//                timerFlowable.subscribe(
-//                        timer -> disposables.add(timeEntriesObs.subscribe(consumer)))
-//        );
-//    }
-
-  public void setTimerInterval(long seconds) {
-    Log.w(TAG, "setTimerInterval: " + seconds + " seconds.");
-    timerFlowable = Flowable.merge(onDemandFlowable, Flowable.interval(seconds, TimeUnit.SECONDS)).share()
-        .subscribeOn(Schedulers.io())
-        .doOnNext(x -> Log.i(TAG, ">TICK!<"));
-  }
-
-  public void refreshData() {
-    Log.i(TAG, "refreshData: ---- " + onDemandPublisher.hasSubscribers());
-    onDemandPublisher.onNext(System.currentTimeMillis());
-  }
+//  public void refreshData() {
+//    Log.i(TAG, "refreshData: ---- " + onDemandPublisher.hasSubscribers());
+//    onDemandPublisher.onNext(System.currentTimeMillis());
+//  }
 
 }

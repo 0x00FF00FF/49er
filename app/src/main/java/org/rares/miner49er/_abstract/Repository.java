@@ -43,9 +43,6 @@ public abstract class Repository {
     // enqueue refresh data
     public void refreshData(boolean onlyLocal) {
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
-        if (!onlyLocal) {
-            ns.refreshData();
-        }
     }
 
     /**
@@ -61,7 +58,11 @@ public abstract class Repository {
 
     protected void slowDown() {
         for (int i = 0; i < 100; i++) {
-            System.out.println("..." + System.currentTimeMillis() / .6688866688866699 / .448854684798794 * .444444444444444);
+            System.out.println(" ... " +
+                System.currentTimeMillis() /
+                    .6688866688866699 /
+                    .448854684798794 *
+                    .444444444444444);
         }
     }
 }

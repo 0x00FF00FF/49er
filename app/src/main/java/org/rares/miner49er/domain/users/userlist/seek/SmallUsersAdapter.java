@@ -11,6 +11,7 @@ import org.rares.miner49er.R;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces;
 import org.rares.miner49er.domain.users.userlist.UserInterfaces.PositionListener;
+import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,8 @@ public class SmallUsersAdapter extends RecyclerView.Adapter<SmallUserItemVH>
 
     @Override
     public void onBindViewHolder(@NonNull SmallUserItemVH holder, int position) {
-        holder.bind(data.get(position).getPicture());
+        String pictureUrl = RestServiceGenerator.INSTANCE.serviceUrl + "images/" + data.get(position).getPicture();
+        holder.bind(pictureUrl);
     }
 
     @Override

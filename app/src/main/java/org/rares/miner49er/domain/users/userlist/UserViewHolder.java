@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.rares.miner49er.R;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.util.TextUtils;
 
@@ -58,8 +59,10 @@ public class UserViewHolder extends RecyclerView.ViewHolder {
                 String.format(userInfoTemplate,
                         otherProjects == 0 ? userInfoTemplateZeroProjects : otherProjects,
                         otherProjects > 1 ? userInfoTemplatePluralSuffix : ""));
+
+        String pictureUrl = RestServiceGenerator.INSTANCE.serviceUrl + "images/" + userData.getPicture();
         GlideApp.with(itemView)
-                .load(userData.getPicture())
+                .load(pictureUrl)
                 .error(R.drawable.skull)
 //                    .apply(RequestOptions.circleCropTransform())
                 .into(userPhoto);

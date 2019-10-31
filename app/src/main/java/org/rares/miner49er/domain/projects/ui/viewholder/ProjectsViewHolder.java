@@ -30,6 +30,7 @@ import org.rares.miner49er._abstract.ItemViewAnimator;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er.domain.projects.adapter.ProjectViewProperties;
 import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
 import org.rares.miner49er.ui.custom.glide.GlideApp;
 import org.rares.miner49er.ui.custom.rotationaware.NoWidthUpdateListener;
 import org.rares.miner49er.util.UiUtil;
@@ -105,10 +106,11 @@ public class ProjectsViewHolder
 
         projectLogoView.setVisibility(View.VISIBLE);
 
-        String pictureUrl = itemData.getPicture();
+        String pictureUrl = RestServiceGenerator.INSTANCE.serviceUrl + "images/" + itemData.getPicture();
 
         try {
-            pictureUrl = URLDecoder.decode(itemData.getPicture(), "UTF-8");
+            pictureUrl = URLDecoder.decode(pictureUrl, "UTF-8");
+            System.out.println(pictureUrl);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

@@ -155,7 +155,7 @@ class CacheFeedWorker {
 
         if (cachedProjects.size() == 0) {
             Log.i(TAG, "linkData: ------------------------ no data ");
-            ns.refreshData();
+//            ns.refreshData();
             return;
         }
 
