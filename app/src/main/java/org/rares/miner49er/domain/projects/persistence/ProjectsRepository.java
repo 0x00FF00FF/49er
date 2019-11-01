@@ -110,13 +110,21 @@ public class ProjectsRepository extends Repository {
    */
 
   @Override
-  public void registerSubscriber(Consumer<List> consumer) {
+  public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
     disposables.add(
         userActionsObservable
             .subscribeOn(Schedulers.io())
             .concatMapSingle(action -> getData())
             .onBackpressureBuffer()
             .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
+            .doOnSubscribe(s -> {
+              if (runnable != null) {
+                disposables.add(
+                    Single.just("running optional command")
+                        .delay(10, TimeUnit.MILLISECONDS)
+                        .subscribe(a -> runnable.run()));
+              }
+            })
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(consumer));
   }

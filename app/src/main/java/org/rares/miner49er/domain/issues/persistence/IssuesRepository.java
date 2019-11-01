@@ -52,9 +52,6 @@ public class IssuesRepository extends Repository {
   @Override
   public void setup() {
 
-    Log.d(TAG, "setup complete: " + userActionProcessor.hasComplete());
-    Log.d(TAG, "setup subscribers: " + userActionProcessor.hasSubscribers());
-
     if (userActionProcessor.hasComplete()) {
       userActionProcessor = PublishProcessor.create();
       userActionsObservable = userActionProcessor.subscribeOn(Schedulers.io());
@@ -127,7 +124,7 @@ public class IssuesRepository extends Repository {
 
 
   @Override
-  public void registerSubscriber(Consumer<List> consumer) {
+  public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
 //    Log.i(TAG, "registerSubscriber: called");
     if (adapterDisposable != null && !adapterDisposable.isDisposed()) {
       adapterDisposable.dispose();
@@ -140,10 +137,17 @@ public class IssuesRepository extends Repository {
             .onBackpressureDrop()
             .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
             .onErrorResumeNext(Flowable.just(Collections.emptyList()))
+            .doOnSubscribe(s -> {
+              if (runnable != null) {
+                disposables.add(
+                    Single.just("running optional command")
+                        .delay(10, TimeUnit.MILLISECONDS)
+                        .subscribe(a -> runnable.run()));
+              }
+            })
             .observeOn(AndroidSchedulers.mainThread())
-//            .doOnComplete(() -> Log.d(TAG, "registerSubscriber: completed."))
-//            .doOnSubscribe(c-> System.out.println("??????? subscribe."))
             .subscribe(consumer);
+
 
 //    disposables.add(
 //        Flowable.interval(800, TimeUnit.MILLISECONDS)
@@ -157,7 +161,7 @@ public class IssuesRepository extends Repository {
   private Single<List<IssueData>> getDbItems() {
     Log.d(TAG, "getDbItems() called: > " + parentProperties.getId());
     return asyncDao.getAll(parentProperties.getId(), true)
-        .doOnError(e-> Log.e(TAG, "getDbItems: ", e))
+        .doOnError(e -> Log.e(TAG, "getDbItems: ", e))
         .flatMapPublisher(Flowable::fromIterable)
         .filter(i -> !i.isDeleted())
         .map(i -> i.clone(false))

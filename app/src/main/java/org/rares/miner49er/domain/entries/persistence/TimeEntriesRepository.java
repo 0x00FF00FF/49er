@@ -78,7 +78,7 @@ public class TimeEntriesRepository extends Repository {
   }
 
   @Override
-  public void registerSubscriber(Consumer<List> consumer) {
+  public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
     if (adapterDisposable != null && !adapterDisposable.isDisposed()) {
       adapterDisposable.dispose();
     }
@@ -88,8 +88,16 @@ public class TimeEntriesRepository extends Repository {
         .concatMapSingle(e -> getDbItems())
         .onBackpressureBuffer()
         .onErrorResumeNext(Flowable.just(Collections.emptyList()))
+        .doOnSubscribe(s->{
+          if (runnable != null) {
+            disposables.add(
+            Single.just("running optional command")
+                .delay(10, TimeUnit.MILLISECONDS)
+                .subscribe(a -> runnable.run()));
+          }})
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(consumer);
+
   }
 
   @Override

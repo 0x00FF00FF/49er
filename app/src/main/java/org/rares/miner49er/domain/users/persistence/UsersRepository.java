@@ -3,6 +3,7 @@ package org.rares.miner49er.domain.users.persistence;
 import android.util.Log;
 import com.pushtorefresh.storio3.sqlite.Changes;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
@@ -66,7 +67,7 @@ public class UsersRepository extends Repository {
     }
 
     @Override
-    public void registerSubscriber(Consumer<List> consumer) {
+    public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
 
         disposables.add(
                 userActionsObservable
@@ -79,6 +80,14 @@ public class UsersRepository extends Repository {
                         .onBackpressureDrop()
                         .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
                         .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
+                        .doOnSubscribe(s -> {
+                            if (runnable != null) {
+                                disposables.add(
+                                    Single.just("running optional command")
+                                        .delay(10, TimeUnit.MILLISECONDS)
+                                        .subscribe(a -> runnable.run()));
+                            }
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(consumer)
         );

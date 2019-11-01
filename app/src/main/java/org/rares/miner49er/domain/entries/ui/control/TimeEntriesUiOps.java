@@ -122,7 +122,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 //            } else {
                 getRv().setAdapter(createNewAdapter(viewProperties));
                 itemTouchHelper.attachToRecyclerView(getRv());
-                repository.refreshData(true);
+//                repository.refreshData(true);
 //            }
         }
     }
@@ -145,7 +145,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
         teRepository.setup();
         teRepository.setParentProperties(viewProperties);
-        teRepository.registerSubscriber(teAdapter);
+        teRepository.registerSubscriber(teAdapter, ()->repository.refreshData(true));
 
         touchHelperCallback.setAdapter(teAdapter);
 

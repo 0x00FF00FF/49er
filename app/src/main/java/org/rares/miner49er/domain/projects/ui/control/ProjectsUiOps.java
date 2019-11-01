@@ -117,7 +117,7 @@ public class ProjectsUiOps
   public void setupRepository() {
 //        Log.e(TAG, "setupRepository() called");
     projectsRepository.setup();
-    projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter());
+    projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter(), null);
     touchHelperCallback.setAdapter((ProjectsAdapter) getRv().getAdapter());
   }
 

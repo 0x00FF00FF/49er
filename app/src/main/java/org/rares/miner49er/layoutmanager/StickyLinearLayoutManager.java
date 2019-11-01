@@ -771,6 +771,7 @@ public class StickyLinearLayoutManager
         if (DEBUG && METHOD_DEBUG) {
             Log.v(TAG, "refreshSelectedView: x_x " + selectedView);
             Log.d(TAG, "refreshSelectedView: x_x " + tempV);
+            Log.d(TAG, "refreshSelectedView: x_x " + TextUtils.getItemText(tempV));
         }
         Drawable background = tempV.getBackground();
         if (background instanceof ColorDrawable) {

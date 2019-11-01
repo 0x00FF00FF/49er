@@ -29,7 +29,7 @@ public abstract class Repository {
 
     public abstract void shutdown();
 
-    public abstract void registerSubscriber(Consumer<List> consumer);
+    public abstract void registerSubscriber(Consumer<List> consumer, Runnable runnable);
 
     protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class);
 
