@@ -391,7 +391,7 @@ public class StickyLinearLayoutManager
     ) {
 
         boolean METHOD_DEBUG = false;
-        boolean selectedViewRefreshed = false;
+//        boolean selectedViewRefreshed = false;
 
         String logDirection = " = ";
         if (newItemPosition == BOTTOM) {
@@ -565,9 +565,9 @@ public class StickyLinearLayoutManager
                     if (DEBUG && METHOD_DEBUG) {
                         Log.e(TAG, "drawChildren: " + selectedPosition + " " + selectedView + " scrolling? " + scrolling);
                     }
-
+//                  System.out.println(">>>>>> >>>> >> > refreshing selected view in method.");
                     refreshSelectedView(recycler);
-                    selectedViewRefreshed = true;
+//                    selectedViewRefreshed = true;
                     item = selectedView;
 
                     selectedViewDetached = false;
@@ -580,6 +580,7 @@ public class StickyLinearLayoutManager
 
                 } else {
                     item = recycler.getViewForPosition(i);
+//                    Log.i(TAG, "drawChildren: item recycler get: "+ TextUtils.getItemText(item));
                 }
 
 
@@ -600,12 +601,24 @@ public class StickyLinearLayoutManager
                 // measurement will be done correctly
 
                 if (newItemPosition == BOTTOM || newItemPosition == NONE) {
-                    addView(item);
-                    // FIXME:
-                    //  ^ IllegalStateException:
-                    //      Added View has RecyclerView as parent
-                    //      but view is not a real child.
-                    //      Unfiltered index:8
+                    try {
+                        addView(item); // man, is this ugly or what?
+                    } catch (IllegalStateException e) {
+                        //  ^ IllegalStateException:
+                        //      Added View has RecyclerView as parent
+                        //      but view is not a real child.
+                        //      Unfiltered index:x
+                        // The rv only accepts views that came
+                        // from recycler.getViewForPosition(i).
+                        // if the selected view came from a
+                        // previous-previous getViewForPosition
+                        // call, then it probably is not recognized
+                        // in any of the recycling pools.
+                        // (happens sometimes when the rv/lm are
+                        // overwhelmed by requests of refreshing
+                        // data and also collapsing/animating the list)
+                        Log.wtf(TAG, "drawChildren: The dog's out again, Larry...");
+                    }
                 } else {
                     // when the first item in the list is
                     // selected and sticky, add items after it.
@@ -674,7 +687,7 @@ public class StickyLinearLayoutManager
                     Log.e(TAG, "drawChildren: PER ITEM: " + (System.currentTimeMillis() - cs));
                 }
             }
-        } finally {
+        } finally { // when the algorithm skips the selected item.
 //            METHOD_DEBUG = true;
             if (selectedView != null) {
                 int l = 0;
@@ -696,12 +709,13 @@ public class StickyLinearLayoutManager
                     addView(selectedView);
                     selectedViewDetached = false;
                 }
-
-                if (selectedPosition != -1) {
-                    if (!selectedViewRefreshed) {
-                        refreshSelectedView(recycler);
-                    }
-                }
+/*do not refresh the selected view in this case - calls refreshData too many times.*/
+//                if (selectedPosition != -1) {
+//                    if (!selectedViewRefreshed) {
+//                      System.err.println(">>>>>> >>>> >> > refreshing selected view in finally block.");
+//                        refreshSelectedView(recycler);
+//                    }
+//                }
 
                 if (scrolling) {
                     RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) selectedView.getLayoutParams();
@@ -771,7 +785,8 @@ public class StickyLinearLayoutManager
         if (DEBUG && METHOD_DEBUG) {
             Log.v(TAG, "refreshSelectedView: x_x " + selectedView);
             Log.d(TAG, "refreshSelectedView: x_x " + tempV);
-            Log.d(TAG, "refreshSelectedView: x_x " + TextUtils.getItemText(tempV));
+            Log.d(TAG, "refreshSelectedView: x_x new: " + TextUtils.getItemText(tempV) + " | old: " + TextUtils.getItemText(selectedView));
+            Log.v(TAG, "refreshSelectedView: x_x " + selectedView.willNotDraw() + " " + tempV.willNotDraw());
         }
         Drawable background = tempV.getBackground();
         if (background instanceof ColorDrawable) {
@@ -789,11 +804,17 @@ public class StickyLinearLayoutManager
                 ((RotationAwareTextView) v).setText(TextUtils.getItemText(tempV));
             }
         }
+        if (childView instanceof RotationAwareTextView) {
+            ((RotationAwareTextView) childView).setText(TextUtils.getItemText(tempV));
+            selectedView.requestLayout();
+        }
 
+//        Log.v(TAG, "refreshSelectedView: x_x " + selectedView.willNotDraw() + " " + tempV.willNotDraw() + " " + childView.willNotDraw());
         if (!tempV.equals(selectedView)) {
             detachView(tempV);
             recycler.recycleView(tempV);
         }
+        recycler.bindViewToPosition(selectedView, selectedPosition);
 //      --------------------------------------------------------------------
     }
 

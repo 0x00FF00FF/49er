@@ -113,12 +113,19 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
     }
 
     private void updateData(List<IssueData> newData) {
+//        String name = "";
+//        if (getLastSelectedPosition() > -1) {
+//          name = getSelected().getName();
+//        }
+//        Log.i(TAG, "updateData: >s " + name);
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new IssuesDiff(data, newData));
         diffResult.dispatchUpdatesTo(this);
 /*        diffResult.dispatchUpdatesTo(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
-                Log.d(TAG, "onInserted() called with: position = [" + position + "], count = [" + count + "]");
+                Log.d(TAG, "onInserted() called with: position = [" +
+                    (position == getLastSelectedPosition() ? position + " [s]" : position) +
+                    "], count = [" + count + "]");
             }
 
             @Override
@@ -133,10 +140,21 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
 
             @Override
             public void onChanged(int position, int count, @Nullable Object payload) {
-                Log.d(TAG, "onChanged() called with: position = [" + position + "], count = [" + count + "], payload = [" + payload + "]");
+//              String newValue = ((Bundle)payload).getString("Name", "xxx");
+//                Log.v(TAG, "onChanged: > new value: " + newValue);
+                Log.d(TAG, "onChanged() called with: position = [" +
+                    (position == getLastSelectedPosition() ? position + " [s]" : position) +
+                    "], count = [" + count + "], payload = [" + payload + "]");
+//                ((StickyLinearLayoutManager)((IssuesUiOps)eventListener).getRv().getLayoutManager())
+//                    .refreshViewText(">>>");
             }
         });*/
         data = newData;
+//        if (getLastSelectedPosition() > -1) {
+//          name = getSelected().getName();
+//          Log.i(TAG, "updateData: updated name.");
+//        }
+//        Log.v(TAG, "updateData: e< " + name);
     }
 
 

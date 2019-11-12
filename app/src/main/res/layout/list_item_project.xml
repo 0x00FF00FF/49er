@@ -82,7 +82,7 @@
             android:id="@+id/project_image"
             android:layout_width="256dp"
             android:layout_height="256dp"
-            android:alpha="0.25"
+            android:alpha="0.15"
             android:rotationX="50"
             android:contentDescription="@string/_projects_pictures_description"
             app:layout_constraintTop_toTopOf="parent"

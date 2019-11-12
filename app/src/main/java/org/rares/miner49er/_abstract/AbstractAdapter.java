@@ -55,7 +55,7 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
 
   @Override
   public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
-//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
+//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.getItemText() + "], position = [" + position + "]");
   }
 
   @Override

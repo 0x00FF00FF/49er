@@ -110,7 +110,6 @@ public class ProjectsViewHolder
 
         try {
             pictureUrl = URLDecoder.decode(pictureUrl, "UTF-8");
-            System.out.println(pictureUrl);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
