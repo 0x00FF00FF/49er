@@ -29,6 +29,7 @@ import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.PermissionsUtil;
+import org.reactivestreams.Subscriber;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
@@ -198,20 +199,21 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             // minimal.
 //            if (unbinderList.size() > 40) {
             repository.shutdown();
-            getRv().setAdapter(null);
-            touchHelperCallback.setAdapter(null);
-            itemTouchHelper.attachToRecyclerView(null);
-            resetRv();
+            if (issuesAdapter != null) {
+                issuesAdapter.setLastSelectedPosition(-1);
+                issuesAdapter.setPreviouslySelectedPosition(-1);
+            }
+//            getRv().setAdapter(null);
+//            touchHelperCallback.setAdapter(null);
+//            itemTouchHelper.attachToRecyclerView(null);
+//            resetRv();
 //            } else if (issuesAdapter != null) {
 //                issuesAdapter.clearData();
 //            }
         } else {
-//            if (issuesAdapter != null) {
-//                onParentChanged(projectProperties);
-//            } else {
+
             getRv().setAdapter(createNewIssuesAdapter(projectProperties));
             itemTouchHelper.attachToRecyclerView(getRv());
-//            }
         }
         getRv().scrollToPosition(0);
         resizeRv(!parentWasEnlarged);
@@ -237,7 +239,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         // this is a fix for network data refresh resetting the selected view
         // // FIXME: 25.04.2019 ^^^ for network data refresh + collision detection and fixing
         issuesRepository.setParentProperties(itemViewProperties);
-        issuesRepository.refreshData(true);
+        issuesRepository.refreshData();
     }
 
     @Override
@@ -256,13 +258,18 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     }
 
     private IssuesAdapter createNewIssuesAdapter(ItemViewProperties projectViewProperties) {
-        IssuesAdapter issuesAdapter = new IssuesAdapter(this);
+        IssuesAdapter issuesAdapter = (IssuesAdapter) getRv().getAdapter();
+
+        if (issuesAdapter == null) {
+            issuesAdapter = new IssuesAdapter(this);
+        }
+
         issuesRepository.setup();
-        issuesRepository.registerSubscriber(issuesAdapter, ()->{
-            repository.refreshData(true);});
+        issuesRepository.registerSubscriber(issuesAdapter, () -> repository.refreshData());
         issuesRepository.setParentProperties(projectViewProperties);
 
-        issuesAdapter.setUnbinderHost(this);
+
+//        issuesAdapter.setUnbinderHost(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
         touchHelperCallback.setAdapter(issuesAdapter);
         return issuesAdapter;
@@ -302,10 +309,10 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void updateEntity(DataUpdater dataUpdater) {
+    public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            dataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId);
+            dataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId, resultListener);
         }
     }
 }

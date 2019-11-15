@@ -650,7 +650,7 @@ public abstract class ResizeableItemsUiOps
      */
     public void refreshData(boolean onlyLocal) {
         if (repository != null) {
-            repository.refreshData(onlyLocal);
+            repository.refreshData();
         }
     }
 
@@ -692,7 +692,7 @@ public abstract class ResizeableItemsUiOps
         getRv().setItemViewCacheSize(0);        // rv moves cached views to rvPool...
         getRv().getRecycledViewPool().clear();  // ...so we clean this too
         clearBindings();
-        getRv().setItemViewCacheSize(14);
+        getRv().setItemViewCacheSize(14);   // // TODO: 14.11.2019 extract the value.
     }
 
     public void shutdown() {

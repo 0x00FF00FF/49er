@@ -39,6 +39,7 @@ import org.rares.miner49er.ui.custom.glide.preload.MultipleListPreloader;
 import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
 import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
 import org.rares.miner49er.util.PermissionsUtil;
+import org.reactivestreams.Subscriber;
 
 import java.util.List;
 
@@ -286,10 +287,10 @@ public class ProjectsUiOps
 
 
   @Override
-  public void updateEntity(DataUpdater dataUpdater) {
+  public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
     AbstractViewModel projectData = getSelectedEntity();
     if (projectData != null) {
-      dataUpdater.fullyUpdateProjects(projectData.objectId);
+      dataUpdater.fullyUpdateProjects(resultListener, projectData.objectId);
     }
   }
 

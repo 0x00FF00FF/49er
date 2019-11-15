@@ -12,6 +12,7 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.users.model.UserData;
+import org.rares.miner49er.network.NetworkProgress;
 import org.rares.miner49er.network.NetworkingService;
 import org.rares.miner49er.network.dto.ProjectDto;
 import org.rares.miner49er.network.dto.converter.IssueConverter;
@@ -25,6 +26,7 @@ import org.rares.miner49er.persistence.entities.ObjectIdHolder;
 import org.rares.miner49er.persistence.entities.Project;
 import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
+import org.reactivestreams.Subscriber;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * This class contains methods that
@@ -66,6 +69,8 @@ public class DataUpdater {
   private final static Project defaultProject = new Project();
   private final static Issue defaultIssue = new Issue();
   private final static TimeEntry defaultTimeEntry = new TimeEntry();
+
+  private final NetworkProgress np = ns.networkProgress;
 
   private final org.rares.miner49er.domain.users.persistence.UserConverter userDbToVmConverter = new org.rares.miner49er.domain.users.persistence.UserConverter();
   private final org.rares.miner49er.domain.issues.persistence.IssueConverter issueDbToVmConverter = new org.rares.miner49er.domain.issues.persistence.IssueConverter();
@@ -214,6 +219,12 @@ public class DataUpdater {
   public Flowable<User> updateUsers() {
     return ns.userService.getUsers()
         .retry(1)
+        .onErrorReturn(throwable -> {
+          if (throwable instanceof ConnectException) {
+            Log.i(TAG, "updateUsers: connection problems?");
+          }
+          return Collections.emptyList();
+        })
         .subscribeOn(Schedulers.io())
         .flatMapPublisher(Flowable::fromIterable)
         .map(UserConverter::toModelBlocking)
@@ -222,8 +233,12 @@ public class DataUpdater {
         ;
   }
 
-  public void fullyUpdateProjects(String... projectObjectIds) {
+  public void fullyUpdateProjects(Subscriber<String> resultListener, String... projectObjectIds) {
+    String callId = UUID.randomUUID().toString();
     Disposable d = updateProjects(createProjectUpdateCall(0, 0, projectObjectIds))
+        .doOnSubscribe((s)->{
+          np.addNetworkCall(callId, callId, resultListener);
+        })
         .concatMapSingle(project -> updateIssues(project)
             .concatMapSingle(issue -> updateTimeEntries(issue)
                 .toList()
@@ -239,6 +254,7 @@ public class DataUpdater {
         .map(projectDbToVmConverter::dmToVm)
         .buffer(maxDbParams)
         .onErrorReturn((throwable) -> {
+          np.cancelNetworkCall(callId, callId);
           if (throwable instanceof ConnectException) {
             Log.w(TAG, "fullyUpdateProjects: connection problems?");
           }
@@ -255,6 +271,7 @@ public class DataUpdater {
                 tEntries.addAll(i.getTimeEntries());
               }
             }
+            np.completeNetworkCall(callId, callId);
             notifyListeners(ProjectData.class, projects);
             notifyListeners(IssueData.class, issues);
             notifyListeners(TimeEntryData.class, tEntries);
@@ -263,9 +280,13 @@ public class DataUpdater {
     disposables.add(d);
   }
 
-  public void fullyUpdateIssue(String issueId, long projectId) {
+  public void fullyUpdateIssue(String issueId, long projectId, Subscriber<String> resultListener) {
+    String callId = UUID.randomUUID().toString();
     Disposable d = ns.issuesService.getIssue(issueId)
         .retry(1)
+        .doOnSubscribe((s)->{
+          np.addNetworkCall(callId, callId, resultListener);
+        })
         .subscribeOn(Schedulers.io())
         .map(i -> {
           Issue iss = issueConverter.toModel(i);
@@ -282,6 +303,7 @@ public class DataUpdater {
                 }))
         .onTerminateDetach()
         .onErrorReturn(throwable -> {
+          np.cancelNetworkCall(callId, callId);
           if (throwable instanceof ConnectException) {
             Log.i(TAG, "fullyUpdateIssue: connection problems?");
           }
@@ -290,6 +312,7 @@ public class DataUpdater {
         .map(issueDbToVmConverter::dmToVm)
         .subscribe(issue -> {
           if (!issue.getId().equals(defaultIssue.getId())) {
+            np.completeNetworkCall(callId, callId);
             notifyListeners(IssueData.class, Collections.singletonList(issue));
             notifyListeners(TimeEntryData.class, new ArrayList<>(issue.getTimeEntries()));
           }
@@ -297,9 +320,13 @@ public class DataUpdater {
     disposables.add(d);
   }
 
-  public void updateTimeEntry(String timeEntryObjectId, long issueId) {
+  public void updateTimeEntry(String timeEntryObjectId, long issueId, Subscriber<String> resultListener) {
+    String callId = UUID.randomUUID().toString();
     Disposable d = ns.timeEntriesService.getTimeEntry(timeEntryObjectId)
         .retry(1)
+        .doOnSubscribe((s)->{
+          np.addNetworkCall(callId, callId, resultListener);
+        })
         .subscribeOn(Schedulers.io())
         .map(teDto -> {
           TimeEntry te = timeEntryConverter.toModel(teDto);
@@ -307,6 +334,7 @@ public class DataUpdater {
           return te;
         })
         .onErrorReturn(throwable -> {
+          np.cancelNetworkCall(callId, callId);
           if (throwable instanceof ConnectException) {
             Log.i(TAG, "fullyUpdateIssue: connection problems?");
           }
@@ -317,13 +345,15 @@ public class DataUpdater {
         .subscribe(teData -> {
           if (!teData.getId().equals(defaultTimeEntry.getId())) {
             notifyListeners(TimeEntryData.class, Collections.singletonList(teData));
+            np.completeNetworkCall(callId, callId);
           }
         });
     disposables.add(d);
   }
 
 
-  public void lightUpdate() {
+  public void lightUpdate(Subscriber<String> resultListener) {
+    String callId = UUID.randomUUID().toString();
     users.clear();
     updateUsers().subscribe();
     List<ProjectDto> projects = new ArrayList<>();
@@ -333,7 +363,15 @@ public class DataUpdater {
     // in fact they are not)
     Disposable d = createProjectUpdateCall(0, 0)
         .retry(1)
+        .doOnSubscribe((s)->np.addNetworkCall(callId, callId, resultListener))
         .toList()
+        .onErrorReturn(throwable -> {
+          np.cancelNetworkCall(callId, callId);
+          if (throwable instanceof ConnectException) {
+            Log.i(TAG, "lightUpdate: connection problems?");
+          }
+          return Collections.emptyList();
+        })
         .subscribeOn(Schedulers.io())
         .subscribe(list -> {
           projects.addAll(list);
@@ -366,6 +404,13 @@ public class DataUpdater {
                     return projectDbToVmConverter.dmToVm(prj);
                   }))
               .toList()
+              .onErrorReturn(throwable -> {
+                np.cancelNetworkCall(callId, callId);
+                if (throwable instanceof ConnectException) {
+                  Log.i(TAG, "lightUpdate: connection problems?");
+                }
+                return Collections.emptyList();
+              })
               .subscribe(savedProjects -> {
                 List<IssueData> issList = new ArrayList<>();
                 disposables.add(
@@ -378,6 +423,7 @@ public class DataUpdater {
                         .subscribe(issues -> {
                           notifyListeners(IssueData.class, issues);
                           notifyListeners(ProjectData.class, savedProjects);
+                          np.completeNetworkCall(callId, callId);
                         }));
               });
           disposables.add(ud);
@@ -439,7 +485,7 @@ public class DataUpdater {
   }
 
   private void notifyListeners(Class cls, List<? extends AbstractViewModel> data) {
-    Log.d(TAG, "notifyListeners() called with: cls = [" + cls + "], data = [" + data.size() + "]" + updateListeners.size());
+//    Log.d(TAG, "notifyListeners() called with: cls = [" + cls + "], data = [" + data.size() + "]" + updateListeners.size());
     for (DataUpdatedListener updateListener : updateListeners) {
       updateListener.dataUpdated(cls, data);
     }

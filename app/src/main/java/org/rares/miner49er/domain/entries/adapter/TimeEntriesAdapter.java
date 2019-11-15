@@ -47,11 +47,11 @@ public class TimeEntriesAdapter extends AbstractAdapter<TimeEntriesViewHolder, T
         final TimeEntriesViewHolder tevh = new TimeEntriesViewHolder(projectItemView);
         tevh.setItemClickListener(eventListener);
 
-        if (unbinderHost != null) {
-            unbinderHost.registerUnbinder(tevh);
-        } else {
-            throw new IllegalStateException("Unbinder host is needed for memory management!");
-        }
+//        if (unbinderHost != null) {
+//            unbinderHost.registerUnbinder(tevh);
+//        } else {
+//            throw new IllegalStateException("Unbinder host is needed for memory management!");
+//        }
 
         return tevh;
     }

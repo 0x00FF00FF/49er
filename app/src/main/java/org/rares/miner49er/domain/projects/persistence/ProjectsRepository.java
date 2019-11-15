@@ -82,7 +82,7 @@ public class ProjectsRepository extends Repository {
 //                  Log.i(TAG, "setup: " + asyncDao.getAll(true).blockingGet().size());
 //                })
                 .throttleLast(500, TimeUnit.MILLISECONDS)
-                .subscribe(o -> refreshData(true)));
+                .subscribe(o -> refreshData()));
       }
     }
   }

@@ -10,7 +10,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er._abstract.Repository;
-import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
@@ -108,7 +107,7 @@ public class IssuesRepository extends Repository {
 //                    CACHE_EVENT_UPDATE_ENTRY.equals(e)
 //                )
                 .throttleLatest(500, TimeUnit.MILLISECONDS)
-                .subscribe(o -> refreshData(true)));
+                .subscribe(o -> refreshData()));
       }
     }
   }
@@ -166,13 +165,5 @@ public class IssuesRepository extends Repository {
         .filter(i -> !i.isDeleted())
         .map(i -> i.clone(false))
         .toList();
-  }
-
-  @Override
-  public void refreshData(boolean onlyLocal) {
-//    Thread.dumpStack();
-//    slowDown();
-//    Log.d(TAG, "refreshData() called with: [" + userActionProcessor.hasSubscribers() + " " + disposables.isDisposed() + "]");
-    userActionProcessor.onNext(UiEvent.TYPE_CLICK);
   }
 }

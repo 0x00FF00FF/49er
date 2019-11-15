@@ -71,7 +71,7 @@ public class TimeEntriesRepository extends Repository {
 //                                    }
 //                                })
                 .throttleLatest(500, TimeUnit.MILLISECONDS)
-                .subscribe(o -> refreshData(true)));
+                .subscribe(o -> refreshData()));
       }
     }
 
@@ -110,7 +110,7 @@ public class TimeEntriesRepository extends Repository {
   }
 
   @Override
-  public void refreshData(boolean onlyLocal) {
+  public void refreshData() {
 //  Thread.dumpStack();
     userActionProcessor.onNext(UiEvent.TYPE_CLICK);
   }

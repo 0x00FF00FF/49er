@@ -28,6 +28,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
+import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import org.rares.miner49er.BaseInterfaces.Messenger;
@@ -64,9 +65,12 @@ import org.rares.miner49er.ui.custom.mask.OverlayMask;
 import org.rares.miner49er.ui.fragments.login.animated.LoginLandingConstraintSetFragment;
 import org.rares.miner49er.ui.fragments.login.simple.SignInFragment.SignInListener;
 import org.rares.miner49er.util.UiUtil;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
 
@@ -230,14 +234,36 @@ public class HomeScrollingActivity
 
         fab2.setOnClickListener(new View.OnClickListener() {
 
+            Subscriber<String> subscriber = new Subscriber<String>() {
+                @Override
+                public void onSubscribe(Subscription s) {
+                    startDataUpdateAnimation();
+                }
+
+                @Override
+                public void onNext(String s) {
+
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                  stopDataUpdateAnimation();
+                }
+
+                @Override
+                public void onComplete() {
+                    stopDataUpdateAnimation();
+                }
+            };
+
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
-
+//                startDataUpdateAnimation();
                 if (getSelectedEntityProvider() != null) {
-                    getSelectedEntityProvider().updateEntity(dtoConverter);
+                    getSelectedEntityProvider().updateEntity(dtoConverter, subscriber);
                 } else {
-                    dtoConverter.lightUpdate();
+                    dtoConverter.lightUpdate(subscriber);
 //                    dtoConverter.updateAll();
                 }
 //                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
@@ -274,6 +300,23 @@ public class HomeScrollingActivity
             }
         });*/
 
+    }
+
+    private Disposable refreshDisposable = null;
+    private void startDataUpdateAnimation() {
+      if (refreshDisposable == null) {
+        refreshDisposable = Flowable.interval(20, TimeUnit.MILLISECONDS)
+            .subscribe(i -> fab2.setRotation(fab2.getRotation() - 10));
+        startDisposable.add(refreshDisposable);
+      }
+    }
+
+    private void stopDataUpdateAnimation() {
+      if (refreshDisposable != null) {
+        refreshDisposable.dispose();
+        fab2.getHandler().post(()->fab2.animate().rotation(0).start());
+        refreshDisposable = null;
+      }
     }
 
     @OnClick(R.id.fabx)
@@ -659,6 +702,7 @@ public class HomeScrollingActivity
     public void dataUpdated(Class cls, List data) {
         //noinspection unchecked
         cache.getCache(cls).putData(data, true);
+//        stopDataUpdateAnimation();
     }
 
     private void startCacheUpdate() {

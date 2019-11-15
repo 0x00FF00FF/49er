@@ -2,6 +2,7 @@ package org.rares.miner49er.domain.agnostic;
 
 import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
+import org.reactivestreams.Subscriber;
 
 /**
  * Interface to simplify getting
@@ -24,5 +25,5 @@ public interface SelectedEntityProvider {
    * server.
    * @param dataUpdater the update service.
    */
-  void updateEntity(DataUpdater dataUpdater);
+  void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener);
 }

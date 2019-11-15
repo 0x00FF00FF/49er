@@ -41,7 +41,7 @@ public abstract class Repository {
     }
 
     // enqueue refresh data
-    public void refreshData(boolean onlyLocal) {
+    public void refreshData() {
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 

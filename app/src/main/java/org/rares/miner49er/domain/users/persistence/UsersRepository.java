@@ -55,7 +55,7 @@ public class UsersRepository extends Repository {
                                         e.equals(CACHE_EVENT_UPDATE_USERS) ||
                                         e.equals(CACHE_EVENT_REMOVE_USER))
                                 .throttleLatest(1, TimeUnit.SECONDS)
-                                .subscribe(o -> refreshData(true)));
+                                .subscribe(o -> refreshData()));
             }
         }
 
@@ -99,7 +99,7 @@ public class UsersRepository extends Repository {
     }
 
     @Override
-    public void refreshData(boolean onlyLocal) {
+    public void refreshData() {
         userActionProcessor.onNext(UiEvent.TYPE_CLICK);
     }
 

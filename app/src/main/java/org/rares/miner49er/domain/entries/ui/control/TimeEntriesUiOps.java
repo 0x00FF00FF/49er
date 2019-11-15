@@ -22,6 +22,7 @@ import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
+import org.reactivestreams.Subscriber;
 
 /**
  * @author rares
@@ -66,7 +67,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentChanged(ItemViewProperties itemViewProperties) {
         teRepository.setParentProperties(itemViewProperties);
-        teRepository.refreshData(true);
+        teRepository.refreshData();
 
 //        Log.v(TAG, "onParentChanged: " + unbinderList.size());
 //        for (Unbinder unbinder : unbinderList) {
@@ -109,10 +110,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
                 // so there are no leaks
 
                 repository.shutdown();
-                getRv().setAdapter(null);
-                touchHelperCallback.setAdapter(null);
-                itemTouchHelper.attachToRecyclerView(null);
-                resetRv();
+//                getRv().setAdapter(null);
+//                touchHelperCallback.setAdapter(null);
+//                itemTouchHelper.attachToRecyclerView(null);
+//                resetRv();
 //            } else if (adapter != null) {
 //                adapter.clearData();
 //            }
@@ -121,7 +122,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 //                onParentChanged(viewProperties);
 //            } else {
                 getRv().setAdapter(createNewAdapter(viewProperties));
-                itemTouchHelper.attachToRecyclerView(getRv());
+//                itemTouchHelper.attachToRecyclerView(getRv());
 //                repository.refreshData(true);
 //            }
         }
@@ -140,12 +141,16 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
         Log.i(TAG, "createNewAdapter: " + viewProperties.toString());
 
-        TimeEntriesAdapter teAdapter = new TimeEntriesAdapter(this);
+        TimeEntriesAdapter teAdapter = (TimeEntriesAdapter) getRv().getAdapter();
+        if (teAdapter == null) {
+            teAdapter = new TimeEntriesAdapter(this);
+        }
+
         teAdapter.setUnbinderHost(this);
 
         teRepository.setup();
         teRepository.setParentProperties(viewProperties);
-        teRepository.registerSubscriber(teAdapter, ()->repository.refreshData(true));
+        teRepository.registerSubscriber(teAdapter, () -> repository.refreshData());
 
         touchHelperCallback.setAdapter(teAdapter);
 
@@ -158,10 +163,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void updateEntity(DataUpdater dataUpdater) {
+    public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            dataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId);
+            dataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId, resultListener);
         }
     }
 }

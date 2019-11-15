@@ -5,6 +5,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.network.rest.AuthenticationInterceptor;
@@ -38,7 +39,7 @@ public enum NetworkingService {
     private OkHttpClient httpClient =
         new OkHttpClient.Builder()
             .addInterceptor(authIntercept)
-//            .addInterceptor(loggingInterceptor.setLevel(Level.BODY))
+            .addInterceptor(loggingInterceptor.setLevel(Level.BODY))
 //            .addNetworkInterceptor(new StethoInterceptor())
             .readTimeout(5, TimeUnit.SECONDS)
             .connectTimeout(5, TimeUnit.SECONDS)
@@ -48,7 +49,7 @@ public enum NetworkingService {
         new Retrofit.Builder()
             .baseUrl(serviceUrl)
             .addConverterFactory(MoshiConverterFactory.create())
-//                        .addConverterFactory(JacksonConverterFactory.create())
+//          .addConverterFactory(JacksonConverterFactory.create())
             // jackson converter does not fail when using flowable + json stream
             // but it only takes the first object
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -74,6 +75,7 @@ public enum NetworkingService {
   public final TimeEntriesService timeEntriesService = RestServiceGenerator.INSTANCE.generateService(TimeEntriesService.class);
   public final UserService userService = RestServiceGenerator.INSTANCE.generateService(UserService.class);
 
+  public final NetworkProgress networkProgress = new NetworkProgress();
 
 //  private PublishProcessor<Long> onDemandPublisher = PublishProcessor.create();
 //  private Flowable<Long> onDemandFlowable = onDemandPublisher.subscribeOn(Schedulers.io());
@@ -111,5 +113,4 @@ public enum NetworkingService {
 //    Log.i(TAG, "refreshData: ---- " + onDemandPublisher.hasSubscribers());
 //    onDemandPublisher.onNext(System.currentTimeMillis());
 //  }
-
 }
