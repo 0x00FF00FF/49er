@@ -144,7 +144,7 @@ public class IssuesAdapter extends AbstractAdapter<IssuesViewHolder, IssueData> 
 //                Log.v(TAG, "onChanged: > new value: " + newValue);
                 Log.d(TAG, "onChanged() called with: position = [" +
                     (position == getLastSelectedPosition() ? position + " [s]" : position) +
-                    "], count = [" + count + "], payload = [" + payload + "]");
+                    "], count = [" + count + "], payload = [" + payload + "] " + data.get(position).getName());
 //                ((StickyLinearLayoutManager)((IssuesUiOps)eventListener).getRv().getLayoutManager())
 //                    .refreshViewText(">>>");
             }

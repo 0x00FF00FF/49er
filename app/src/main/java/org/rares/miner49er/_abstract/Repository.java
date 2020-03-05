@@ -31,11 +31,12 @@ public abstract class Repository {
 
     public abstract void registerSubscriber(Consumer<List> consumer, Runnable runnable);
 
-    protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class);
+    protected ItemViewProperties parentProperties = ItemViewProperties.create(Project.class); // ???
 
     public void setParentProperties(ItemViewProperties ivp) {
         if (ivp.getId() != 0) {
             parentProperties.setId(ivp.getId());
+            parentProperties.setObjectId(ivp.getObjectId());
         }
         parentProperties.setItemBgColor(ivp.getItemBgColor());
     }

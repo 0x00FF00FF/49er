@@ -49,7 +49,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         SwipeDeletedListener {
 
     private static final String TAG = IssuesUiOps.class.getSimpleName();
-    private IssuesRepository issuesRepository = new IssuesRepository();
+    private IssuesRepository issuesRepository;
 
     private ToolbarActionManager toolbarManager = null;
 
@@ -64,7 +64,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private TouchHelperCallback<IssuesViewHolder, IssueData> touchHelperCallback = new TouchHelperCallback<>();
     private ItemTouchHelper itemTouchHelper;
 
-    public IssuesUiOps(RecyclerView rv) {
+    public IssuesUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+        this.networkDataUpdater = networkDataUpdater;
+        this.networkProgressListener = networkProgressListener;
+
+         issuesRepository = new IssuesRepository(networkDataUpdater, networkProgressListener);
+
         setRv(rv);
         issuesRepository.setup();
         repository = issuesRepository;
@@ -198,7 +203,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
             // context or views will be
             // minimal.
 //            if (unbinderList.size() > 40) {
-            repository.shutdown();
+//            repository.shutdown();
             if (issuesAdapter != null) {
                 issuesAdapter.setLastSelectedPosition(-1);
                 issuesAdapter.setPreviouslySelectedPosition(-1);
@@ -211,9 +216,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 //                issuesAdapter.clearData();
 //            }
         } else {
-
-            getRv().setAdapter(createNewIssuesAdapter(projectProperties));
-            itemTouchHelper.attachToRecyclerView(getRv());
+            if (issuesAdapter == null) {
+                getRv().setAdapter(createNewIssuesAdapter(projectProperties));
+            } else {
+                issuesRepository.setParentProperties(projectProperties);
+                issuesRepository.refreshData();
+            }
         }
         getRv().scrollToPosition(0);
         resizeRv(!parentWasEnlarged);
@@ -262,16 +270,16 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         if (issuesAdapter == null) {
             issuesAdapter = new IssuesAdapter(this);
+            issuesRepository.registerSubscriber(issuesAdapter, () -> repository.refreshData());
+            touchHelperCallback.setAdapter(issuesAdapter);
         }
 
         issuesRepository.setup();
-        issuesRepository.registerSubscriber(issuesAdapter, () -> repository.refreshData());
         issuesRepository.setParentProperties(projectViewProperties);
-
+        issuesRepository.refreshData();
 
 //        issuesAdapter.setUnbinderHost(this);
         issuesAdapter.setParentColor(projectViewProperties.getItemBgColor());
-        touchHelperCallback.setAdapter(issuesAdapter);
         return issuesAdapter;
     }
 
@@ -309,10 +317,10 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
+    public void updateEntity() {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            dataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId, resultListener);
+            networkDataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId, networkProgressListener);
         }
     }
 }

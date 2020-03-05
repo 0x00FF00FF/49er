@@ -25,7 +25,7 @@ public interface ProjectsService {
   @Streaming
   @Headers({"accept: application/stream+json"})
   @GET("projects?skip=0&take=2")
-  Flowable<ProjectDto> getProjectsAsFlowable();
+  Flowable<ProjectDto> getProjectsAsFlowable(); // using server side events (SSE)
 
   @GET("projects")
   Single<List<ProjectDto>> getProjectsAsSingleList();
@@ -41,6 +41,9 @@ public interface ProjectsService {
 
   @GET("projects/{projectId}/issues")
   Flowable<IssueDto> getProjectIssues(@Path("projectId") String projectId);
+
+  @GET("projects/{projectId}/issues")
+  Single<List<IssueDto>> getProjectIssuesAsSingleList(@Path("projectId") String projectId);
 
   @POST("projects")
   Single<ProjectDto> postProject(ProjectDto project);

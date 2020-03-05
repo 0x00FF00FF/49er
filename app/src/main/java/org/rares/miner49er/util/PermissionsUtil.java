@@ -1,5 +1,6 @@
 package org.rares.miner49er.util;
 
+import android.util.Log;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
@@ -15,6 +16,7 @@ public class PermissionsUtil {
     private static AsyncGenericDao<ProjectData> projectsDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
     private static AsyncGenericDao<IssueData> issuesDao = InMemoryCacheAdapterFactory.ofType(IssueData.class);
     private static AsyncGenericDao<TimeEntryData> entriesDao = InMemoryCacheAdapterFactory.ofType(TimeEntryData.class);
+    private static final String TAG = "PermissionsUtil";
 
     private static UserData loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
     public static boolean isResponsible = false;
@@ -25,7 +27,7 @@ public class PermissionsUtil {
 
     public static boolean canEditProject(ProjectData projectData) {
 //        Thread.dumpStack();
-//        Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
+        Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
         return loggedInUser.id.equals(projectData.getOwner().id) || isResponsible;
     }
 

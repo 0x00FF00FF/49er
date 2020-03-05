@@ -65,16 +65,16 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
     public String toString() {
         return "\nTimeEntry: " +
             "parentId=[" + parentId +
-            "] dateAdded=[" + dateAdded +
-            "] workDate=[" + workDate +
-            "] comments=[" + comments +
-            "] userId=[" + userId +
-            "] userName=[" + userName +
-            "] userPhoto=[" + userPhoto +
-            "] color=[" + color +
-            "] hours=[" + hours +
-            "] deleted=[" + deleted +
-            "] objectId=[" + objectId +
+//            "] dateAdded=[" + dateAdded +
+//            "] workDate=[" + workDate +
+//            "] comments=[" + comments +
+//            "] userId=[" + userId +
+//            "] userName=[" + userName +
+//            "] userPhoto=[" + userPhoto +
+//            "] color=[" + color +
+//            "] hours=[" + hours +
+//            "] deleted=[" + deleted +
+//            "] objectId=[" + objectId +
             "]";
     }
 
@@ -90,6 +90,7 @@ public class TimeEntryData extends AbstractViewModel implements Cloneable {
         hours = newData.hours;
         deleted = newData.deleted;
         objectId = newData.objectId;
+        lastUpdated = newData.lastUpdated;
     }
 
     public TimeEntryData clone() {

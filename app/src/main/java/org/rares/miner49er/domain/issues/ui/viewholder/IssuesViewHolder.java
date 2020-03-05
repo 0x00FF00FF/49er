@@ -2,7 +2,6 @@ package org.rares.miner49er.domain.issues.ui.viewholder;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.text.TextPaint;
@@ -73,6 +72,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
     @Override
     public void bindData(Object o, boolean shortVersion, boolean selected) {
+//        Log.v(TAG, "bindData() called with: o = [" + o + "], shortVersion = [" + shortVersion + "], selected = [" + selected + "]");
         holderData = (IssueData) o;
         String dataName = holderData.getName();
         if (dataName != null) {
@@ -81,7 +81,10 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
               TextUtils.extractInitials(holderData.getName());
         }
 
-        longTitle = TextUtils.capitalize(holderData.getName());
+
+        longTitle = TextUtils.capitalize(holderData.getName())/*.substring(0, 9) + "_" +
+        ViewModelCacheSingleton.getInstance().getCache(ProjectData.class).getData(holderData.parentId).getName().split(" ")[0]*/;
+
 
 /*        Drawable d = itemView.getBackground();
         if (d instanceof LayerDrawable) {
@@ -94,6 +97,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         }*/
         getItemProperties().setItemBgColor(holderData.getColor());
         getItemProperties().setId(holderData.getId());
+        getItemProperties().setObjectId(holderData.objectId);
 
 //        prepareIssueInfo();
 //        if (shortVersion && infoLabel != null && infoLabel.getVisibility() == View.VISIBLE) {
@@ -105,7 +109,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
 //        Log.i(TAG, "bindData: >> before validation: " + issueName.getText());
         validateItem(shortVersion, selected);
-//        Log.v(TAG, "bindData: >> " + longTitle + " " + shortTitle + " " + issueName.getText());
+//        Log.v(TAG, "bindData: >> after validation: " + longTitle + " " + shortTitle + " " + issueName.getText());
     }
 
     @Override
@@ -158,10 +162,12 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
      */
     @Override
     public void validateItem(boolean collapsed, boolean selected) {
-
+//        Log.w(TAG, "validateItem() called with: collapsed = [" + collapsed + "], selected = [" + selected + "]");
         int fadeAnimationDelay = 250;
         boolean shouldValidate = true;
-        if (getAnimator() != null && getAnimator().isRunning()) {
+        ValueAnimator anim = getAnimator();
+        if (anim != null && anim.isRunning()) {
+//            Log.i(TAG, "validateItem: animator: " + anim.isRunning() + " " + anim.getCurrentPlayTime() + "/" + anim.getDuration());
             shouldValidate = false; // do not validate anything if the animator is running
         }
 //        Log.i(TAG, "validateItem: shouldValidate: " + shouldValidate);
@@ -191,7 +197,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
                 disposables.add(Single.just(1)
                         .delay(fadeAnimationDelay, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(one -> startInfoContainerFade(currentAlpha))
+                        .subscribe(one -> infoLabel.animate().alpha(1).start())
                 );
 //                infoLabel.postDelayed(() -> startInfoContainerFade(currentAlpha), fadeAnimationDelay);
 //                startInfoContainerFade(currentAlpha);
@@ -205,6 +211,9 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 //            itemView.postDelayed(() -> addInfoLabelToContainer(itemView.getContext().getResources(), collapsed), fadeAnimationDelay);
 //            addInfoLabelToContainer(itemView.getContext().getResources(), collapsed);
         }
+
+//        Log.i(TAG, "validateItem: _________");
+//        Log.i(TAG, "validateItem: " + issueName.getText());
     }
 
     /**
@@ -342,23 +351,23 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         return adto;
     }
 
-    /**
-     * Visual effects for the info container
-     *
-     * @param currentAlpha the alpha to start the animation with
-     */
-    private void startInfoContainerFade(float currentAlpha) {
-
-        PropertyValuesHolder pvh = PropertyValuesHolder.ofFloat("alpha", currentAlpha, 1);
-
-        ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(pvh);
-
-        setAnimator(animator);
-
-        getAnimator().addUpdateListener(new IssueAnimationUpdateListener());
-        getAnimator().setDuration(400);
-        getAnimator().start();
-    }
+//    /**
+//     * Visual effects for the info container
+//     *
+//     * @param currentAlpha the alpha to start the animation with
+//     */
+//    private void startInfoContainerFade(float currentAlpha) {
+//
+//        PropertyValuesHolder pvh = PropertyValuesHolder.ofFloat("alpha", currentAlpha, 1);
+//
+//        ValueAnimator animator = ValueAnimator.ofPropertyValuesHolder(pvh);
+//
+//        setAnimator(animator);
+//
+//        getAnimator().addUpdateListener(new IssueAnimationUpdateListener());
+//        getAnimator().setDuration(400);
+//        getAnimator().start();
+//    }
 
     /**
      * Validate size position, alignment, gravity for issueName
@@ -456,7 +465,7 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
 
         topContainer.addView(infoLabel);
 
-        startInfoContainerFade(infoLabel.getAlpha());
+        infoLabel.animate().alpha(1).start();
     }
 
     /**
@@ -479,23 +488,23 @@ public class IssuesViewHolder extends ResizeableItemViewHolder implements ItemVi
         }
     }
 
-    /**
-     * Listener that acts on the info container alpha value.
-     */
-    class IssueAnimationUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+//    /**
+//     * Listener that acts on the info container alpha value.
+//     */
+//    class IssueAnimationUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+//
+//        @Override
+//        public void onAnimationUpdate(ValueAnimator animation) {
+//            float alpha = (float) animation.getAnimatedValue("alpha");
+//            setInfoContainerAlpha(alpha);
+//        }
+//    }
 
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            float alpha = (float) animation.getAnimatedValue("alpha");
-            setInfoContainerAlpha(alpha);
-        }
-    }
-
-    private void setInfoContainerAlpha(float alpha) {
-        if (infoLabel != null) {
-            infoLabel.setAlpha(alpha);
-        }
-    }
+//    private void setInfoContainerAlpha(float alpha) {
+//        if (infoLabel != null) {
+//            infoLabel.setAlpha(alpha);
+//        }
+//    }
 
     private void toggleInfoContainerVisiblity(boolean visible) {
         if (infoLabel != null) {

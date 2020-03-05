@@ -68,6 +68,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
     ownerId = newData.ownerId;
     deleted = newData.deleted;
     objectId = newData.objectId;
+    lastUpdated = newData.lastUpdated;
   }
 
   public IssueData clone(boolean shallow) {
@@ -106,7 +107,7 @@ public class IssueData extends AbstractViewModel implements Cloneable {
     if (list1 == null && list2 == null) {
       return true;
     }
-    if (list1.size() == list2.size()) {
+    if (list1.size() > 0 && list1.size() == list2.size()) {
       Comparator<TimeEntryData> c = (te1, te2) -> te1.id > te2.id ? 1 : te1.id.equals(te2.id) ? 0 : -1;
       Collections.sort(list1, c);
       Collections.sort(list2, c);
@@ -127,14 +128,14 @@ public class IssueData extends AbstractViewModel implements Cloneable {
         "id=[" + id +
         "] parentId=[" + parentId +
         "] name=[" + name +
-        "] dateAdded=[" + dateAdded +
-        "] dateDue=[" + dateDue +
-        "] timeEntries=[" + timeEntries +
-        "] color=[" + color +
-        "] owner=[" + owner +
-        "] ownerId=[" + ownerId +
-        "] deleted=[" + deleted +
-        "] objectId=[" + objectId +
+//        "] dateAdded=[" + dateAdded +
+//        "] dateDue=[" + dateDue +
+//        "] timeEntries=[" + timeEntries +
+//        "] color=[" + color +
+//        "] owner=[" + owner +
+//        "] ownerId=[" + ownerId +
+//        "] deleted=[" + deleted +
+//        "] objectId=[" + objectId +
         "]";
   }
 }

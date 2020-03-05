@@ -566,7 +566,7 @@ public class StickyLinearLayoutManager
                         Log.e(TAG, "drawChildren: " + selectedPosition + " " + selectedView + " scrolling? " + scrolling);
                     }
 //                  System.out.println(">>>>>> >>>> >> > refreshing selected view in method.");
-                    refreshSelectedView(recycler);
+//                    refreshSelectedView(recycler);    // why do i NOT need this anymore?
 //                    selectedViewRefreshed = true;
                     item = selectedView;
 

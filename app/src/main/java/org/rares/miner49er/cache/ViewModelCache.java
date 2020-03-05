@@ -43,6 +43,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
                   128,
                   () -> Log.w(TAG, "[ CACHE UPDATE OVERFLOW ]"),
                   BackpressureOverflowStrategy.DROP_OLDEST)
+              .debounce(10, TimeUnit.MILLISECONDS)
               .window(50, TimeUnit.MILLISECONDS)
               .flatMap(Flowable::distinct)
 //                            .map(b -> {
@@ -96,6 +97,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
   public void sendEvent(Byte event) {
 //        if (cacheUpdatedProcessor.hasSubscribers()) {
     cacheUpdatedProcessor.onNext(event);
+//            Log.w(TAG, "sendEvent: CACHE EVENT " + event);
 //        System.out.println("_cache_ event: " + getProjectDataCache().translate(event) + " " + Thread.currentThread().getName());
 //        if (!cacheUpdatedProcessor.offer(event)) {
 //            Log.w(TAG, "sendEvent: CACHE EVENT OFFER FAILED " + event);
@@ -252,7 +254,7 @@ public class ViewModelCache implements EventBroadcaster, Disposable, Closeable {
           "\nteam: " + (project.getTeam() == null ? "null" : project.getTeam().size())
       );
       for (IssueData issue : project.getIssues()) {
-        Log.w(TAG, "dumpCaches: te:\t" + issue.getTimeEntries());
+        Log.w(TAG, "dumpCaches: te:\t" + (issue.getTimeEntries()==null?"null":issue.getTimeEntries()));
       }
     }
 //        Log.v(TAG, "dumpCaches: " + getProjectsLruCache().snapshot().toString());

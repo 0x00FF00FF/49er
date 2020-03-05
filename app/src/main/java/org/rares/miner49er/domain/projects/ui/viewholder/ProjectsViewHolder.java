@@ -76,7 +76,6 @@ public class ProjectsViewHolder
 
     public ProjectsViewHolder(View itemView) {
         super(itemView);
-        setItemProperties(projectViewProperties);
         animationUpdateListener = new NoWidthUpdateListener(projectNameTextView);
         animatorHost = new DefaultRotationAnimatorHost(projectNameTextView.gatherAnimationData());
         projectNameTextView.getTextPaint().setTypeface(customTypeface);
@@ -88,6 +87,7 @@ public class ProjectsViewHolder
         int itemBgColor = itemData.getColor() == 0 ? Color.parseColor("#AA5C6BC0") : itemData.getColor();
         projectViewProperties.setItemBgColor(itemBgColor);  // use bundle to pass stuff around?
         projectViewProperties.setId(itemData.getId());
+        projectViewProperties.setObjectId(itemData.objectId);
 
         shortTitle = selected ? ""/*TextUtils.extractVowels(itemData.getName())*/ : shortTitle;
 
@@ -104,6 +104,7 @@ public class ProjectsViewHolder
             }
         }
 
+        setItemProperties(projectViewProperties);
         projectLogoView.setVisibility(View.VISIBLE);
 
         String pictureUrl = RestServiceGenerator.INSTANCE.serviceUrl + "images/" + itemData.getPicture();

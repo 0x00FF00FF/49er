@@ -60,6 +60,7 @@ public class TimeEntriesViewHolder extends ResizeableItemViewHolder {
 
         day.setText(entryDate);
         getItemProperties().setId(entryData.id);
+        getItemProperties().setObjectId(entryData.objectId);
     }
 
 }

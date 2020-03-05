@@ -121,7 +121,7 @@ public class ProjectsRepository extends Repository {
               if (runnable != null) {
                 disposables.add(
                     Single.just("running optional command")
-                        .delay(10, TimeUnit.MILLISECONDS)
+                        .delay(50, TimeUnit.MILLISECONDS)
                         .subscribe(a -> runnable.run()));
               }
             })

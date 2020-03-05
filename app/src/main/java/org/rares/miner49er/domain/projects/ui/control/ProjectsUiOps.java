@@ -82,8 +82,11 @@ public class ProjectsUiOps
   private TouchHelperCallback<ProjectsViewHolder, ProjectData> touchHelperCallback = new TouchHelperCallback<>();
   private ItemTouchHelper itemTouchHelper;
 
-  public ProjectsUiOps(RecyclerView rv) {
+  public ProjectsUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
+    this.networkDataUpdater = networkDataUpdater;
+    this.networkProgressListener = networkProgressListener;
+
     setRv(rv);
     projectsRepository = new ProjectsRepository();
     repository = projectsRepository;
@@ -118,7 +121,7 @@ public class ProjectsUiOps
   public void setupRepository() {
 //        Log.e(TAG, "setupRepository() called");
     projectsRepository.setup();
-    projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter(), null);
+    projectsRepository.registerSubscriber((Consumer<List>) getRv().getAdapter(), null/*()->repository.refreshData()*/);
     touchHelperCallback.setAdapter((ProjectsAdapter) getRv().getAdapter());
   }
 
@@ -287,10 +290,10 @@ public class ProjectsUiOps
 
 
   @Override
-  public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
+  public void updateEntity() {
     AbstractViewModel projectData = getSelectedEntity();
     if (projectData != null) {
-      dataUpdater.fullyUpdateProjects(resultListener, projectData.objectId);
+      networkDataUpdater.fullyUpdateProjects(networkProgressListener, projectData.objectId);
     }
   }
 

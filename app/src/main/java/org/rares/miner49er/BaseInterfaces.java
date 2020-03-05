@@ -28,6 +28,8 @@ public interface BaseInterfaces {
     int MAX_ELEVATION_ISSUES = MAX_ELEVATION_PROJECTS - 4;
     int MAX_ELEVATION_TIME_ENTRIES = MAX_ELEVATION_ISSUES - 4;
 
+    int UPDATE_INTERVAL = 1_800_000; // 30 min;
+
     short ANIMATION_DURATION = 200;
 
     interface SetValues {

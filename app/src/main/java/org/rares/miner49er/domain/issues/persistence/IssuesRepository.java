@@ -9,24 +9,28 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
+import org.reactivestreams.Subscriber;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUE;
+import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUES;
+
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ENTRY;
-//import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_ISSUE;
-//import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_PROJECT;
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_REMOVE_USER;
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRIES;
-//import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ENTRY;
-//import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUE;
-//import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_ISSUES;
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECT;
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
 //import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_USER;
@@ -40,12 +44,17 @@ public class IssuesRepository extends Repository {
 
   private Disposable adapterDisposable = null;
 
-  public IssuesRepository() {
+  private DataUpdater networkDataUpdater;
+  private Subscriber<String> networkProgressListener;
+
+  public IssuesRepository(DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
 //        ns.registerIssuesConsumer(this);
 //        issueTableObservable =
 //                storio
 //                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
+    this.networkDataUpdater = networkDataUpdater;
+    this.networkProgressListener = networkProgressListener;
   }
 
   @Override
@@ -100,12 +109,12 @@ public class IssuesRepository extends Repository {
 //                    Log.i(TAG, "setup: <<<< CACHE_EVENT_REMOVE_USER    ");
 //                  }
 //                })
-//                .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
-//                    CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
-//                    CACHE_EVENT_REMOVE_ISSUE.equals(e) ||
-//                    CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
-//                    CACHE_EVENT_UPDATE_ENTRY.equals(e)
-//                )
+                .filter(e -> CACHE_EVENT_UPDATE_ISSUES.equals(e) ||
+                    CACHE_EVENT_UPDATE_ISSUE.equals(e) ||
+                    CACHE_EVENT_REMOVE_ISSUE.equals(e) ||
+                    CACHE_EVENT_REMOVE_PROJECT.equals(e) ||
+                    CACHE_EVENT_UPDATE_ENTRY.equals(e)
+                )
                 .throttleLatest(500, TimeUnit.MILLISECONDS)
                 .subscribe(o -> refreshData()));
       }
@@ -124,7 +133,7 @@ public class IssuesRepository extends Repository {
 
   @Override
   public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
-//    Log.i(TAG, "registerSubscriber: called");
+//    Log.w(TAG, "registerSubscriber: called " + consumer);
     if (adapterDisposable != null && !adapterDisposable.isDisposed()) {
       adapterDisposable.dispose();
     }
@@ -132,16 +141,25 @@ public class IssuesRepository extends Repository {
     adapterDisposable =
         userActionsObservable
             .subscribeOn(Schedulers.io())
+//            .doOnNext(e-> Log.i(TAG, "registerSubscriber: refresh event."))
             .concatMapSingle(event -> getDbItems())
             .onBackpressureDrop()
             .doOnError((e) -> Log.e(TAG, "registerSubscriber: ", e))
             .onErrorResumeNext(Flowable.just(Collections.emptyList()))
             .doOnSubscribe(s -> {
+              // when the first click on a project is executed, the issues list does not appear:
+              // when creating the issues/te adapter and repository (for the first time),
+              //   the subscription does not happen instantly (or as fast as i'd wish)
+              //   so we need to add a delayed refresh (for now).
+              // todo: perhaps it's better to add the repository/adapter
+              //  when creating the activity?
               if (runnable != null) {
                 disposables.add(
                     Single.just("running optional command")
                         .delay(50, TimeUnit.MILLISECONDS)
-                        .subscribe(a -> runnable.run()));
+                        .subscribe(a -> {
+//                          Log.w(TAG, "registerSubscriber: >>>> running runnable>>>>");
+                          runnable.run();}));
               }
             })
             .observeOn(AndroidSchedulers.mainThread())
@@ -158,12 +176,22 @@ public class IssuesRepository extends Repository {
 
 
   private Single<List<IssueData>> getDbItems() {
-    Log.d(TAG, "getDbItems() called: > " + parentProperties.getId());
+//    Log.d(TAG, "getDbItems() called: > " + parentProperties.getId());
     return asyncDao.getAll(parentProperties.getId(), true)
         .doOnError(e -> Log.e(TAG, "getDbItems: ", e))
         .flatMapPublisher(Flowable::fromIterable)
         .filter(i -> !i.isDeleted())
         .map(i -> i.clone(false))
-        .toList();
+        .toList()
+        .doOnSuccess((list)-> {
+          if (list != null && list.size() > 0) {
+            IssueData data = list.get(0);
+            // this rule should probably not be in the repository
+//            Log.i(TAG, "getDbItems: data.lastUpdated: " + data.lastUpdated);
+            if (data.lastUpdated <= 0 || (System.currentTimeMillis() - data.lastUpdated > BaseInterfaces.UPDATE_INTERVAL)) {
+              networkDataUpdater.lightIssuesUpdate(parentProperties.getId(), parentProperties.getObjectId(), networkProgressListener);
+            }
+          }
+        });
   }
 }

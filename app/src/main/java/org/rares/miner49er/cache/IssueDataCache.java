@@ -74,6 +74,7 @@ public class IssueDataCache implements Cache<IssueData> {
             }
         }
         issuesCache.put(issue.id, issue);
+//        Log.w(TAG, "putData: cache event.");
         cache.sendEvent(CACHE_EVENT_UPDATE_ISSUE);
     }
 

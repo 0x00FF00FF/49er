@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import java.util.List;
 
 public class IssuesDiff extends DiffUtil.Callback {
-
+    private static final String TAG = "IssuesDiff";
     private List<IssueData> oldIssueData;
     private List<IssueData> newIssueData;
 
@@ -31,13 +31,13 @@ public class IssuesDiff extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        //        Log.d(TAG, String.format("areItemsTheSame() returned: [%s:%s] %s", oldIssueData.get(oldItemPosition).getId(), newIssueData.get(newItemPosition).getId(), result));
+//        Log.d(TAG, String.format("areItemsTheSame() returned: [%s:%s] %s", oldIssueData.get(oldItemPosition).getId(), newIssueData.get(newItemPosition).getId(), oldIssueData.get(oldItemPosition).getId().equals(newIssueData.get(newItemPosition).getId())));
         return oldIssueData.get(oldItemPosition).getId().equals(newIssueData.get(newItemPosition).getId());
     }
 
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-        //        Log.d(TAG, "areContentsTheSame() returned: " + result);
+//        Log.d(TAG, "areContentsTheSame() returned: " + oldIssueData.get(oldItemPosition).compareContents(newIssueData.get(newItemPosition)));
         return oldIssueData.get(oldItemPosition).compareContents(newIssueData.get(newItemPosition));
     }
 

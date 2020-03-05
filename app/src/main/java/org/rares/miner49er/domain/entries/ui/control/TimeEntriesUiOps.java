@@ -44,7 +44,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     private TouchHelperCallback<TimeEntriesViewHolder, TimeEntryData> touchHelperCallback = new TouchHelperCallback<>();
     private ItemTouchHelper itemTouchHelper;
 
-    public TimeEntriesUiOps(RecyclerView rv) {
+    public TimeEntriesUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+
+        this.networkDataUpdater = networkDataUpdater;
+        this.networkProgressListener = networkProgressListener;
+
         teRepository.setup();
         repository = teRepository;
 
@@ -101,7 +105,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     @Override
     public void onParentSelected(ItemViewProperties viewProperties, boolean parentWasEnlarged) {
 
-//        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
+        AbstractAdapter adapter = (AbstractAdapter) getRv().getAdapter();
 
         if (parentWasEnlarged) {
 //            if (unbinderList.size() > 40) {
@@ -109,7 +113,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
                 // they reach a certain number;
                 // so there are no leaks
 
-                repository.shutdown();
+//                repository.shutdown();
 //                getRv().setAdapter(null);
 //                touchHelperCallback.setAdapter(null);
 //                itemTouchHelper.attachToRecyclerView(null);
@@ -121,7 +125,12 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 //            if (adapter != null) {
 //                onParentChanged(viewProperties);
 //            } else {
+              if (adapter == null) {
                 getRv().setAdapter(createNewAdapter(viewProperties));
+              } else {
+                teRepository.setParentProperties(viewProperties);
+                teRepository.refreshData();
+              }
 //                itemTouchHelper.attachToRecyclerView(getRv());
 //                repository.refreshData(true);
 //            }
@@ -144,15 +153,16 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         TimeEntriesAdapter teAdapter = (TimeEntriesAdapter) getRv().getAdapter();
         if (teAdapter == null) {
             teAdapter = new TimeEntriesAdapter(this);
+            teRepository.registerSubscriber(teAdapter, () -> repository.refreshData());
+            touchHelperCallback.setAdapter(teAdapter);
         }
 
-        teAdapter.setUnbinderHost(this);
+//        teAdapter.setUnbinderHost(this);
 
         teRepository.setup();
         teRepository.setParentProperties(viewProperties);
-        teRepository.registerSubscriber(teAdapter, () -> repository.refreshData());
+        teRepository.refreshData();
 
-        touchHelperCallback.setAdapter(teAdapter);
 
         return teAdapter;
     }
@@ -163,10 +173,10 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     }
 
     @Override
-    public void updateEntity(DataUpdater dataUpdater, Subscriber<String> resultListener) {
+    public void updateEntity() {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            dataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId, resultListener);
+            networkDataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId, networkProgressListener);
         }
     }
 }

@@ -149,7 +149,7 @@ public class HomeScrollingActivity
 //    private SignUpFragment signUpFragment = null;
 
 
-    private DataUpdater dtoConverter = DataUpdater.builder()
+    private DataUpdater dataUpdater = DataUpdater.builder() // should this be a service?
             .userDao(GenericEntityDao.Factory.of(User.class))
             .projectDao(GenericEntityDao.Factory.of(Project.class))
             .issueDao(GenericEntityDao.Factory.of(Issue.class))
@@ -159,6 +159,8 @@ public class HomeScrollingActivity
             .build();
 
     Unbinder unbinder;
+
+    private NetworkUpdateListener networkUpdateListener = new NetworkUpdateListener();
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
 
@@ -173,9 +175,9 @@ public class HomeScrollingActivity
 //        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
 //        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
 
-        dtoConverter.addDbUpdateFinishedListener(this);
-        dtoConverter.addUpdateListener(this);
-//        dtoConverter.updateProjects();
+        dataUpdater.addDbUpdateFinishedListener(this);
+        dataUpdater.addUpdateListener(this);
+//        dataUpdater.updateProjects();
 
 //        entityOptimizer.addDbUpdateFinishedListener(this);
 
@@ -234,37 +236,15 @@ public class HomeScrollingActivity
 
         fab2.setOnClickListener(new View.OnClickListener() {
 
-            Subscriber<String> subscriber = new Subscriber<String>() {
-                @Override
-                public void onSubscribe(Subscription s) {
-                    startDataUpdateAnimation();
-                }
-
-                @Override
-                public void onNext(String s) {
-
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                  stopDataUpdateAnimation();
-                }
-
-                @Override
-                public void onComplete() {
-                    stopDataUpdateAnimation();
-                }
-            };
-
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
 //                startDataUpdateAnimation();
                 if (getSelectedEntityProvider() != null) {
-                    getSelectedEntityProvider().updateEntity(dtoConverter, subscriber);
+                    getSelectedEntityProvider().updateEntity();
                 } else {
-                    dtoConverter.lightUpdate(subscriber);
-//                    dtoConverter.updateAll();
+                    dataUpdater.lightProjectUpdate(networkUpdateListener);
+//                    dataUpdater.updateAll();
                 }
 //                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
 //                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
@@ -276,6 +256,11 @@ public class HomeScrollingActivity
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }
+        });
+
+        fab2.setOnLongClickListener(view -> {
+            dataUpdater.fullyUpdateProjects(networkUpdateListener);
+            return true;
         });
 
         /*
@@ -313,9 +298,13 @@ public class HomeScrollingActivity
 
     private void stopDataUpdateAnimation() {
       if (refreshDisposable != null) {
-        refreshDisposable.dispose();
-        fab2.getHandler().post(()->fab2.animate().rotation(0).start());
-        refreshDisposable = null;
+          refreshDisposable.dispose();
+          fab2.getHandler().post(() -> {
+              int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
+              int toRotation = 180 * (rotations - 1);
+              fab2.animate().rotation(toRotation).withEndAction(() -> fab2.setRotation(0)).start();
+          });
+          refreshDisposable = null;
       }
     }
 
@@ -430,7 +419,7 @@ public class HomeScrollingActivity
 //        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
-        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
+        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv, dataUpdater, networkUpdateListener);
         timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
         timeEntriesUiOps.setSelectedEntityManager(this);
 
@@ -443,7 +432,7 @@ public class HomeScrollingActivity
                 (int) UiUtil.pxFromDp(this, 58),
                 (int) UiUtil.pxFromDp(this, 56));
         issuesRV.setLayoutManager(issuesManager);
-        issuesUiOps = new IssuesUiOps(issuesRV);
+        issuesUiOps = new IssuesUiOps(issuesRV, dataUpdater, networkUpdateListener);
         issuesUiOps.setRvCollapsedWidth((int) UiUtil.pxFromDp(this, 56));
         issuesUiOps.setDomainLink(timeEntriesUiOps);
 //        decoration.setSelectedPosition(1); // the selected position should get a different color
@@ -462,7 +451,7 @@ public class HomeScrollingActivity
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);
 
-        projectsUiOps = new ProjectsUiOps(projectsRV);
+        projectsUiOps = new ProjectsUiOps(projectsRV, dataUpdater, networkUpdateListener);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
         projectsUiOps.setSelectedEntityManager(this);
@@ -773,4 +762,28 @@ public class HomeScrollingActivity
         fab2.setVisibility(View.VISIBLE);
     }
 */
+
+    private class NetworkUpdateListener implements Subscriber<String> {
+
+        @Override
+        public void onSubscribe(Subscription s) {
+            startDataUpdateAnimation();
+        }
+
+        @Override
+        public void onNext(String s) {
+
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            stopDataUpdateAnimation();
+            showMessage(t.getMessage(), Messenger.DISMISSIBLE, null);
+        }
+
+        @Override
+        public void onComplete() {
+            stopDataUpdateAnimation();
+        }
+    }
 }

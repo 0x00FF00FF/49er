@@ -22,6 +22,7 @@ public abstract class ItemViewProperties {
     private long id;
     private String name;
     private String secondaryData;
+    private String objectId;
 
     public static ItemViewProperties create(Class c) {
         if (c.equals(TimeEntry.class)) {
