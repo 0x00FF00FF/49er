@@ -122,13 +122,13 @@ class CacheFeedWorker {
         daoList.add(iDao);
         daoList.add(tDao);
 
-        // if this is registered _AFTER_ the following disposables.add call,
-        // it may miss its window of opportunity and link data is never called.
+        // this needs to be registered before the next disposables.add call
+        // the next one triggers this one
         disposables.add(progressProcessor
                         .limit(daoList.size())
                         .count()
                         .subscribe(x -> {
-                            cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
+//                            cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS); // unneeded cache update trigger?
                             linkData();
                         })
         );

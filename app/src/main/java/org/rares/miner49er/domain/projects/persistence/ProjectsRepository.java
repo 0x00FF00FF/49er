@@ -8,13 +8,17 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
+import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectsSort;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
+import org.reactivestreams.Subscriber;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +30,12 @@ public class ProjectsRepository extends Repository {
   private ProjectsSort projectsSort = new ProjectsSort();
   private AsyncGenericDao<ProjectData> asyncDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
 
-  public ProjectsRepository() {
+  private DataUpdater networkDataUpdater;
+  private Subscriber<String> networkProgressListener;
+
+  public ProjectsRepository(DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+    this.networkDataUpdater = networkDataUpdater;
+    this.networkProgressListener = networkProgressListener;
   }
 
   @Override
@@ -111,10 +120,11 @@ public class ProjectsRepository extends Repository {
 
   @Override
   public void registerSubscriber(Consumer<List> consumer, Runnable runnable) {
+    Log.i(TAG, "registerSubscriber: ");
     disposables.add(
         userActionsObservable
             .subscribeOn(Schedulers.io())
-            .concatMapSingle(action -> getData())
+            .concatMapSingle(action -> getDbItems())
             .onBackpressureBuffer()
             .onErrorResumeNext(Flowable.fromIterable(Collections.emptyList()))
             .doOnSubscribe(s -> {
@@ -129,13 +139,32 @@ public class ProjectsRepository extends Repository {
             .subscribe(consumer));
   }
 
-  private Single<List<ProjectData>> getData() {
+  private Single<List<ProjectData>> getDbItems() {
+//    Thread.dumpStack();
+//    Log.i(TAG, "getDbItems: <<<<<>>>>>");
     return asyncDao.getAll(true)
-        .doOnError(e -> Log.e(TAG, "getData: setup timeout? ", e))
-        .onErrorReturnItem(Collections.emptyList())
+        .doOnError(e -> Log.e(TAG, "getDbItems: setup timeout? ", e))
         .flatMapPublisher(Flowable::fromIterable)
         .filter(p -> !p.isDeleted())
         .map(p -> p.clone(false))
-        .toList();
+        .toList()
+        .doOnSuccess((list) -> {
+//          Log.i(TAG, "getDbItems: db project list: " + list);
+          boolean callNetwork = false;
+          if (list != null && list.size() > 0) {
+            AbstractViewModel data = list.get(0); // TODO: perhaps check all and if any does not comply, then network refresh
+            // this rule should probably not be in the repository
+//            Log.i(TAG, "getDbItems: data.lastUpdated: " + data.lastUpdated);
+            if (data.lastUpdated <= 0 || (System.currentTimeMillis() - data.lastUpdated > BaseInterfaces.UPDATE_INTERVAL)) {
+              callNetwork = true;
+            }
+          } else {
+            callNetwork = true;
+          }
+          if (callNetwork) { // only do a network call if needed
+//            Log.d(TAG, "getDbItems: network call > " + networkDataUpdater);
+            networkDataUpdater.lightProjectUpdate(networkProgressListener);
+          }
+        });
   }
 }

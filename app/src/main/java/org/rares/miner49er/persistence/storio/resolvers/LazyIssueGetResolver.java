@@ -1,7 +1,6 @@
 package org.rares.miner49er.persistence.storio.resolvers;
 
 import android.database.Cursor;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.Optional;
 import com.pushtorefresh.storio3.Queries;
@@ -25,7 +24,7 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
     public final String TAG = LazyIssueGetResolver.class.getSimpleName();
 
     protected LazyIssueGetResolver getInstance() {
-        Log.d(TAG, "getInstance() called");
+//        Log.d(TAG, "getInstance() called");
         return this;
     }
 
@@ -158,7 +157,7 @@ public class LazyIssueGetResolver extends DefaultGetResolver<Issue> {
     }
 
     private PreparedGetListOfObjects<Issue> _getAll(StorIOSQLite storIOSQLite, long projectId) {
-        Log.i(TAG, "_getAll() called with: projectId = [" + projectId + "] " + Thread.currentThread().getName());
+//        Log.i(TAG, "_getAll() called with: projectId = [" + projectId + "] " + Thread.currentThread().getName());
         return storIOSQLite.get()
                 .listOfObjects(Issue.class)
                 .withQuery(

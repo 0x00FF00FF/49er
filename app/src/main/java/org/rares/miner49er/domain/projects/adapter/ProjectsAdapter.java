@@ -150,6 +150,9 @@ public class ProjectsAdapter
 //    }
 
     private void updateList(List<ProjectData> newData) {
+//        Log.d(TAG, "updateList() called with: " +
+//            "newData = [" + (newData == null ? "null" : (newData.size() + " items")) + "], " +
+//            "oldData = [" + (data == null ? "null" : (data.size() + " items")) + "]");
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new ProjectDiff(data, newData));
         data = newData;
         diffResult.dispatchUpdatesTo(this);

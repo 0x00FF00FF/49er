@@ -153,7 +153,7 @@ public class UsersDao implements GenericEntityDao<User> {
                             });
                 })
                 .map(user -> {
-                    System.out.println("user after saving: " + user);
+//                    System.out.println("user after saving: " + user);
                     return user;
                 })
                 .doOnError(Throwable::printStackTrace);

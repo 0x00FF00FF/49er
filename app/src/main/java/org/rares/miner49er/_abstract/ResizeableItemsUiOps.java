@@ -655,7 +655,7 @@ public abstract class ResizeableItemsUiOps
     /**
      * Convenience method to ease up on demand data refresh.
      */
-    public void refreshData(boolean onlyLocal) {
+    public void refreshData() {
         if (repository != null) {
             repository.refreshData();
         }
@@ -703,6 +703,7 @@ public abstract class ResizeableItemsUiOps
     }
 
     public void shutdown() {
+//        Log.d(TAG, "shutdown() called");
         if (repository != null) {
             repository.shutdown();
         }

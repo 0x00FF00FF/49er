@@ -29,6 +29,7 @@ import com.google.android.material.snackbar.Snackbar;
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import org.rares.miner49er.BaseInterfaces.Messenger;
@@ -231,7 +232,6 @@ public class HomeScrollingActivity
                         .add(R.id.main_container, llFrag, LoginLandingConstraintSetFragment.TAG)
                         .commit();
             }
-
         }
 
         fab2.setOnClickListener(new View.OnClickListener() {
@@ -291,6 +291,7 @@ public class HomeScrollingActivity
     private void startDataUpdateAnimation() {
       if (refreshDisposable == null) {
         refreshDisposable = Flowable.interval(20, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe(i -> fab2.setRotation(fab2.getRotation() - 10));
         startDisposable.add(refreshDisposable);
       }
@@ -299,11 +300,13 @@ public class HomeScrollingActivity
     private void stopDataUpdateAnimation() {
       if (refreshDisposable != null) {
           refreshDisposable.dispose();
-          fab2.getHandler().post(() -> {
-              int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
-              int toRotation = 180 * (rotations - 1);
-              fab2.animate().rotation(toRotation).withEndAction(() -> fab2.setRotation(0)).start();
-          });
+          if (fab2 != null) {
+              fab2.getHandler().post(() -> {
+                  int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
+                  int toRotation = 180 * (rotations - 1);
+                  fab2.animate().rotation(toRotation).withEndAction(() -> fab2.setRotation(0)).start();
+              });
+          }
           refreshDisposable = null;
       }
     }
@@ -601,6 +604,8 @@ public class HomeScrollingActivity
     protected void onDestroy() {
         super.onDestroy();
 
+        dataUpdater.close();// TODO: 06.03.2020  this should be a service
+
         NetworkingService.INSTANCE.end();
 
         unbinder.unbind();
@@ -691,6 +696,7 @@ public class HomeScrollingActivity
     public void dataUpdated(Class cls, List data) {
         //noinspection unchecked
         cache.getCache(cls).putData(data, true);
+//        Log.v(TAG, "dataUpdated: cache update.");
 //        stopDataUpdateAnimation();
     }
 
@@ -741,6 +747,9 @@ public class HomeScrollingActivity
         topOverlay.setVisibility(View.VISIBLE);
         bottomOverlay.setVisibility(View.VISIBLE);
         fab2.setVisibility(View.VISIBLE);
+
+        Log.i(TAG, "signIn: >>>>>>>>> cached user: " + cache.loggedInUser + " ");
+        projectsUiOps.refreshData();
     }
 
     public void log(String log) {

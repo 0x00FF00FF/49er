@@ -185,7 +185,7 @@ public class IssuesRepository extends Repository {
         .toList()
         .doOnSuccess((list)-> {
           if (list != null && list.size() > 0) {
-            IssueData data = list.get(0);
+            IssueData data = list.get(0); // TODO: perhaps check all and if any does not comply, then network refresh
             // this rule should probably not be in the repository
 //            Log.i(TAG, "getDbItems: data.lastUpdated: " + data.lastUpdated);
             if (data.lastUpdated <= 0 || (System.currentTimeMillis() - data.lastUpdated > BaseInterfaces.UPDATE_INTERVAL)) {

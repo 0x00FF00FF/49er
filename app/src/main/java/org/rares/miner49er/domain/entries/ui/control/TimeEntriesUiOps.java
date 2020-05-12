@@ -35,7 +35,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     public static final String TAG = TimeEntriesUiOps.class.getSimpleName();
 
-    private TimeEntriesRepository teRepository = new TimeEntriesRepository();
+    private TimeEntriesRepository teRepository;
 
     private ToolbarActionManager toolbarManager = null;
 
@@ -49,6 +49,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         this.networkDataUpdater = networkDataUpdater;
         this.networkProgressListener = networkProgressListener;
 
+        teRepository = new TimeEntriesRepository(networkDataUpdater, networkProgressListener);
         teRepository.setup();
         repository = teRepository;
 

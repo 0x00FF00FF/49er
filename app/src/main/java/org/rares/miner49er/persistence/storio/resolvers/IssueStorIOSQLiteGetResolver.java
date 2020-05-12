@@ -1,7 +1,6 @@
 package org.rares.miner49er.persistence.storio.resolvers;
 
 import android.database.Cursor;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
 import org.rares.miner49er.persistence.entities.Issue;
@@ -15,7 +14,7 @@ public class IssueStorIOSQLiteGetResolver extends LazyIssueGetResolver {
     public final String TAG = IssueStorIOSQLiteGetResolver.class.getSimpleName();
 
     protected LazyIssueGetResolver getInstance() {
-        Log.d(TAG, "getInstance() called");
+//        Log.d(TAG, "getInstance() called");
         return this;
     }
 

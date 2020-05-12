@@ -1,5 +1,6 @@
 package org.rares.miner49er.domain.projects.ui.control;
 
+import android.util.Log;
 import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -88,7 +89,7 @@ public class ProjectsUiOps
     this.networkProgressListener = networkProgressListener;
 
     setRv(rv);
-    projectsRepository = new ProjectsRepository();
+    projectsRepository = new ProjectsRepository(networkDataUpdater, networkProgressListener);
     repository = projectsRepository;
 
     selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
@@ -246,6 +247,7 @@ public class ProjectsUiOps
    * Should be called on activity stop.
    */
   public void shutdown() {
+    Log.d(TAG, "shutdown() called");
     projectsRepository.shutdown();
     startDisposable.dispose();
   }

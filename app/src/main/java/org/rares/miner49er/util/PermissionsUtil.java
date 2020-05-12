@@ -28,7 +28,7 @@ public class PermissionsUtil {
     public static boolean canEditProject(ProjectData projectData) {
 //        Thread.dumpStack();
         Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
-        return loggedInUser.id.equals(projectData.getOwner().id) || isResponsible;
+        return loggedInUser.id.equals(projectData.getOwner().id) || isResponsible; // FIXME project owner null
     }
 
     public static boolean canAddProject() {

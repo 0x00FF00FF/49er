@@ -4,8 +4,11 @@ import android.util.Log;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Setter;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.network.rest.auth.NetworkUserAccountService;
@@ -37,7 +40,9 @@ public class AuthenticationInterceptor implements Interceptor {
 
     Request.Builder builder = original.newBuilder();
 
-    if (authToken != null && !authToken.equals("")) {
+    boolean authTokenExists = authToken != null && !authToken.equals("");
+
+    if (authTokenExists) {
       builder
 //                .header("Authorization", authToken);
           .header("X-AUTH-TOKEN", authToken);
@@ -45,11 +50,23 @@ public class AuthenticationInterceptor implements Interceptor {
 
     Request request = builder.build();
 
-    Response response = chain.proceed(request);
     UserData loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
-//    boolean isLoginCall = request.url().pathSegments().contains("login");
+    boolean isLoginCall = request.url().pathSegments().contains("login");
 
-    Log.d(TAG, "intercept: " + response.code());
+    if (!isLoginCall && !authTokenExists) {
+      Log.w(TAG, String.format("intercept: Call blocked [%s]. No user login.", request.url().toString()));
+      return new Response.Builder()
+          .code(600)
+          .protocol(Protocol.HTTP_2)
+          .body(ResponseBody.create(MediaType.get("text/html; charset=utf-8"), ""))
+          .message("Will not proceed with any request until a user is logged in.")
+          .request(chain.request())
+          .build();
+    }
+
+    Response response = chain.proceed(request);
+
+//    Log.d(TAG, "intercept: " + response.code());
 
     if (loggedInUser != null) {
       if (401 == response.code() || 500 == response.code()) { // invalid session throws 500

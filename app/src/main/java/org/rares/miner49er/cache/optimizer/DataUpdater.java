@@ -222,16 +222,18 @@ public class DataUpdater {
   private Flowable<User> updateUsers() {
     return ns.userService.getUsers()
         .retry(1)
-        .onErrorReturn(throwable -> {
-          if (throwable instanceof ConnectException) {
-            Log.i(TAG, "updateUsers: connection problems?");
-          }
-          return Collections.emptyList();
-        })
+        // do not implement onError* so that whoever subscribes
+        // can know that something went wrong here.
+//        .onErrorReturn(throwable -> {
+//          if (throwable instanceof ConnectException) {
+//            Log.i(TAG, "updateUsers: connection problems?");
+//          }
+//          return Collections.emptyList();
+//        })
         .subscribeOn(Schedulers.io())
         .flatMapPublisher(Flowable::fromIterable)
         .map(UserConverter::toModelBlocking)
-        .map(e->{e.setLastUpdated(System.currentTimeMillis());return e;})
+        .map(user->{user.setLastUpdated(System.currentTimeMillis());return user;})
         .buffer(maxDbParams)
         .flatMap(userList -> saveEntityList(userList, userDao, defaultUser), maxThreads)
         ;
@@ -335,6 +337,7 @@ public class DataUpdater {
         .map(teDto -> {
           TimeEntry te = timeEntryConverter.toModel(teDto);
           te.setIssueId(issueId);
+          te.setLastUpdated(System.currentTimeMillis());
           return te;
         })
         .onErrorReturn(throwable -> {
@@ -355,83 +358,105 @@ public class DataUpdater {
     disposables.add(d);
   }
 
+  public void updateTimeEntries(String issueObjectId, long issueId, Subscriber<String> resultListener) {
+    String callId = UUID.randomUUID().toString();
+    Issue tempIssue = new Issue();
+    tempIssue.setId(issueId);
+    tempIssue.setObjectId(issueObjectId);
+    Disposable d = updateTimeEntries(tempIssue)
+        .doOnSubscribe(s -> np.addNetworkCall(callId, callId, resultListener))
+        .map(timeEntryDbToVmConverter::dmToVm)
+        .toList()
+        .subscribe(data -> {
+          notifyListeners(TimeEntryData.class, data);
+          np.completeNetworkCall(callId, callId);
+        });
+    disposables.add(d);
+  }
+
 
   public void lightProjectUpdate(Subscriber<String> resultListener) {
+//    Log.e(TAG, "lightProjectUpdate called.");
     String callId = UUID.randomUUID().toString();
     users.clear();
-    updateUsers().subscribe();
     List<ProjectDto> projects = new ArrayList<>();
     // saved initial projects to have a reference
     // to the projects' issues because i thought
     // that after saving, the issues are gone (but
     // in fact they are not)
-    Disposable d = createProjectUpdateCall(0, 0)
-        .retry(1)
-        .doOnSubscribe((s) -> np.addNetworkCall(callId, callId, resultListener))
-        .toList()
-        .onErrorReturn(throwable -> {
-          np.cancelNetworkCall(callId, callId);
-          if (throwable instanceof ConnectException) {
-            Log.i(TAG, "lightProjectUpdate: connection problems?");
-          }
-          return Collections.emptyList();
-        })
-        .subscribeOn(Schedulers.io())
-        .subscribe(list -> {
-          projects.addAll(list);
-          Disposable ud = updateProjects(Flowable.fromIterable(list))
-              .map(prj -> {
-                List<Issue> newIssues = new ArrayList<>();
-                for (ProjectDto pd : projects) {
-                  if (pd.getId().equals(prj.getObjectId())) {
-                    List<String> ids = pd.getIssues();
-                    if (ids != null && ids.size() > 0) {
-                      for (String oid : ids) {
-                        Issue issue = new Issue();
-                        issue.setObjectId(oid);
-                        issue.setProjectId(prj.getId());
-                        issue.setOwnerId(prj.getOwnerId());
-                        issue.setName("New issue");
-                        newIssues.add(issue);
+    Disposable d = updateUsers().count().subscribe((count, thr) -> {
+      if (thr != null) {
+        Log.e(TAG, "lightProjectUpdate: error while getting users (for projects) " + thr.getMessage());
+        return;
+      }
+      disposables.add(createProjectUpdateCall(0, 0)
+          .retry(1)
+          .doOnSubscribe((s) -> np.addNetworkCall(callId, callId, resultListener))
+          .toList()
+          .onErrorReturn(throwable -> {
+            np.cancelNetworkCall(callId, callId);
+            if (throwable instanceof ConnectException) {
+              Log.i(TAG, "lightProjectUpdate: connection problems?");
+            }
+            return Collections.emptyList();
+          })
+          .subscribeOn(Schedulers.io())
+          .subscribe(list -> {
+            projects.addAll(list);
+            Disposable ud = updateProjects(Flowable.fromIterable(list))
+                .map(prj -> {
+                  List<Issue> newIssues = new ArrayList<>();
+                  for (ProjectDto pd : projects) {
+                    if (pd.getId().equals(prj.getObjectId())) {
+                      List<String> ids = pd.getIssues();
+                      if (ids != null && ids.size() > 0) {
+                        for (String oid : ids) {
+                          Issue issue = new Issue();
+                          issue.setObjectId(oid);
+                          issue.setProjectId(prj.getId());
+                          issue.setOwnerId(prj.getOwnerId());
+                          issue.setName("New issue");
+                          newIssues.add(issue);
+                        }
                       }
                     }
                   }
-                }
-                prj.setIssues(newIssues);
-                return prj;
-              })
-              .concatMapSingle(prj -> insertEntityList(prj.getIssues(), issueDao, defaultIssue)
-                  .toList()
-                  .map(il -> {
-                    prj.setIssues(il);
+                  prj.setIssues(newIssues);
+                  return prj;
+                })
+                .concatMapSingle(prj -> insertEntityList(prj.getIssues(), issueDao, defaultIssue)
+                    .toList()
+                    .map(il -> {
+                      prj.setIssues(il);
 //                    System.out.println("project issues: " + prj.getIssues());
-                    return projectDbToVmConverter.dmToVm(prj);
-                  }))
-              .toList()
-              .onErrorReturn(throwable -> {
-                np.cancelNetworkCall(callId, callId);
-                if (throwable instanceof ConnectException) {
-                  Log.i(TAG, "lightProjectUpdate: connection problems?");
-                }
-                return Collections.emptyList();
-              })
-              .subscribe(savedProjects -> {
-                List<IssueData> issList = new ArrayList<>();
-                disposables.add(
-                    Flowable.fromIterable(savedProjects)
-                        .map(ProjectData::getIssues)
-                        .reduce(issList, (aggregate, newItems) -> {
-                          aggregate.addAll(newItems);
-                          return aggregate;
-                        })
-                        .subscribe(issues -> {
-                          notifyListeners(IssueData.class, issues);
-                          notifyListeners(ProjectData.class, savedProjects);
-                          np.completeNetworkCall(callId, callId);
-                        }));
-              });
-          disposables.add(ud);
-        });
+                      return projectDbToVmConverter.dmToVm(prj);
+                    }))
+                .toList()
+                .onErrorReturn(throwable -> {
+                  np.cancelNetworkCall(callId, callId);
+                  if (throwable instanceof ConnectException) {
+                    Log.i(TAG, "lightProjectUpdate: connection problems?");
+                  }
+                  return Collections.emptyList();
+                })
+                .subscribe(savedProjects -> {
+                  List<IssueData> issList = new ArrayList<>();
+                  disposables.add(
+                      Flowable.fromIterable(savedProjects)
+                          .map(ProjectData::getIssues)
+                          .reduce(issList, (aggregate, newItems) -> {
+                            aggregate.addAll(newItems);
+                            return aggregate;
+                          })
+                          .subscribe(issues -> {
+                            notifyListeners(IssueData.class, issues);
+                            notifyListeners(ProjectData.class, savedProjects);
+                            np.completeNetworkCall(callId, callId);
+                          }));
+                });
+            disposables.add(ud);
+          }));
+    });
     disposables.add(d);
   }
 
@@ -571,6 +596,7 @@ public class DataUpdater {
     disposables.clear();
   }
 
+  @Deprecated
   private void pingListeners() {
     for (DbUpdateFinishedListener listener : listenerList) {
       listener.onDbUpdateFinished(true, 1);
@@ -578,7 +604,7 @@ public class DataUpdater {
   }
 
   private void notifyListeners(Class cls, List<? extends AbstractViewModel> data) {
-//      Log.i(TAG, "notifyListeners: >>>>>>>> NOTIFY LISTENERS >> " + updateListeners.size() + " " + cls.getSimpleName());
+//    Log.i(TAG, "notifyListeners: >>>>>>>> NOTIFY LISTENERS >> " + updateListeners.size() + " " + cls.getSimpleName());
     for (DataUpdatedListener updateListener : updateListeners) {
       updateListener.dataUpdated(cls, data);
     }
