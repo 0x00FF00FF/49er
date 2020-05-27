@@ -95,6 +95,14 @@ public class UserListFragmentPureRv extends DialogFragment {
         recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), spanCount, RecyclerView.HORIZONTAL, false));
 //        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext(), RecyclerView.HORIZONTAL, false));
         recyclerView.addItemDecoration(new HorizontalGridSpacingItemDecoration(spanCount, 18, false));
+        if (savedInstanceState != null) {
+            userIds = savedInstanceState.getLongArray(UserInterfaces.KEY_SELECTED_USERS);
+            Bundle args = getArguments();   // this... smh
+            if (args != null) {
+                args.putLongArray(UserInterfaces.KEY_SELECTED_USERS, userIds);
+            }
+            setArguments(args);
+        }
 
         UserAdapter userAdapter = UserAdapter.builder()
                 .data(Collections.emptyList())
@@ -104,8 +112,8 @@ public class UserListFragmentPureRv extends DialogFragment {
                 .roleProjectManager(roleProjectManager)
                 .clickable(false)
                 .build();
-        refreshData();
         recyclerView.setAdapter(userAdapter);
+        refreshData();
         return recyclerView;
     }
 
@@ -193,4 +201,9 @@ public class UserListFragmentPureRv extends DialogFragment {
         return Collections.emptyList();
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLongArray(UserInterfaces.KEY_SELECTED_USERS, userIds);
+    }
 }

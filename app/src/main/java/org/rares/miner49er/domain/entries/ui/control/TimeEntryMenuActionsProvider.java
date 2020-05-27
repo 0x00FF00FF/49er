@@ -30,15 +30,20 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean edit(long id) {
-        if (fragmentManager.findFragmentByTag(TimeEntryEditFormFragment.TAG) != null) {
-            // prevent multiple fragments and/or multiple action listeners being created
-            return true;
-        }
-        ActionFragment timeEntryEditFormFragment = TimeEntryEditFormFragment.newInstance();
+//        if (fragmentManager.findFragmentByTag(TimeEntryEditFormFragment.TAG) != null) {
+//            // prevent multiple fragments and/or multiple action listeners being created
+//            return true;
+//        }
 
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putLong(KEY_TIME_ENTRY_ID, id);
-        timeEntryEditFormFragment.setArguments(fragmentArgs);
+        // TODO: 27.05.2020 test this with changed/editable data; check if multiple instances of action listeners exist
+        ActionFragment existing = (ActionFragment) fragmentManager.findFragmentByTag(TimeEntryEditFormFragment.TAG);
+        ActionFragment timeEntryEditFormFragment = existing!=null?existing:TimeEntryEditFormFragment.newInstance();
+
+        if (existing == null) {
+            Bundle fragmentArgs = new Bundle();
+            fragmentArgs.putLong(KEY_TIME_ENTRY_ID, id);
+            timeEntryEditFormFragment.setArguments(fragmentArgs);
+        }
 
         TimeEntryEditActionListener timeEntryEditActionListener = new TimeEntryEditActionListener(timeEntryEditFormFragment, actionManager);
 
@@ -56,7 +61,7 @@ public class TimeEntryMenuActionsProvider implements GenericMenuActions {
 
     @Override
     public boolean details(long id) {
-        return false;
+        return edit(id);
     }
 
     @Override

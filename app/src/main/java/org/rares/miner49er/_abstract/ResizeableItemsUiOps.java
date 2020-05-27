@@ -25,17 +25,15 @@ import org.rares.miner49er.BaseInterfaces.ColorAnimation;
 import org.rares.miner49er.BaseInterfaces.SelectableItemsManager;
 import org.rares.miner49er.BaseInterfaces.SetValues;
 import org.rares.miner49er.R;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
-import org.rares.miner49er.domain.agnostic.SelectedEntityManager;
 import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.layoutmanager.ItemAnimationDto;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.util.ArgbEvaluator;
 import org.rares.miner49er.util.TextUtils;
 import org.rares.miner49er.util.UiUtil;
-import org.reactivestreams.Subscriber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,9 +63,6 @@ public abstract class ResizeableItemsUiOps
 
     protected List<Unbinder> unbinderList = new ArrayList<>();
 
-    @Setter
-    protected SelectedEntityManager selectedEntityManager;
-
     @Getter
     @Setter
     private RecyclerView rv;
@@ -83,7 +78,7 @@ public abstract class ResizeableItemsUiOps
 
 
     protected DataUpdater networkDataUpdater;
-    protected Subscriber<String> networkProgressListener;
+//    protected Subscriber<String> networkProgressListener;
 
 
     /**

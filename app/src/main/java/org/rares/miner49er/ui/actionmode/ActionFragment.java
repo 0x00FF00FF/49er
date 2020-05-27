@@ -67,4 +67,11 @@ public abstract class ActionFragment extends Fragment implements ActionEnforcer 
 
     protected ScrollView rootView;      // root view should not necessarily be a ScrollView
     protected Unbinder unbinder;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        replacedView = null;
+        rootView = null;
+    }
 }

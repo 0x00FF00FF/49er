@@ -120,10 +120,14 @@ public class ProjectMenuActionsProvider
         }
 
         if (menuActionId == R.id.action_add_project) {
-            ActionFragment projectAddFormFragment = ProjectAddFormFragment.newInstance();
+            ActionFragment existing = (ActionFragment) fragmentManager.findFragmentByTag(ProjectAddFormFragment.TAG);
+
+            ActionFragment projectAddFormFragment = existing != null ? existing : ProjectAddFormFragment.newInstance();
             ProjectAddActionListener projectAddActionListener = new ProjectAddActionListener(projectAddFormFragment, actionManager);
 
-            showFragment(projectAddFormFragment);
+            if (existing == null) {
+                showFragment(projectAddFormFragment);
+            }
 
             actionManager.registerActionListener(projectAddActionListener);
         }

@@ -2,6 +2,7 @@ package org.rares.miner49er;
 
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -14,60 +15,67 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.Unbinder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces.Messenger;
 import org.rares.miner49er.cache.ViewModelCache;
-import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.optimizer.CacheFeederService;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
-import org.rares.miner49er.cache.optimizer.DataUpdater.DataUpdatedListener;
-import org.rares.miner49er.cache.optimizer.EntityOptimizer.DbUpdateFinishedListener;
-import org.rares.miner49er.domain.agnostic.SelectedEntityManager;
+import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
+import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.domain.entries.ui.actions.add.TimeEntryAddFormFragment;
+import org.rares.miner49er.domain.entries.ui.actions.edit.TimeEntryEditFormFragment;
 import org.rares.miner49er.domain.entries.ui.control.TimeEntriesUiOps;
 import org.rares.miner49er.domain.issues.decoration.AccDecoration;
 import org.rares.miner49er.domain.issues.decoration.IssuesItemDecoration;
+import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.domain.issues.ui.actions.add.IssueAddFormFragment;
+import org.rares.miner49er.domain.issues.ui.actions.edit.IssueEditFormFragment;
 import org.rares.miner49er.domain.issues.ui.control.IssuesUiOps;
 import org.rares.miner49er.domain.projects.ProjectsInterfaces.ProjectsResizeListener;
 import org.rares.miner49er.domain.projects.adapter.ProjectsAdapter;
+import org.rares.miner49er.domain.projects.model.ProjectData;
+import org.rares.miner49er.domain.projects.ui.actions.add.ProjectAddFormFragment;
+import org.rares.miner49er.domain.projects.ui.actions.edit.ProjectEditFormFragment;
 import org.rares.miner49er.domain.projects.ui.control.ProjectsUiOps;
 import org.rares.miner49er.domain.users.model.UserData;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.network.NetworkingService;
 import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
-import org.rares.miner49er.network.dto.converter.IssueConverter;
-import org.rares.miner49er.network.dto.converter.TimeEntryConverter;
-import org.rares.miner49er.persistence.dao.GenericEntityDao;
-import org.rares.miner49er.persistence.entities.Issue;
-import org.rares.miner49er.persistence.entities.Project;
-import org.rares.miner49er.persistence.entities.TimeEntry;
-import org.rares.miner49er.persistence.entities.User;
+import org.rares.miner49er.network.ObservableNetworkProgress;
+import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.custom.mask.OverlayMask;
 import org.rares.miner49er.ui.fragments.login.animated.LoginLandingConstraintSetFragment;
 import org.rares.miner49er.ui.fragments.login.simple.SignInFragment.SignInListener;
+import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.util.UiUtil;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
+import org.rares.miner49er.viewmodel.HierarchyViewModel;
+import org.rares.miner49er.viewmodel.NetworkRequestsModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,13 +87,13 @@ public class HomeScrollingActivity
         extends
         AppCompatActivity
         implements
-        DataUpdatedListener,
-        SelectedEntityManager,
+//        DataUpdatedListener,
+//        SelectedEntityManager,
 //        LandingListener,
         SignInListener,
 //        SignUpListener,
         ProjectsResizeListener,
-        DbUpdateFinishedListener,
+//        DbUpdateFinishedListener,
         Messenger {
 
     public static final String TAG = HomeScrollingActivity.class.getName();
@@ -142,7 +150,6 @@ public class HomeScrollingActivity
     private TimeEntriesUiOps timeEntriesUiOps;
     private IssuesUiOps issuesUiOps;
     private ProjectsUiOps projectsUiOps;
-    private ViewModelCache cache = ViewModelCacheSingleton.getInstance();
 
     private LoginLandingConstraintSetFragment llFrag = null;
 //    private LoginLandingFragment loginLandingFragment = null;
@@ -150,24 +157,33 @@ public class HomeScrollingActivity
 //    private SignUpFragment signUpFragment = null;
 
 
-    private DataUpdater dataUpdater = DataUpdater.builder() // should this be a service?
-            .userDao(GenericEntityDao.Factory.of(User.class))
-            .projectDao(GenericEntityDao.Factory.of(Project.class))
-            .issueDao(GenericEntityDao.Factory.of(Issue.class))
-            .timeEntryDao(GenericEntityDao.Factory.of(TimeEntry.class))
-            .issueConverter(IssueConverter.builder().userDao(GenericEntityDao.Factory.of(User.class)).build())  // should be internal
-            .timeEntryConverter(TimeEntryConverter.builder().userDao(GenericEntityDao.Factory.of(User.class)).build())
-            .build();
-
     Unbinder unbinder;
 
     private NetworkUpdateListener networkUpdateListener = new NetworkUpdateListener();
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
 
+    private NetworkRequestsModel networkRequestsModel;
+    private ObservableNetworkProgress networkProgress;
+    private DataUpdater dataUpdater;
+    private ViewModelCache cache;
+    private HierarchyViewModel hierarchyViewModel;
+
+//    private AsyncGenericDao<ProjectData> asyncDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
+    // should the view know about the dao/repository? or the cache?
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ViewModelProvider vmp = new ViewModelProvider(this);
+
+        networkRequestsModel = vmp.get(NetworkRequestsModel.class);
+        dataUpdater = networkRequestsModel.getDataUpdater();
+        networkProgress = networkRequestsModel.getOnp();
+        cache = networkRequestsModel.getVmCache();
+
+        hierarchyViewModel = vmp.get(HierarchyViewModel.class);
 
         NetworkingService.INSTANCE.start();
         if (cache.lastUpdateTime + 1200 * 1000 <= System.currentTimeMillis()) {
@@ -176,8 +192,8 @@ public class HomeScrollingActivity
 //        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
 //        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
 
-        dataUpdater.addDbUpdateFinishedListener(this);
-        dataUpdater.addUpdateListener(this);
+//        dataUpdater.addDbUpdateFinishedListener(this);
+//        dataUpdater.addUpdateListener(this);
 //        dataUpdater.updateProjects();
 
 //        entityOptimizer.addDbUpdateFinishedListener(this);
@@ -243,7 +259,7 @@ public class HomeScrollingActivity
                 if (getSelectedEntityProvider() != null) {
                     getSelectedEntityProvider().updateEntity();
                 } else {
-                    dataUpdater.lightProjectUpdate(networkUpdateListener);
+                    dataUpdater.lightProjectsUpdate();
 //                    dataUpdater.updateAll();
                 }
 //                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
@@ -259,7 +275,7 @@ public class HomeScrollingActivity
         });
 
         fab2.setOnLongClickListener(view -> {
-            dataUpdater.fullyUpdateProjects(networkUpdateListener);
+            dataUpdater.fullyUpdateProjects();
             return true;
         });
 
@@ -285,9 +301,61 @@ public class HomeScrollingActivity
             }
         });*/
 
+        NetworkUpdateListener updateListener = new NetworkUpdateListener();
+
+        Disposable networkTrafficDisposable = Observable.interval(100, TimeUnit.MILLISECONDS)
+            .subscribe(t -> {
+                Completable completable = networkProgress.getByObjectId(ObservableNetworkProgress.ID_PROJECTS);
+                if (completable != null) {
+                    completable.subscribe(updateListener);
+                }
+            });
+        startDisposable.add(networkTrafficDisposable);
+
+        Point point = new Point();
+        getWindowManager().getDefaultDisplay().getSize(point);
+        FragmentManager fm = getSupportFragmentManager();
+
+        List<Fragment> fragments = fm.getFragments();
+//        for (Fragment fragment : fragments) {
+//            Log.i(TAG, "onStart: " + fragment.getClass());
+//        }
+
+        Fragment lastFragment = null;
+        if (fragments.size() > 0) {
+            lastFragment = fragments.get(fragments.size() - 1);
+        }
+
+        if (lastFragment instanceof ActionFragment) {
+            Log.i(TAG, "onStart:lastFragment > "+ lastFragment.getClass());
+            scrollViewsContainer.setTranslationX(point.x);
+        }
+
+        Log.i(TAG, "onCreate:scrollPositionProjects >>>> " + hierarchyViewModel.scrollPositionProjects);
+        Log.d(TAG, "onCreate:scrollPositionIssues >>>> " + hierarchyViewModel.scrollPositionIssues);
+        Log.i(TAG, "onCreate:scrollPositionTimeEntries >>>> " + hierarchyViewModel.scrollPositionTimeEntries);
+
+        // TODO: 27.05.2020 sticky layout manager -> scroll to position
+        projectsRV.scrollToPosition(hierarchyViewModel.scrollPositionProjects);
+        issuesRV.scrollToPosition(hierarchyViewModel.scrollPositionIssues);
+        timeEntriesRv.scrollToPosition(hierarchyViewModel.scrollPositionTimeEntries);
+    }
+
+    private SelectedEntityProvider getSelectedEntityProvider() {
+        if (hierarchyViewModel.selectedTimeEntryId != -1L) {
+            return timeEntriesUiOps;
+        }
+        if (hierarchyViewModel.selectedIssueId != -1L) {
+            return issuesUiOps;
+        }
+        if (hierarchyViewModel.selectedProjectId != -1L) {
+            return projectsUiOps;
+        }
+        return null;
     }
 
     private Disposable refreshDisposable = null;
+
     private void startDataUpdateAnimation() {
       if (refreshDisposable == null) {
         refreshDisposable = Flowable.interval(20, TimeUnit.MILLISECONDS)
@@ -296,26 +364,25 @@ public class HomeScrollingActivity
         startDisposable.add(refreshDisposable);
       }
     }
-
     private void stopDataUpdateAnimation() {
       if (refreshDisposable != null) {
           refreshDisposable.dispose();
-          if (fab2 != null) {
+          if (fab2 != null && fab2.getHandler() != null) {
               fab2.getHandler().post(() -> {
-                  int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
-                  int toRotation = 180 * (rotations - 1);
-                  fab2.animate().rotation(toRotation).withEndAction(() -> fab2.setRotation(0)).start();
+                  if (fab2 != null) {
+                      int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
+                      int toRotation = 180 * (rotations - 1);
+                      fab2.animate().rotation(toRotation).withEndAction(() -> {
+                          if (fab2 != null) {
+                              fab2.setRotation(0);
+                          }
+                      }).start();
+                  }
               });
           }
           refreshDisposable = null;
       }
     }
-
-    @OnClick(R.id.fabx)
-    public void dumpCache(){
-        cache.dumpCaches();
-    }
-
 
     //    @OnClick(R.id.fab)
     public void onClick(View view) {
@@ -358,9 +425,49 @@ public class HomeScrollingActivity
 
     private void inflateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_home, menu);
-        // fixme
+
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_add_project, R.drawable.icon_path_add, 0, R.string.action_add_project);
         ToolbarActionManager.addIconToMenuItem(this, menu, R.id.action_settings, R.drawable.icon_path_settings, 0, 0);
+
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+
+        ProjectData selectedProject = cache.getCache(ProjectData.class).getData(hierarchyViewModel.selectedProjectId);
+        IssueData selectedIssue = cache.getCache(IssueData.class).getData(hierarchyViewModel.selectedIssueId);
+        TimeEntryData selectedTimeEntry = cache.getCache(TimeEntryData.class).getData(hierarchyViewModel.selectedTimeEntryId);
+
+        if (fragments.size() > 0) {
+            Fragment fragment = fragments.get(fragments.size() - 1);
+            if (fragment instanceof ProjectAddFormFragment) {
+                projectsUiOps.getMenuActionsProvider().menuAction(R.id.action_add_project, -1);
+            }
+            if (fragment instanceof ProjectEditFormFragment) {
+                // todo: user *can* edit but selects [details]
+                if (PermissionsUtil.canEditProject(selectedProject)) {
+                    projectsUiOps.getMenuActionsProvider().edit(hierarchyViewModel.selectedProjectId);
+                } else {
+                    projectsUiOps.getMenuActionsProvider().details(hierarchyViewModel.selectedProjectId);
+                }
+            }
+            if (fragment instanceof IssueAddFormFragment) {
+                projectsUiOps.getMenuActionsProvider().add(hierarchyViewModel.selectedProjectId);
+            }
+            if (fragment instanceof IssueEditFormFragment) {
+                if (PermissionsUtil.canAddIssue(selectedProject)) {
+                    // todo: user *can* edit but selects [details]
+                    projectsUiOps.getMenuActionsProvider().edit(selectedProject.id);
+                } else {
+                    issuesUiOps.getMenuActionsProvider().details(selectedIssue.id);
+                }
+            }
+            if (fragment instanceof TimeEntryAddFormFragment) {
+                issuesUiOps.getMenuActionsProvider().add(selectedIssue.id);
+            }
+            if (fragment instanceof TimeEntryEditFormFragment) {
+//                if (PermissionsUtil.canEditTimeEntry(selectedTimeEntry)) {
+                    timeEntriesUiOps.getMenuActionsProvider().edit(selectedTimeEntry.id);
+//                }
+            }
+        }
     }
 
     @Override
@@ -409,6 +516,19 @@ public class HomeScrollingActivity
 //        flingBarUp();
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+/*
+        outState.putString("selectedProjectId", hierarchyViewModel.selectedProjectId);
+        outState.putString("selectedIssueId", hierarchyViewModel.selectedIssueId);
+        outState.putString("selectedTimeEntryId", hierarchyViewModel.selectedTimeEntryId);
+        outState.putInt("scrollPositionProjects", hierarchyViewModel.scrollPositionProjects);
+        outState.putInt("scrollPositionIssues", hierarchyViewModel.scrollPositionIssues);
+        outState.putInt("scrollPositionTimeEntries", hierarchyViewModel.scrollPositionTimeEntries);
+*/
+    }
+
     private void setupRV() {
 
 //        projectsRV.setHasFixedSize(true);
@@ -422,9 +542,8 @@ public class HomeScrollingActivity
 //        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
-        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv, dataUpdater, networkUpdateListener);
+        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv, dataUpdater);
         timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
-        timeEntriesUiOps.setSelectedEntityManager(this);
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
 //        RecyclerView.LayoutManager issuesManager = new LinearLayoutManager(this);
@@ -435,7 +554,7 @@ public class HomeScrollingActivity
                 (int) UiUtil.pxFromDp(this, 58),
                 (int) UiUtil.pxFromDp(this, 56));
         issuesRV.setLayoutManager(issuesManager);
-        issuesUiOps = new IssuesUiOps(issuesRV, dataUpdater, networkUpdateListener);
+        issuesUiOps = new IssuesUiOps(issuesRV, dataUpdater);
         issuesUiOps.setRvCollapsedWidth((int) UiUtil.pxFromDp(this, 56));
         issuesUiOps.setDomainLink(timeEntriesUiOps);
 //        decoration.setSelectedPosition(1); // the selected position should get a different color
@@ -449,15 +568,13 @@ public class HomeScrollingActivity
         ipp.setPostProcessConsumer(issuesUiOps);
         issuesUiOps.setResizePostProcessor(ipp);
         issuesUiOps.setFragmentManager(getSupportFragmentManager());
-        issuesUiOps.setSelectedEntityManager(this);
 
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);
 
-        projectsUiOps = new ProjectsUiOps(projectsRV, dataUpdater, networkUpdateListener);
+        projectsUiOps = new ProjectsUiOps(projectsRV, dataUpdater);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
-        projectsUiOps.setSelectedEntityManager(this);
 
         ProjectsAdapter projectsAdapter = new ProjectsAdapter(projectsUiOps);
         projectsAdapter.setUnbinderHost(projectsUiOps);
@@ -685,20 +802,20 @@ public class HomeScrollingActivity
         snackbar.show();
     }
 
-    @Override
-    public void onDbUpdateFinished(boolean success, int numberOfChanges) {
-        if (success && numberOfChanges > 0) {
-            startCacheUpdate();
-        }
-    }
+//    @Override
+//    public void onDbUpdateFinished(boolean success, int numberOfChanges) {
+//        if (success && numberOfChanges > 0) {
+//            startCacheUpdate();
+//        }
+//    }
 
-    @Override
-    public void dataUpdated(Class cls, List data) {
-        //noinspection unchecked
-        cache.getCache(cls).putData(data, true);
-//        Log.v(TAG, "dataUpdated: cache update.");
-//        stopDataUpdateAnimation();
-    }
+//    @Override
+//    public void dataUpdated(Class cls, List data) {
+//        //noinspection unchecked
+//        cache.getCache(cls).putData(data, true);
+////        Log.v(TAG, "dataUpdated: cache update.");
+////        stopDataUpdateAnimation();
+//    }
 
     private void startCacheUpdate() {
         Intent cacheFeederServiceIntent = new Intent(this, CacheFeederService.class);
@@ -772,27 +889,29 @@ public class HomeScrollingActivity
     }
 */
 
-    private class NetworkUpdateListener implements Subscriber<String> {
+    private class NetworkUpdateListener implements CompletableObserver {
+
+        @Getter
+        Disposable networkDisposable;
 
         @Override
-        public void onSubscribe(Subscription s) {
+        public void onSubscribe(Disposable d) {
             startDataUpdateAnimation();
-        }
-
-        @Override
-        public void onNext(String s) {
-
+            networkDisposable = d;
+            startDisposable.add(networkDisposable);
         }
 
         @Override
         public void onError(Throwable t) {
             stopDataUpdateAnimation();
             showMessage(t.getMessage(), Messenger.DISMISSIBLE, null);
+            networkDisposable.dispose(); // needed?
         }
 
         @Override
         public void onComplete() {
             stopDataUpdateAnimation();
+            networkDisposable.dispose();
         }
     }
 }

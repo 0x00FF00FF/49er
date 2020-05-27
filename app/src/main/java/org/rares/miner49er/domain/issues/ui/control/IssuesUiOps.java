@@ -4,6 +4,8 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
@@ -16,7 +18,6 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
@@ -25,11 +26,12 @@ import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.domain.issues.ui.actions.remove.IssueRemoveAction;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.PermissionsUtil;
-import org.reactivestreams.Subscriber;
+import org.rares.miner49er.viewmodel.HierarchyViewModel;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
@@ -64,11 +66,12 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     private TouchHelperCallback<IssuesViewHolder, IssueData> touchHelperCallback = new TouchHelperCallback<>();
     private ItemTouchHelper itemTouchHelper;
 
-    public IssuesUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
-        this.networkDataUpdater = networkDataUpdater;
-        this.networkProgressListener = networkProgressListener;
+    private HierarchyViewModel vm;
 
-         issuesRepository = new IssuesRepository(networkDataUpdater, networkProgressListener);
+    public IssuesUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
+        this.networkDataUpdater = networkDataUpdater;
+
+         issuesRepository = new IssuesRepository(networkDataUpdater);
 
         setRv(rv);
         issuesRepository.setup();
@@ -78,6 +81,8 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         itemTouchHelper.attachToRecyclerView(getRv());
         touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(IssueData.class));
         touchHelperCallback.setDeletedListener(this);
+
+        vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
     }
 
     @Override
@@ -91,13 +96,19 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
         if (enlarge) {
             toolbarManager.unregisterActionListener(this);
-            selectedEntityManager.deregisterProvider(this);
+//            selectedEntityManager.deregisterProvider(this);
+            vm.selectedIssueId=-1L;
+            vm.selectedTimeEntryId=-1L;
+            vm.scrollPositionIssues = 0;
+            vm.scrollPositionTimeEntries = 0;
             itemTouchHelper.attachToRecyclerView(getRv());
         } else {
             menuActionEntityId = holder.getItemProperties().getId();
             toolbarManager.registerActionListener(this);
-            selectedEntityManager.registerProvider(this);
+//            selectedEntityManager.registerProvider(this);
             itemTouchHelper.attachToRecyclerView(null);
+            vm.selectedIssueId = holder.getItemProperties().getId();
+            vm.scrollPositionIssues = ((AbstractAdapter)getRv().getAdapter()).findPositionById(vm.selectedIssueId); // expose this by a function that can be called from the activity
         }
 
         return enlarge;
@@ -294,7 +305,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         Toolbar t = ((AppCompatActivity) getRv().getContext()).findViewById(R.id.toolbar_c);
 
         if (t.getTag(R.integer.tag_toolbar_action_manager) == null) {
-            toolbarManager = new ToolbarActionManager(t);
+            toolbarManager = new ToolbarActionManager(t);   // tool bar manager in the view model -> set/unset toolbar inside it -> the tbm will only do actions when it has a toolbar associated
             t.setTag(R.integer.tag_toolbar_action_manager, toolbarManager);
         } else {
             toolbarManager = (ToolbarActionManager) t.getTag(R.integer.tag_toolbar_action_manager);
@@ -320,7 +331,7 @@ public class IssuesUiOps extends ResizeableItemsUiOps
     public void updateEntity() {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            networkDataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId, networkProgressListener);
+            networkDataUpdater.fullyUpdateIssue(vmData.objectId, vmData.parentId);
         }
     }
 }

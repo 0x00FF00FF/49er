@@ -18,10 +18,9 @@ public interface SelectedEntityProvider {
   AbstractViewModel getSelectedEntity();
 
   /**
-   * Gets the latest version of the
+   * Get the latest version of the
    * [selected] entity from the sync
    * server.
-   * [@]param dataUpdater the update service.
    */
-  void updateEntity(/*DataUpdater dataUpdater, Subscriber<String> resultListener*/);
+  void updateEntity();
 }

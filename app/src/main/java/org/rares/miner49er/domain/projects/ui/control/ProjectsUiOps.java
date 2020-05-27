@@ -5,6 +5,8 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
@@ -19,7 +21,6 @@ import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback.SwipeDeletedListener;
@@ -30,6 +31,7 @@ import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.domain.projects.ui.actions.remove.ProjectRemoveAction;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -40,7 +42,7 @@ import org.rares.miner49er.ui.custom.glide.preload.MultipleListPreloader;
 import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
 import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
 import org.rares.miner49er.util.PermissionsUtil;
-import org.reactivestreams.Subscriber;
+import org.rares.miner49er.viewmodel.HierarchyViewModel;
 
 import java.util.List;
 
@@ -59,7 +61,6 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 public class ProjectsUiOps
     extends ResizeableItemsUiOps
     implements
-    SelectedEntityProvider,
     ToolbarActionManager.MenuActionListener,
     ResizeableLayoutManager.PreloadSizeConsumer,
     SwipeDeletedListener {
@@ -82,14 +83,16 @@ public class ProjectsUiOps
   private long menuActionEntityId;
   private TouchHelperCallback<ProjectsViewHolder, ProjectData> touchHelperCallback = new TouchHelperCallback<>();
   private ItemTouchHelper itemTouchHelper;
+  private HierarchyViewModel vm;
 
-  public ProjectsUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+  public ProjectsUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
     this.networkDataUpdater = networkDataUpdater;
-    this.networkProgressListener = networkProgressListener;
+
+    vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
 
     setRv(rv);
-    projectsRepository = new ProjectsRepository(networkDataUpdater, networkProgressListener);
+    projectsRepository = new ProjectsRepository(networkDataUpdater);
     repository = projectsRepository;
 
     selectedDrawableRes = R.drawable.transient_semitransparent_rectangle_tr_bl;
@@ -137,14 +140,22 @@ public class ProjectsUiOps
     if (enlarge) {
       requireActionMode = false;
       toolbarManager.unregisterActionListener(this);
-      selectedEntityManager.deregisterProvider(this);
+      vm.selectedProjectId = -1;
+      vm.selectedIssueId=-1L;
+      vm.selectedTimeEntryId=-1L;
+      vm.scrollPositionProjects = 0;
+      vm.scrollPositionIssues = 0;
+      vm.scrollPositionTimeEntries = 0;
+//      selectedEntityManager.deregisterProvider(this);
       itemTouchHelper.attachToRecyclerView(getRv());
     } else {
       requireActionMode = true;
       menuActionEntityId = holder.getItemProperties().getId();
 //            toolbarManager.setEntityId(holder.getItemProperties().getId()); //
       toolbarManager.registerActionListener(this);
-      selectedEntityManager.registerProvider(this);
+//      selectedEntityManager.registerProvider(this);
+      vm.selectedProjectId = holder.getItemProperties().getId();
+      vm.scrollPositionProjects = ((AbstractAdapter)getRv().getAdapter()).findPositionById(vm.selectedProjectId);
       itemTouchHelper.attachToRecyclerView(null);
     }
 
@@ -295,7 +306,7 @@ public class ProjectsUiOps
   public void updateEntity() {
     AbstractViewModel projectData = getSelectedEntity();
     if (projectData != null) {
-      networkDataUpdater.fullyUpdateProjects(networkProgressListener, projectData.objectId);
+      networkDataUpdater.fullyUpdateProjects(projectData.objectId);
     }
   }
 

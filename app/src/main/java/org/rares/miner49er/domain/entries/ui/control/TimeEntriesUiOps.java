@@ -4,8 +4,11 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces.DomainLink;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
@@ -13,16 +16,16 @@ import org.rares.miner49er._abstract.ItemViewProperties;
 import org.rares.miner49er._abstract.ResizeableItemViewHolder;
 import org.rares.miner49er._abstract.ResizeableItemsUiOps;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
 import org.rares.miner49er.domain.agnostic.TouchHelperCallback;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesViewHolder;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
-import org.reactivestreams.Subscriber;
+import org.rares.miner49er.viewmodel.HierarchyViewModel;
 
 /**
  * @author rares
@@ -39,17 +42,18 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
     private ToolbarActionManager toolbarManager = null;
 
+    @Getter // perhaps the ops class should implement MenuActionsListener instead?
     private TimeEntryMenuActionsProvider menuActionsProvider;
 
     private TouchHelperCallback<TimeEntriesViewHolder, TimeEntryData> touchHelperCallback = new TouchHelperCallback<>();
     private ItemTouchHelper itemTouchHelper;
+    private HierarchyViewModel vm;
 
-    public TimeEntriesUiOps(RecyclerView rv, DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+    public TimeEntriesUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
 
         this.networkDataUpdater = networkDataUpdater;
-        this.networkProgressListener = networkProgressListener;
 
-        teRepository = new TimeEntriesRepository(networkDataUpdater, networkProgressListener);
+        teRepository = new TimeEntriesRepository(networkDataUpdater);
         teRepository.setup();
         repository = teRepository;
 
@@ -58,6 +62,8 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(TimeEntryData.class));
 
         setRv(rv);
+
+        vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
     }
 
     @Override
@@ -66,6 +72,9 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
         String text = adapter.getData(getRv().getChildAdapterPosition(holder.itemView));
         Log.d(TAG, "onListItemClick: [[ TIME ENTRY ]] :::: " + text);
         menuActionsProvider.edit(holder.getItemProperties().getId());
+
+        vm.selectedTimeEntryId = holder.getItemProperties().getId();
+        vm.scrollPositionTimeEntries = ((AbstractAdapter)getRv().getAdapter()).findPositionById(vm.selectedTimeEntryId);
         return true;
     }
 
@@ -177,7 +186,7 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     public void updateEntity() {
         AbstractViewModel vmData = getSelectedEntity();
         if (vmData != null) {
-            networkDataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId, networkProgressListener);
+            networkDataUpdater.updateTimeEntry(vmData.objectId, vmData.parentId);
         }
     }
 }

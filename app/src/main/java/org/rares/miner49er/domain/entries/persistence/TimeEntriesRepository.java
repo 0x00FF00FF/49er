@@ -12,11 +12,10 @@ import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er._abstract.UiEvent;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
-import org.reactivestreams.Subscriber;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +36,9 @@ public class TimeEntriesRepository extends Repository {
   private Disposable adapterDisposable = null;
 
   private DataUpdater networkDataUpdater;
-  private Subscriber<String> networkProgressListener;
 
-  public TimeEntriesRepository(DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+  public TimeEntriesRepository(DataUpdater networkDataUpdater) {
     this.networkDataUpdater = networkDataUpdater;
-    this.networkProgressListener = networkProgressListener;
   }
 
   @Override
@@ -139,7 +136,7 @@ public class TimeEntriesRepository extends Repository {
             if (data.lastUpdated <= 0 || (System.currentTimeMillis() - data.lastUpdated > BaseInterfaces.UPDATE_INTERVAL)) {
               //networkDataUpdater.lightIssuesUpdate(parentProperties.getId(), parentProperties.getObjectId(), networkProgressListener);
 //              Log.i(TAG, "getDbItems: >> should update from the network");
-              networkDataUpdater.updateTimeEntries(parentProperties.getObjectId(), parentProperties.getId(), networkProgressListener);
+              networkDataUpdater.updateTimeEntries(parentProperties.getObjectId(), parentProperties.getId());
             }
           }
         });

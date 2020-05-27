@@ -1,6 +1,5 @@
 package org.rares.miner49er.network.dto.converter;
 
-import lombok.Builder;
 import org.rares.miner49er.network.dto.ProjectDto;
 import org.rares.miner49er.network.dto.UserDto;
 import org.rares.miner49er.persistence.entities.Issue;
@@ -10,15 +9,12 @@ import org.rares.miner49er.persistence.entities.User;
 import java.util.ArrayList;
 import java.util.List;
 
-@Builder
+//@Builder
 public class ProjectConverter {
 
     private static final String TAG = ProjectConverter.class.getSimpleName();
 
-    private final IssueConverter issueConverter;
-    private final UserConverter userConverter;
-
-    public Project toModel(ProjectDto dtoProject) {
+    public static Project toModel(ProjectDto dtoProject) {
         Project project = new Project();
         project.setObjectId(dtoProject.getId());
 //        project.setId();
@@ -32,7 +28,7 @@ public class ProjectConverter {
         project.setPicture(pic);
         project.setDeleted(0);
         project.setArchived(dtoProject.getArchived() != null ? dtoProject.getArchived() ? 1 : 0 : 0);
-        project.setOwner(userConverter.toModelBlocking(dtoProject.getOwner()));
+        project.setOwner(UserConverter.toModelBlocking(dtoProject.getOwner()));
         List<Issue> issueList = new ArrayList<>();
         for (String issueId : dtoProject.getIssues()) {
             Issue issue = new Issue();
@@ -43,7 +39,7 @@ public class ProjectConverter {
         project.setIssues(issueList);
         List<User> team = new ArrayList<>();
         for (UserDto userDto : dtoProject.getTeam()) {
-            team.add(userConverter.toModelBlocking(userDto));
+            team.add(UserConverter.toModelBlocking(userDto));
         }
         project.setTeam(team);
         return project;

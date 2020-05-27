@@ -12,11 +12,10 @@ import io.reactivex.schedulers.Schedulers;
 import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.issues.model.IssueData;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
-import org.reactivestreams.Subscriber;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,16 +44,14 @@ public class IssuesRepository extends Repository {
   private Disposable adapterDisposable = null;
 
   private DataUpdater networkDataUpdater;
-  private Subscriber<String> networkProgressListener;
 
-  public IssuesRepository(DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+  public IssuesRepository(DataUpdater networkDataUpdater) {
 //        ns.registerIssuesConsumer(this);
 //        issueTableObservable =
 //                storio
 //                        .observeChangesInTable(IssueTable.NAME, BackpressureStrategy.LATEST)
 //                        .subscribeOn(Schedulers.io());
     this.networkDataUpdater = networkDataUpdater;
-    this.networkProgressListener = networkProgressListener;
   }
 
   @Override
@@ -189,7 +186,7 @@ public class IssuesRepository extends Repository {
             // this rule should probably not be in the repository
 //            Log.i(TAG, "getDbItems: data.lastUpdated: " + data.lastUpdated);
             if (data.lastUpdated <= 0 || (System.currentTimeMillis() - data.lastUpdated > BaseInterfaces.UPDATE_INTERVAL)) {
-              networkDataUpdater.lightIssuesUpdate(parentProperties.getId(), parentProperties.getObjectId(), networkProgressListener);
+              networkDataUpdater.lightIssuesUpdate(parentProperties.getId(), parentProperties.getObjectId());
             }
           }
         });

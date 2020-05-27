@@ -95,6 +95,28 @@ public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemV
     return getData().get(getLastSelectedPosition());
   }
 
+  public int findPositionByObjectId(String objectId) {
+    int size = getData().size();
+    for (int i = 0; i < size; i++) {
+      T data = getData().get(i);
+      if(data.objectId.equals(objectId)){
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  public int findPositionById(long id) {
+    int size = getData().size();
+    for (int i = 0; i < size; i++) {
+      T data = getData().get(i);
+      if(data.id.equals(id)){ // Long-long
+        return i;
+      }
+    }
+    return -1;
+  }
+
   public abstract void clearData();
 
   public abstract String resolveData(int position, boolean forceFullData);

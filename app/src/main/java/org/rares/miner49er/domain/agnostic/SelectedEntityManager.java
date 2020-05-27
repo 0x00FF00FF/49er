@@ -1,34 +1,37 @@
 package org.rares.miner49er.domain.agnostic;
 
 import android.util.Log;
+import lombok.Getter;
 
 import java.util.Stack;
 
-public interface SelectedEntityManager {
-  String TAG = SelectedEntityManager.class.getSimpleName();
+@Deprecated
+public class SelectedEntityManager {
+  private String TAG = SelectedEntityManager.class.getSimpleName();
 
-  Stack<SelectedEntityProvider> providerStack = new Stack<>();
+  @Getter
+  private Stack<SelectedEntityProvider> providerStack = new Stack<>();
 
-  default void registerProvider(SelectedEntityProvider provider) {
+  public void registerProvider(SelectedEntityProvider provider) {
     if (providerStack.isEmpty() || !providerStack.peek().equals(provider)) {
       providerStack.push(provider);
     }
   }
 
-  default void deregisterProvider(SelectedEntityProvider provider) {
+  public void deregisterProvider(SelectedEntityProvider provider) {
     if (!providerStack.peek().equals(provider)) {
-      dumpStack();
+//      dumpStack();
       Log.w(TAG, "deregisterProvider: SOMEBODY ACCIDENTALLY THE STACK!");
     }
     providerStack.pop();
   }
 
-  default SelectedEntityProvider getSelectedEntityProvider() {
+  public SelectedEntityProvider getSelectedEntityProvider() {
     return providerStack.empty() ? null : providerStack.peek();
   }
 
-  default void dumpStack(){
-    Log.e(TAG, "dumpStack: ---------------dump");
+  public void dumpStack(){
+    Log.e(TAG, "dumpStack: ---------------dump " + hashCode());
     for (SelectedEntityProvider selectedEntityProvider : providerStack) {
       Log.e(TAG, "dumpStack: \t" + selectedEntityProvider.toString());
     }

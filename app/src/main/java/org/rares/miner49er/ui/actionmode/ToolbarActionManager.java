@@ -27,7 +27,6 @@ import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_ID;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ITEM_NAME;
 
-// TODO: 11/29/18  singleton this
 public class ToolbarActionManager
         implements
         ActionListenerManager,

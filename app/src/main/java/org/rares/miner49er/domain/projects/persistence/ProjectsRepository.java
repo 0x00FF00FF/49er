@@ -12,13 +12,12 @@ import org.rares.miner49er.BaseInterfaces;
 import org.rares.miner49er._abstract.Repository;
 import org.rares.miner49er.cache.cacheadapter.AbstractAsyncCacheAdapter;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
-import org.rares.miner49er.cache.optimizer.DataUpdater;
 import org.rares.miner49er.domain.projects.model.ProjectData;
 import org.rares.miner49er.domain.projects.model.ProjectsSort;
+import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.persistence.dao.AsyncGenericDao;
 import org.rares.miner49er.persistence.dao.EventBroadcaster;
-import org.reactivestreams.Subscriber;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,11 +30,9 @@ public class ProjectsRepository extends Repository {
   private AsyncGenericDao<ProjectData> asyncDao = InMemoryCacheAdapterFactory.ofType(ProjectData.class);
 
   private DataUpdater networkDataUpdater;
-  private Subscriber<String> networkProgressListener;
 
-  public ProjectsRepository(DataUpdater networkDataUpdater, Subscriber<String> networkProgressListener) {
+  public ProjectsRepository(DataUpdater networkDataUpdater) {
     this.networkDataUpdater = networkDataUpdater;
-    this.networkProgressListener = networkProgressListener;
   }
 
   @Override
@@ -163,7 +160,7 @@ public class ProjectsRepository extends Repository {
           }
           if (callNetwork) { // only do a network call if needed
 //            Log.d(TAG, "getDbItems: network call > " + networkDataUpdater);
-            networkDataUpdater.lightProjectUpdate(networkProgressListener);
+            networkDataUpdater.lightProjectsUpdate();
           }
         });
   }
