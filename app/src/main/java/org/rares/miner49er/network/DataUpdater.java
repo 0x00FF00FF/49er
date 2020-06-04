@@ -26,6 +26,7 @@ import org.rares.miner49er.persistence.entities.TimeEntry;
 import org.rares.miner49er.persistence.entities.User;
 
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,9 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.rares.miner49er.network.ObservableNetworkProgress.ID_ENTRIES;
-import static org.rares.miner49er.network.ObservableNetworkProgress.ID_ISSUES;
-import static org.rares.miner49er.network.ObservableNetworkProgress.ID_PROJECTS;
+import static org.rares.miner49er.network.ObservableNetworkProgress.ID_PROJECTS_LIGHT;
 
 /**
  * This class contains methods that
@@ -55,13 +54,13 @@ public class DataUpdater {
   private final GenericEntityDao<TimeEntry> timeEntryDao = GenericEntityDao.Factory.of(TimeEntry.class);
   private final GenericEntityDao<User> userDao = GenericEntityDao.Factory.of(User.class);
 
-//  private final UserConverter userConverter = UserConverter.builder().build();
+  //  private final UserConverter userConverter = UserConverter.builder().build();
 //  private final ProjectConverter projectConverter = ProjectConverter.builder().build();
   private final IssueConverter issueConverter = IssueConverter.builder().userDao(userDao).build();
   private final TimeEntryConverter timeEntryConverter = TimeEntryConverter.builder().userDao(userDao).build();
 
   private final NetworkingService ns = NetworkingService.INSTANCE;
-//  private final List<DbUpdateFinishedListener> listenerList = new ArrayList<>();
+  //  private final List<DbUpdateFinishedListener> listenerList = new ArrayList<>();
 //  private final List<DataUpdatedListener> updateListeners = new ArrayList<>();
   private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -74,6 +73,7 @@ public class DataUpdater {
 //  private final NetworkProgress np = ns.networkProgress;
 
   private final ObservableNetworkProgress observableNetworkProgress;
+
   private final ViewModelCache cache;
 
   private final org.rares.miner49er.domain.users.persistence.UserConverter userDbToVmConverter = new org.rares.miner49er.domain.users.persistence.UserConverter();
@@ -136,21 +136,27 @@ public class DataUpdater {
     return
         ns.projectsService
             .getProjectsAsSingleList()
-            .retry(1)
+            .retry(1, (t) -> {
+              Log.w(TAG, "getProjects: retry: " + t.getClass().getSimpleName());
+              return !(t instanceof SocketTimeoutException);
+            })
             .flatMapPublisher(Flowable::fromIterable)
             .onTerminateDetach()
             .doOnError(e -> Log.e(TAG, "[doOnError] getProjects: ERROR " + e))
-            .onErrorResumeNext(x -> {
-              Log.i(TAG, "getProjects: returning empty list.");
-              return Flowable.fromIterable(Collections.emptyList());
-            })
+//            .onErrorResumeNext(x -> {
+//              Log.i(TAG, "getProjects: returning empty list.");
+//              return Flowable.fromIterable(Collections.emptyList());
+//            })
             .subscribeOn(Schedulers.io());
   }
 
   private Flowable<Project> updateProjects(Flowable<ProjectDto> projectUpdateCall) {
     users.clear();  // side effect
     return projectUpdateCall
-        .retry(1)
+        .retry(1, (t) -> {
+          Log.w(TAG, "updateProjects: retry: " + t.getClass().getSimpleName());
+          return !(t instanceof SocketTimeoutException);
+        })
         .subscribeOn(Schedulers.io())
         .map(ProjectConverter::toModel)
         .map(p -> {
@@ -237,70 +243,88 @@ public class DataUpdater {
         .subscribeOn(Schedulers.io())
         .flatMapPublisher(Flowable::fromIterable)
         .map(UserConverter::toModelBlocking)
-        .map(user->{user.setLastUpdated(System.currentTimeMillis());return user;})
+        .map(user -> {
+          user.setLastUpdated(System.currentTimeMillis());
+          return user;
+        })
         .buffer(maxDbParams)
         .flatMap(userList -> saveEntityList(userList, userDao, defaultUser), maxThreads)
         ;
   }
 
   public void fullyUpdateProjects(String... projectObjectIds) {
-    UUID uuid = UUID.randomUUID();
-    Disposable d = updateProjects(createProjectUpdateCall(0, 0, projectObjectIds))
-        .doOnSubscribe((s) -> {
-//          np.addNetworkCall(callId, callId, resultListener);
-          observableNetworkProgress.addNetworkEvent(ID_PROJECTS, uuid);
-        })
-        .concatMapSingle(project -> updateIssues(project)
-            .concatMapSingle(issue -> updateTimeEntries(issue)
+    if (projectObjectIds == null || projectObjectIds.length == 0) {
+      return;
+    }
+    CompositeDisposable disposable = new CompositeDisposable();
+    for (String projectObjectId : projectObjectIds) {
+      UUID uuid = UUID.randomUUID();
+      observableNetworkProgress.addNetworkEvent(projectObjectId, uuid, disposable);
+    }
+    Disposable updateProjectsDisposable =
+        updateProjects(createProjectUpdateCall(0, 0, projectObjectIds))
+            .concatMapSingle(project -> updateIssues(project)
+                .concatMapSingle(issue -> updateTimeEntries(issue)
+                    .toList()
+                    .map(timeEntryList -> {
+                      issue.setTimeEntries(timeEntryList);
+                      return issue;
+                    }))
                 .toList()
-                .map(timeEntryList -> {
-                  issue.setTimeEntries(timeEntryList);
-                  return issue;
+                .map(issueList -> {
+                  project.setIssues(issueList);
+                  return project;
                 }))
-            .toList()
-            .map(issueList -> {
-              project.setIssues(issueList);
-              return project;
-            }))
-        .map(projectDbToVmConverter::dmToVm)
-        .buffer(maxDbParams)
-        .onErrorReturn((throwable) -> {
-          ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable); //
-//          np.cancelNetworkCall(callId, callId);
-          if (throwable instanceof ConnectException) {
-            Log.w(TAG, "fullyUpdateProjects: connection problems?");
-          }
-          Log.w(TAG, "fullyUpdateProjects: an error occurred, returning empty list.");
-          return Collections.emptyList();
-        })
-        .subscribe(projects -> {
-          if (projects.size() > 0) {
-            List<TimeEntryData> tEntries = new ArrayList<>();
-            List<IssueData> issues = new ArrayList<>();
-            for (ProjectData project : projects) {
-              issues.addAll(project.getIssues());
-              for (IssueData i : project.getIssues()) {
-                tEntries.addAll(i.getTimeEntries());
+            .map(projectDbToVmConverter::dmToVm)
+            .buffer(maxDbParams)
+            .onErrorReturn((throwable) -> {
+              for (String oid : projectObjectIds) {
+                CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByObjectId(oid));
+                if (cs != null) {
+                  cs.onError(throwable);
+                  observableNetworkProgress.removeNetworkEvent(oid, null);
+                }
               }
-            }
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete(); //
+//          np.cancelNetworkCall(callId, callId);
+              if (throwable instanceof ConnectException) {
+                Log.w(TAG, "fullyUpdateProjects: connection problems?");
+              }
+              Log.w(TAG, "fullyUpdateProjects: an error occurred, returning empty list.");
+              return Collections.emptyList();
+            })
+            .subscribe(projects -> {
+              if (projects.size() > 0) {
+                List<TimeEntryData> tEntries = new ArrayList<>();
+                List<IssueData> issues = new ArrayList<>();
+                for (ProjectData project : projects) {
+                  issues.addAll(project.getIssues());
+                  for (IssueData i : project.getIssues()) {
+                    tEntries.addAll(i.getTimeEntries());
+                  }
+                }
+                for (String oid : projectObjectIds) {
+                  CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByObjectId(oid));
+                  if (cs != null) {
+                    observableNetworkProgress.removeNetworkEvent(oid, null);
+                    cs.onComplete();
+                  }
+                }
 //            np.completeNetworkCall(callId, callId);
-            updateCache(ProjectData.class, projects);
-            updateCache(IssueData.class, issues);
-            updateCache(TimeEntryData.class, tEntries);
-          }
-        });
-    disposables.add(d);
+                updateCache(ProjectData.class, projects);
+                updateCache(IssueData.class, issues);
+                updateCache(TimeEntryData.class, tEntries);
+              }
+            });
+    disposable.add(updateProjectsDisposable);
+    disposables.add(disposable);
   }
 
   public void fullyUpdateIssue(String issueId, long projectId) {
     UUID uuid = UUID.randomUUID();
+    CompositeDisposable disposable = new CompositeDisposable();
+    observableNetworkProgress.addNetworkEvent(issueId, uuid, disposable);
     Disposable d = ns.issuesService.getIssue(issueId)
         .retry(1)
-        .doOnSubscribe((s) -> {
-//          np.addNetworkCall(callId, callId, resultListener);
-          observableNetworkProgress.addNetworkEvent(ID_ISSUES, uuid);
-        })
         .subscribeOn(Schedulers.io())
         .map(i -> {
           Issue iss = issueConverter.toModel(i);
@@ -318,7 +342,11 @@ public class DataUpdater {
         .onTerminateDetach()
         .onErrorReturn(throwable -> {
 //          np.cancelNetworkCall(callId, callId);
-          ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable); //
+          CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+          if (cs != null) {
+            cs.onError(throwable);
+            observableNetworkProgress.removeNetworkEvent(issueId, uuid);
+          }
           if (throwable instanceof ConnectException) {
             Log.i(TAG, "fullyUpdateIssue: connection problems?");
           }
@@ -327,23 +355,26 @@ public class DataUpdater {
         .map(issueDbToVmConverter::dmToVm)
         .subscribe(issue -> {
           if (!issue.getId().equals(defaultIssue.getId())) {
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete(); //
+            CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+            if (cs != null) {
+              cs.onComplete();
+              observableNetworkProgress.removeNetworkEvent(issueId, uuid);
+            }
 //            np.completeNetworkCall(callId, callId);
             updateCache(IssueData.class, Collections.singletonList(issue));
             updateCache(TimeEntryData.class, new ArrayList<>(issue.getTimeEntries()));
           }
         });
-    disposables.add(d);
+    disposable.add(d);
+    disposables.add(disposable);
   }
 
   public void updateTimeEntry(String timeEntryObjectId, long issueId) {
     UUID uuid = UUID.randomUUID();
+    CompositeDisposable disposable = new CompositeDisposable();
+    observableNetworkProgress.addNetworkEvent(timeEntryObjectId, uuid, disposable);
     Disposable d = ns.timeEntriesService.getTimeEntry(timeEntryObjectId)
         .retry(1)
-        .doOnSubscribe((s) -> {
-          observableNetworkProgress.addNetworkEvent(timeEntryObjectId, uuid);
-//          np.addNetworkCall(callId, callId, resultListener);
-        })
         .subscribeOn(Schedulers.io())
         .map(teDto -> {
           TimeEntry te = timeEntryConverter.toModel(teDto);
@@ -352,7 +383,11 @@ public class DataUpdater {
           return te;
         })
         .onErrorReturn(throwable -> {
-          ((CompletableSubject) observableNetworkProgress.getByObjectId(timeEntryObjectId)).onError(throwable); //
+          CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByObjectId(timeEntryObjectId));
+          if (cs != null) {
+            cs.onError(throwable);
+            observableNetworkProgress.removeNetworkEvent(timeEntryObjectId, uuid);
+          }
 //          np.cancelNetworkCall(callId, callId);
           if (throwable instanceof ConnectException) {
             Log.i(TAG, "fullyUpdateIssue: connection problems?");
@@ -364,27 +399,34 @@ public class DataUpdater {
         .subscribe(teData -> {
           if (!teData.getId().equals(defaultTimeEntry.getId())) {
             updateCache(TimeEntryData.class, Collections.singletonList(teData));
-            ((CompletableSubject) observableNetworkProgress.getByObjectId(timeEntryObjectId)).onComplete(); //
+            CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByObjectId(timeEntryObjectId));
+            if (cs != null) {
+              cs.onComplete();
+              observableNetworkProgress.removeNetworkEvent(timeEntryObjectId, uuid);
+            }
 //            np.completeNetworkCall(callId, callId);
           }
         });
-    disposables.add(d);
+    disposable.add(d);
+    disposables.add(disposable);
   }
 
   public void updateTimeEntries(String issueObjectId, long issueId) {
     UUID uuid = UUID.randomUUID();
+    CompositeDisposable disposable = new CompositeDisposable();
+    observableNetworkProgress.addNetworkEvent(issueObjectId, uuid, disposable);
     Issue tempIssue = new Issue();
     tempIssue.setId(issueId);
     tempIssue.setObjectId(issueObjectId);
     Disposable d = updateTimeEntries(tempIssue)
-        .doOnSubscribe(s ->
-//            np.addNetworkCall(callId, callId, resultListener)
-            observableNetworkProgress.addNetworkEvent(ID_ENTRIES, uuid)
-        )
         .map(timeEntryDbToVmConverter::dmToVm)
         .toList()
         .onErrorReturn(throwable -> {
-          ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable); //
+          CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+          if (cs != null) {
+            cs.onError(throwable);
+            observableNetworkProgress.removeNetworkEvent(issueObjectId, uuid);
+          }
 //          np.cancelNetworkCall(callId, callId);
           if (throwable instanceof ConnectException) {
             Log.i(TAG, "fullyUpdateIssue: connection problems?");
@@ -394,11 +436,16 @@ public class DataUpdater {
         .subscribe(data -> {
           updateCache(TimeEntryData.class, data);
           if (data.size() > 0) {
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete(); //
+            CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+            if (cs != null) {
+              cs.onComplete();
+              observableNetworkProgress.removeNetworkEvent(issueObjectId, uuid);
+            }
           }
 //          np.completeNetworkCall(callId, callId);
         });
-    disposables.add(d);
+    disposable.add(d);
+    disposables.add(disposable);
   }
 
 
@@ -411,17 +458,28 @@ public class DataUpdater {
     // to the projects' issues because i thought
     // that after saving, the issues are gone (but
     // in fact they are not)
-    Disposable d = updateUsers().count().subscribe((count, thr) -> {
+    CompositeDisposable disposable = new CompositeDisposable();
+//    Log.v(TAG, "lightProjectsUpdate() addNetworkEvent");
+    observableNetworkProgress.addNetworkEvent(ID_PROJECTS_LIGHT, uuid, disposable);
+    Disposable userDisposable = updateUsers().count().subscribe((count, thr) -> {
       if (thr != null) {
         Log.e(TAG, "lightProjectsUpdate: error while getting users (for projects) " + thr.getMessage());
         return;
       }
-      disposables.add(createProjectUpdateCall(0, 0)
-          .retry(1)
-          .doOnSubscribe((s) -> observableNetworkProgress.addNetworkEvent(ID_PROJECTS, uuid))
+      Disposable pucDisposable = createProjectUpdateCall(0, 0)
+          .retry(1, (t) -> {
+            Log.w(TAG, "lightProjectsUpdate: retry: " + t.getClass().getSimpleName());
+            return !(t instanceof SocketTimeoutException);
+          })
+//              .doOnSubscribe((s) -> observableNetworkProgress.addNetworkEvent(ID_PROJECTS_LIGHT, uuid, disposable))
           .toList()
           .onErrorReturn(throwable -> {
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable); //
+//            Log.i(TAG, "lightProjectsUpdate: error " + uuid);
+            CompletableSubject subject = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+            if (subject != null) {
+              subject.onError(throwable);
+              observableNetworkProgress.removeNetworkEvent(ID_PROJECTS_LIGHT, uuid);
+            }
             if (throwable instanceof ConnectException) {
               Log.i(TAG, "lightProjectsUpdate: connection problems?");
             }
@@ -430,7 +488,7 @@ public class DataUpdater {
           .subscribeOn(Schedulers.io())
           .subscribe(list -> {
             projects.addAll(list);
-            Disposable ud = updateProjects(Flowable.fromIterable(list))
+            Disposable updateProjectsDisposable = updateProjects(Flowable.fromIterable(list))
                 .map(prj -> {
                   List<Issue> newIssues = new ArrayList<>();
                   for (ProjectDto pd : projects) {
@@ -459,13 +517,18 @@ public class DataUpdater {
                       return projectDbToVmConverter.dmToVm(prj);
                     }))
                 .toList()
-                .onErrorReturn(throwable -> {
-                  ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable);
-                  if (throwable instanceof ConnectException) {
-                    Log.i(TAG, "lightProjectsUpdate: connection problems?");
-                  }
-                  return Collections.emptyList();
-                })
+//                .onErrorReturn(throwable -> {
+//                  Log.i(TAG, "lightProjectsUpdate: error " + uuid);
+//                  CompletableSubject subject = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+//                  if (subject != null) {
+//                    subject.onError(throwable);
+//                    observableNetworkProgress.removeNetworkEvent(ID_PROJECTS, uuid);
+//                  }
+//                  if (throwable instanceof ConnectException) {
+//                    Log.i(TAG, "lightProjectsUpdate: connection problems?");
+//                  }
+//                  return Collections.emptyList();
+//                })
                 .subscribe(savedProjects -> {
                   List<IssueData> issList = new ArrayList<>();
                   disposables.add(
@@ -477,17 +540,25 @@ public class DataUpdater {
                           })
                           .subscribe(issues -> {
                             if (issues.size() > 0) {
-                              ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete();
+//                              Log.i(TAG, "lightProjectsUpdate: completed " + uuid);
+                              CompletableSubject subject = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+                              if (subject != null) {
+                                subject.onComplete();
+                                observableNetworkProgress.removeNetworkEvent(ID_PROJECTS_LIGHT, uuid);
+                              }
                             }
                             updateCache(IssueData.class, issues);
                             updateCache(ProjectData.class, savedProjects);
 //                            np.completeNetworkCall(callId, callId);
                           }));
                 });
-            disposables.add(ud);
-          }));
+            disposable.add(updateProjectsDisposable);
+          });
+      disposable.add(pucDisposable);
     });
-    disposables.add(d);
+    disposable.add(userDisposable);
+    disposables.add(disposable);
+//    return disposable;
   }
 
   // TODO: 05.03.2020 : after inserting new issues in the database, try to see if a more complex sync works /!\
@@ -495,22 +566,25 @@ public class DataUpdater {
 //    Log.v(TAG, "lightIssuesUpdate() called with: projectId = [" + projectId + "], projectObjectId = [" + projectObjectId + "], resultListener = [" + resultListener + "]");
     UUID uuid = UUID.randomUUID();
     List<TimeEntry> timeEntries = new ArrayList<>();
-
-    Disposable d = ns.projectsService.getProjectIssuesAsSingleList(projectObjectId)
+    CompositeDisposable disposable = new CompositeDisposable();
+    observableNetworkProgress.addNetworkEvent(projectObjectId, uuid, disposable);
+    Disposable networkCallDisposable = ns.projectsService.getProjectIssuesAsSingleList(projectObjectId)
         .retry(1)
-        .doOnSubscribe((s) -> {
-          observableNetworkProgress.addNetworkEvent(ID_ISSUES, uuid);
-        })
         .subscribeOn(Schedulers.io())
         .subscribe((issueDtos, throwable) -> {
           if (throwable != null) {
-            Log.w(TAG, "lightIssuesUpdate: ERROR WHEN LIGHT GETTING ISSUES " + throwable.getMessage());
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onError(throwable);
+//            Log.w(TAG, "lightIssuesUpdate: ERROR WHEN LIGHT GETTING ISSUES " + throwable.getMessage());
+            CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+            if (cs != null) {
+              cs.onError(throwable);
+              observableNetworkProgress.removeNetworkEvent(projectObjectId, uuid);
+            }
             if (throwable instanceof ConnectException) {
               Log.w(TAG, "lightProjectsUpdate: connection problems?");
             }
           } else if (issueDtos != null && issueDtos.size() > 0) { // todo: if size>0 is only temporary here. size CAN be 0
             Disposable convertAndSaveDisposable = Flowable.fromIterable(issueDtos)
+//                .doOnComplete(() -> Log.d(TAG, "lightIssuesUpdate: convertAndSaveDisposable complete"))
                 .map(issueConverter::toModel)
                 .map(issue -> {
                   issue.setProjectId(projectId);
@@ -554,6 +628,7 @@ public class DataUpdater {
                 .toList()
                 .subscribe(issueDataList -> {
                   Disposable teDisposable = insertEntityList(timeEntries, timeEntryDao, defaultTimeEntry)
+//                      .doOnComplete(() -> Log.d(TAG, "lightIssuesUpdate: teDisposable complete"))
                       .map(timeEntryDbToVmConverter::dmToVm)
                       .map(entry -> {
                         for (IssueData issueData : issueDataList) {
@@ -566,66 +641,32 @@ public class DataUpdater {
                       .toList()
                       .subscribe(teList -> {
                         if (teList.size() > 0) {
-                          ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete();
+                          CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+                          if (cs != null) {
+                            cs.onComplete();
+                            observableNetworkProgress.removeNetworkEvent(projectObjectId, uuid);
+                          }
                         }
                         updateCache(TimeEntryData.class, teList);
                         updateCache(IssueData.class, issueDataList);
 //                        np.completeNetworkCall(callId, callId);
                       });
-                  disposables.add(teDisposable);
+                  disposable.add(teDisposable);
                 });
-            disposables.add(convertAndSaveDisposable);
+            disposable.add(convertAndSaveDisposable);
           } else {
 //            np.completeNetworkCall(callId, callId); // this should also be deleted when issueDtoS.size()>0 is removed.
-            ((CompletableSubject) observableNetworkProgress.getByUuid(uuid)).onComplete();
+            CompletableSubject cs = ((CompletableSubject) observableNetworkProgress.getByUuid(uuid));
+            if (cs != null) {
+              cs.onComplete();
+              observableNetworkProgress.removeNetworkEvent(projectObjectId, uuid);
+            }
+//            Log.d(TAG, "lightIssuesUpdate: onComplete");
           }
         });
-    disposables.add(d);
+    disposable.add(networkCallDisposable);
+    disposables.add(disposable);
   }
-
-/*
-  @Deprecated
-  public void updateAll() {
-// also update users because someone needs to add a [new] user to a project.
-    Disposable d = updateUsers()
-        .count()
-        .flatMapPublisher(n -> {
-          int bufferProjects = (n.intValue() / maxThreads); // limit the threads // todo: better!
-          return updateProjects(createProjectUpdateCall(0, 0))
-              .buffer(bufferProjects)
-              .flatMap(Flowable::fromIterable, 2)
-              .flatMapSingle(project -> updateIssues(project)
-                  .concatMapSingle(issue -> updateTimeEntries(issue)
-                      .toList()
-                      .map(timeEntryList -> {
-                        issue.setTimeEntries(timeEntryList);
-                        return issue;
-                      }))
-                  .toList()
-                  .map(issueList -> {
-                    project.setIssues(issueList);
-                    return project;
-                  })
-              );
-        })
-        .map(projectDbToVmConverter::dmToVm)
-        .count()
-        .onTerminateDetach()
-        .doOnError(Throwable::printStackTrace)
-        .onErrorResumeNext(x -> {
-          Log.i(TAG, "getProjects: returning 0.");
-          return Single.just(0L)
-              ;
-        })
-        .subscribe(x -> pingListeners());
-    disposables.add(d);
-  }
-
-  public void addDbUpdateFinishedListener(DbUpdateFinishedListener listener) {
-    if (!listenerList.contains(listener)) {
-      listenerList.add(listener);
-    }
-  }*/
 
   public void close() {
     disposables.clear();

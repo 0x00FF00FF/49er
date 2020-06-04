@@ -1,6 +1,5 @@
 package org.rares.miner49er.util;
 
-import android.util.Log;
 import org.rares.miner49er.cache.ViewModelCacheSingleton;
 import org.rares.miner49er.cache.cacheadapter.InMemoryCacheAdapterFactory;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
@@ -27,7 +26,7 @@ public class PermissionsUtil {
 
     public static boolean canEditProject(ProjectData projectData) {
 //        Thread.dumpStack();
-        Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
+//        Log.i(TAG, "canEditProject: [" + loggedInUser + "][" + projectData + "]");
         return loggedInUser.id.equals(projectData.getOwner().id) || isResponsible; // FIXME project owner null
     }
 

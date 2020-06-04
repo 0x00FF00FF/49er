@@ -26,12 +26,12 @@ import org.rares.miner49er.domain.issues.model.IssueData;
 import org.rares.miner49er.domain.issues.persistence.IssuesRepository;
 import org.rares.miner49er.domain.issues.ui.actions.remove.IssueRemoveAction;
 import org.rares.miner49er.domain.issues.ui.viewholder.IssuesViewHolder;
-import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.viewmodel.HierarchyViewModel;
+import org.rares.miner49er.viewmodel.NetworkRequestsModel;
 
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.ENABLED;
 import static org.rares.miner49er.ui.actionmode.ToolbarActionManager.MenuConfig.FLAGS;
@@ -68,10 +68,13 @@ public class IssuesUiOps extends ResizeableItemsUiOps
 
     private HierarchyViewModel vm;
 
-    public IssuesUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
-        this.networkDataUpdater = networkDataUpdater;
+    public IssuesUiOps(RecyclerView rv) {
+        ViewModelProvider vmProvider = new ViewModelProvider((ViewModelStoreOwner) rv.getContext());
+        vm = vmProvider.get(HierarchyViewModel.class);
 
-         issuesRepository = new IssuesRepository(networkDataUpdater);
+        networkDataUpdater = vmProvider.get(NetworkRequestsModel.class).getDataUpdater();
+
+        issuesRepository = new IssuesRepository(networkDataUpdater);
 
         setRv(rv);
         issuesRepository.setup();
@@ -81,8 +84,6 @@ public class IssuesUiOps extends ResizeableItemsUiOps
         itemTouchHelper.attachToRecyclerView(getRv());
         touchHelperCallback.setDao(InMemoryCacheAdapterFactory.ofType(IssueData.class));
         touchHelperCallback.setDeletedListener(this);
-
-        vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
     }
 
     @Override

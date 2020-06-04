@@ -31,7 +31,6 @@ import org.rares.miner49er.domain.projects.persistence.ProjectsRepository;
 import org.rares.miner49er.domain.projects.ui.actions.remove.ProjectRemoveAction;
 import org.rares.miner49er.domain.projects.ui.viewholder.ProjectsViewHolder;
 import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
-import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.GenericMenuActions;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
@@ -43,6 +42,7 @@ import org.rares.miner49er.ui.custom.glide.preload.ProjectDataModelProvider;
 import org.rares.miner49er.ui.custom.glide.preload.RecyclerToListViewScrollListener;
 import org.rares.miner49er.util.PermissionsUtil;
 import org.rares.miner49er.viewmodel.HierarchyViewModel;
+import org.rares.miner49er.viewmodel.NetworkRequestsModel;
 
 import java.util.List;
 
@@ -85,11 +85,12 @@ public class ProjectsUiOps
   private ItemTouchHelper itemTouchHelper;
   private HierarchyViewModel vm;
 
-  public ProjectsUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
+  public ProjectsUiOps(RecyclerView rv) {
 //        Miner49erApplication.getRefWatcher(activity).watch(this);
-    this.networkDataUpdater = networkDataUpdater;
+    ViewModelProvider vmProvider = new ViewModelProvider((ViewModelStoreOwner) rv.getContext());
+    vm = vmProvider.get(HierarchyViewModel.class);
 
-    vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
+    networkDataUpdater = vmProvider.get(NetworkRequestsModel.class).getDataUpdater();
 
     setRv(rv);
     projectsRepository = new ProjectsRepository(networkDataUpdater);

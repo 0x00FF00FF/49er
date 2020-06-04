@@ -85,7 +85,6 @@ public class ProjectsRepository extends Repository {
 //                  if (b.equals(CACHE_EVENT_REMOVE_USER)) {
 //                    Log.v(TAG, "setup: <<<< CACHE_EVENT_REMOVE_USER    ");
 //                  }
-//                  Log.i(TAG, "setup: " + asyncDao.getAll(true).blockingGet().size());
 //                })
                 .throttleLast(500, TimeUnit.MILLISECONDS)
                 .subscribe(o -> refreshData()));
@@ -104,7 +103,7 @@ public class ProjectsRepository extends Repository {
   }
 
   /*
-   * todo:
+   * another way:
    * Observable.concat(
    *	[getFromLocalCache(id),
    *	getFromPersistentCache(id)],
@@ -159,7 +158,6 @@ public class ProjectsRepository extends Repository {
             callNetwork = true;
           }
           if (callNetwork) { // only do a network call if needed
-//            Log.d(TAG, "getDbItems: network call > " + networkDataUpdater);
             networkDataUpdater.lightProjectsUpdate();
           }
         });

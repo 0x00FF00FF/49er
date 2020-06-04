@@ -11,10 +11,10 @@ public class NetworkRequestsModel extends ViewModel {
 
   @Getter
   private ObservableNetworkProgress onp = new ObservableNetworkProgress();
-  @Getter
+  @Getter // remove getter in the future
   private ViewModelCache vmCache = ViewModelCacheSingleton.getInstance();
 
-  @Getter
+  @Getter // remove getter in the future
   private DataUpdater dataUpdater = DataUpdater.builder()
       .observableNetworkProgress(onp)
       .cache(vmCache)

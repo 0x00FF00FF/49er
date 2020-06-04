@@ -39,6 +39,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import lombok.Getter;
 import org.rares.miner49er.BaseInterfaces.Messenger;
+import org.rares.miner49er.cache.Cache;
 import org.rares.miner49er.cache.ViewModelCache;
 import org.rares.miner49er.cache.optimizer.CacheFeederService;
 import org.rares.miner49er.domain.agnostic.SelectedEntityProvider;
@@ -63,10 +64,10 @@ import org.rares.miner49er.layoutmanager.ResizeableLayoutManager;
 import org.rares.miner49er.layoutmanager.StickyLinearLayoutManager;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 import org.rares.miner49er.layoutmanager.postprocessing.rotation.SelfAnimatedItemRotator;
-import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.network.NetworkingService;
 import org.rares.miner49er.network.NetworkingService.RestServiceGenerator;
 import org.rares.miner49er.network.ObservableNetworkProgress;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.ActionFragment;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.ui.custom.mask.OverlayMask;
@@ -82,6 +83,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.rares.miner49er.cache.Cache.CACHE_EVENT_UPDATE_PROJECTS;
+import static org.rares.miner49er.network.ObservableNetworkProgress.ID_PROJECTS_LIGHT;
 
 public class HomeScrollingActivity
         extends
@@ -162,10 +164,11 @@ public class HomeScrollingActivity
     private NetworkUpdateListener networkUpdateListener = new NetworkUpdateListener();
 
     private CompositeDisposable startDisposable = new CompositeDisposable();
+    private Disposable refreshDisposable = null;
+    private Disposable networkTrafficDisposable = null;
 
     private NetworkRequestsModel networkRequestsModel;
     private ObservableNetworkProgress networkProgress;
-    private DataUpdater dataUpdater;
     private ViewModelCache cache;
     private HierarchyViewModel hierarchyViewModel;
 
@@ -179,7 +182,6 @@ public class HomeScrollingActivity
         ViewModelProvider vmp = new ViewModelProvider(this);
 
         networkRequestsModel = vmp.get(NetworkRequestsModel.class);
-        dataUpdater = networkRequestsModel.getDataUpdater();
         networkProgress = networkRequestsModel.getOnp();
         cache = networkRequestsModel.getVmCache();
 
@@ -191,10 +193,6 @@ public class HomeScrollingActivity
         }
 //        EntityOptimizer entityOptimizer = new EntityOptimizer.Builder().defaultBuild();
 //        NetworkingService.INSTANCE.registerProjectsConsumer(entityOptimizer);   // NS is shut down onDestroy, no leak
-
-//        dataUpdater.addDbUpdateFinishedListener(this);
-//        dataUpdater.addUpdateListener(this);
-//        dataUpdater.updateProjects();
 
 //        entityOptimizer.addDbUpdateFinishedListener(this);
 
@@ -254,13 +252,29 @@ public class HomeScrollingActivity
 
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA");
-//                startDataUpdateAnimation();
+
+                if (isNetworkRefresh()) {
+                    stopDataUpdateAnimation();
+//                    Log.e(TAG, "fab onClick: USER ACTION: REFRESH DATA [stop]");
+                    Disposable nuDisposable = networkProgress.getNetworkUpdateDisposable(getSelectedObjectId());
+                    if (nuDisposable != null) {
+                        nuDisposable.dispose();
+                    }
+                    nuDisposable = networkUpdateListener.networkDisposable;
+                    if (nuDisposable != null) {
+                        nuDisposable.dispose();
+                    }
+//                    fab2.getHandler().postDelayed(() -> {
+//                        Completable c = networkProgress.getByObjectId(getSelectedObjectId());
+//                        Log.i(TAG, "onClick: " + c);
+//                    }, 300);
+                    return;
+                }
+
+//                Log.d(TAG, "fab onClick: USER ACTION: REFRESH DATA [start]");
+                startDataUpdateAnimation();
                 if (getSelectedEntityProvider() != null) {
                     getSelectedEntityProvider().updateEntity();
-                } else {
-                    dataUpdater.lightProjectsUpdate();
-//                    dataUpdater.updateAll();
                 }
 //                int scrollTo = ((AbstractAdapter) projectsRV.getAdapter()).getLastSelectedPosition();
 //                projectsRV.smoothScrollToPosition(scrollTo == -1 ? 0 : scrollTo);
@@ -272,11 +286,6 @@ public class HomeScrollingActivity
 //                issuesUiOps.refreshData();
 //                timeEntriesUiOps.refreshData();
             }
-        });
-
-        fab2.setOnLongClickListener(view -> {
-            dataUpdater.fullyUpdateProjects();
-            return true;
         });
 
         /*
@@ -301,13 +310,38 @@ public class HomeScrollingActivity
             }
         });*/
 
-        NetworkUpdateListener updateListener = new NetworkUpdateListener();
-
-        Disposable networkTrafficDisposable = Observable.interval(100, TimeUnit.MILLISECONDS)
+        networkTrafficDisposable = Observable.interval(500, TimeUnit.MILLISECONDS)
             .subscribe(t -> {
-                Completable completable = networkProgress.getByObjectId(ObservableNetworkProgress.ID_PROJECTS);
-                if (completable != null) {
-                    completable.subscribe(updateListener);
+                String objectId = getSelectedObjectId();
+                Completable completable = networkProgress.getByObjectId(objectId);
+//                Disposable nd = networkUpdateListener.networkDisposable;
+                Disposable nd = networkProgress.getNetworkUpdateDisposable(objectId);
+//                Log.i(TAG, "onCreate: // networkRefresh " + isNetworkRefresh());
+//                Log.i(TAG, "onCreate: // objectId -> " + objectId);
+//                Log.i(TAG, "onCreate: // refresh animation: " + (refreshDisposable != null && !refreshDisposable.isDisposed()));
+//                Log.i(TAG, "onCreate: // nd: " + nd);
+//                if (nd != null) {
+//                    Log.i(TAG, "onCreate: nd disposed: " + nd.isDisposed());
+//                }
+
+                // TODO: 02.06.2020 see if this if chain can be optimized
+                if (completable != null && (nd == null || nd.isDisposed())) {
+                    completable.subscribe(networkUpdateListener);
+//                    Log.d(TAG, "onCreate: // ----------- subscribed");
+                } else {
+//                    Log.w(TAG, "onCreate: // ----------- not subscribed");
+                    if (nd != null && nd.isDisposed()) {
+//                        Log.i(TAG, "onCreate: nd not null, nd disposed");
+                        stopDataUpdateAnimation();
+                    } else if (nd == null) {
+//                        Log.i(TAG, "onCreate: nd null");
+                        stopDataUpdateAnimation();
+                    } else if (!nd.isDisposed()) {
+                        startDataUpdateAnimation();
+//                        Log.d(TAG, "onCreate: >>>> start update animation.");
+//                    } else {
+//                        Log.w(TAG, "onCreate: <><><> not stopping animation.");
+                    }
                 }
             });
         startDisposable.add(networkTrafficDisposable);
@@ -327,18 +361,39 @@ public class HomeScrollingActivity
         }
 
         if (lastFragment instanceof ActionFragment) {
-            Log.i(TAG, "onStart:lastFragment > "+ lastFragment.getClass());
+//            Log.i(TAG, "onStart:lastFragment > "+ lastFragment.getClass());
             scrollViewsContainer.setTranslationX(point.x);
         }
 
-        Log.i(TAG, "onCreate:scrollPositionProjects >>>> " + hierarchyViewModel.scrollPositionProjects);
-        Log.d(TAG, "onCreate:scrollPositionIssues >>>> " + hierarchyViewModel.scrollPositionIssues);
-        Log.i(TAG, "onCreate:scrollPositionTimeEntries >>>> " + hierarchyViewModel.scrollPositionTimeEntries);
+//        Log.i(TAG, "onCreate:scrollPositionProjects >>>> " + hierarchyViewModel.scrollPositionProjects);
+//        Log.d(TAG, "onCreate:scrollPositionIssues >>>> " + hierarchyViewModel.scrollPositionIssues);
+//        Log.i(TAG, "onCreate:scrollPositionTimeEntries >>>> " + hierarchyViewModel.scrollPositionTimeEntries);
 
         // TODO: 27.05.2020 sticky layout manager -> scroll to position
         projectsRV.scrollToPosition(hierarchyViewModel.scrollPositionProjects);
         issuesRV.scrollToPosition(hierarchyViewModel.scrollPositionIssues);
         timeEntriesRv.scrollToPosition(hierarchyViewModel.scrollPositionTimeEntries);
+    }
+
+    @NonNull
+    private String getSelectedObjectId() {
+        long id = hierarchyViewModel.getSelectedId();
+        Class cls = hierarchyViewModel.getSelectedType();
+        String objectId = null;
+        if (cls != null) {
+            // noinspection unchecked
+            Cache c = cache.getCache(cls);
+            objectId = ((AbstractViewModel) c.getData(id)).getObjectId();
+        }
+        if (objectId == null) {
+            objectId = ID_PROJECTS_LIGHT;
+        }
+        return objectId;
+    }
+
+    private boolean isNetworkRefresh() {
+        Disposable nd = networkProgress.getNetworkUpdateDisposable(getSelectedObjectId());
+        return nd != null && !nd.isDisposed();
     }
 
     private SelectedEntityProvider getSelectedEntityProvider() {
@@ -351,37 +406,42 @@ public class HomeScrollingActivity
         if (hierarchyViewModel.selectedProjectId != -1L) {
             return projectsUiOps;
         }
-        return null;
+        return homeProjectsProvider;
     }
-
-    private Disposable refreshDisposable = null;
 
     private void startDataUpdateAnimation() {
-      if (refreshDisposable == null) {
-        refreshDisposable = Flowable.interval(20, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(i -> fab2.setRotation(fab2.getRotation() - 10));
-        startDisposable.add(refreshDisposable);
-      }
+        if (refreshDisposable == null) {
+//            Log.d(TAG, ">>>>>>>>>>>>>>>>> startDataUpdateAnimation() called");
+            refreshDisposable = Flowable.interval(20, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(i -> fab2.setRotation(fab2.getRotation() - 10));
+            startDisposable.add(refreshDisposable);
+        } /*else {
+            Log.v(TAG, ">>>>>>>>>>>>>>>>> startDataUpdateAnimation() called");
+        }*/
     }
+
     private void stopDataUpdateAnimation() {
-      if (refreshDisposable != null) {
-          refreshDisposable.dispose();
-          if (fab2 != null && fab2.getHandler() != null) {
-              fab2.getHandler().post(() -> {
-                  if (fab2 != null) {
-                      int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
-                      int toRotation = 180 * (rotations - 1);
-                      fab2.animate().rotation(toRotation).withEndAction(() -> {
-                          if (fab2 != null) {
-                              fab2.setRotation(0);
-                          }
-                      }).start();
-                  }
-              });
-          }
-          refreshDisposable = null;
-      }
+        if (refreshDisposable != null) {
+//            Log.d(TAG, ">>>>>>>>>>>>>>>>> stopDataUpdateAnimation() called");
+            refreshDisposable.dispose();
+            if (fab2 != null && fab2.getHandler() != null) {
+                fab2.getHandler().post(() -> {
+                    if (fab2 != null) {
+                        int rotations = (int) Math.ceil(fab2.getRotation()) / 180;
+                        int toRotation = 180 * (rotations - 1);
+                        fab2.animate().rotation(toRotation).withEndAction(() -> {
+                            if (fab2 != null) {
+                                fab2.setRotation(0);
+                            }
+                        }).start();
+                    }
+                });
+            }
+            refreshDisposable = null;
+        } /*else {
+            Log.v(TAG, ">>>>>>>>>>>>>>>>> stopDataUpdateAnimation() called");
+        }*/
     }
 
     //    @OnClick(R.id.fab)
@@ -516,19 +576,6 @@ public class HomeScrollingActivity
 //        flingBarUp();
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-/*
-        outState.putString("selectedProjectId", hierarchyViewModel.selectedProjectId);
-        outState.putString("selectedIssueId", hierarchyViewModel.selectedIssueId);
-        outState.putString("selectedTimeEntryId", hierarchyViewModel.selectedTimeEntryId);
-        outState.putInt("scrollPositionProjects", hierarchyViewModel.scrollPositionProjects);
-        outState.putInt("scrollPositionIssues", hierarchyViewModel.scrollPositionIssues);
-        outState.putInt("scrollPositionTimeEntries", hierarchyViewModel.scrollPositionTimeEntries);
-*/
-    }
-
     private void setupRV() {
 
 //        projectsRV.setHasFixedSize(true);
@@ -542,7 +589,7 @@ public class HomeScrollingActivity
 //        timeEntriesRv.addItemDecoration(new AccDecoration());
         timeEntriesRv.setLayoutManager(new LinearLayoutManager(this));
 //        timeEntriesRv.addItemDecoration(new EntriesItemDecoration());
-        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv, dataUpdater);
+        timeEntriesUiOps = new TimeEntriesUiOps(timeEntriesRv);
         timeEntriesUiOps.setFragmentManager(getSupportFragmentManager());
 
         RecyclerView.LayoutManager issuesManager = new StickyLinearLayoutManager();
@@ -554,7 +601,7 @@ public class HomeScrollingActivity
                 (int) UiUtil.pxFromDp(this, 58),
                 (int) UiUtil.pxFromDp(this, 56));
         issuesRV.setLayoutManager(issuesManager);
-        issuesUiOps = new IssuesUiOps(issuesRV, dataUpdater);
+        issuesUiOps = new IssuesUiOps(issuesRV);
         issuesUiOps.setRvCollapsedWidth((int) UiUtil.pxFromDp(this, 56));
         issuesUiOps.setDomainLink(timeEntriesUiOps);
 //        decoration.setSelectedPosition(1); // the selected position should get a different color
@@ -572,7 +619,7 @@ public class HomeScrollingActivity
         RecyclerView.LayoutManager projectsLayoutManager = new StickyLinearLayoutManager();
         projectsRV.setLayoutManager(projectsLayoutManager);
 
-        projectsUiOps = new ProjectsUiOps(projectsRV, dataUpdater);
+        projectsUiOps = new ProjectsUiOps(projectsRV);
         projectsUiOps.setFragmentManager(getSupportFragmentManager());
         projectsUiOps.setProjectsListResizeListener(this);
 
@@ -670,15 +717,6 @@ public class HomeScrollingActivity
     protected void onPause() {
         Log.e(TAG, "onPause() called");
         super.onPause();
-/*
-        // clear backstack for now. no fragment re-creation.
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            int id = fragmentManager.getBackStackEntryAt(0).getId();
-            fragmentManager.popBackStackImmediate(id, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        }
-        // need to also clear the TAM queue
-*/
     }
 
     @Override
@@ -689,14 +727,13 @@ public class HomeScrollingActivity
         // if the user comes back to the app
         // or changes orientation after the cache is filled
         cache.sendEvent(CACHE_EVENT_UPDATE_PROJECTS);
+        // can reset an ongoing light projects refresh!
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
         projectsUiOps.setupRepository();
-
     }
 
     @Override
@@ -721,9 +758,9 @@ public class HomeScrollingActivity
     protected void onDestroy() {
         super.onDestroy();
 
-        dataUpdater.close();// TODO: 06.03.2020  this should be a service
-
-        NetworkingService.INSTANCE.end();
+        if (isFinishing()) {
+            NetworkingService.INSTANCE.end();
+        }
 
         unbinder.unbind();
 
@@ -892,7 +929,7 @@ public class HomeScrollingActivity
     private class NetworkUpdateListener implements CompletableObserver {
 
         @Getter
-        Disposable networkDisposable;
+        Disposable networkDisposable = null;
 
         @Override
         public void onSubscribe(Disposable d) {
@@ -903,15 +940,36 @@ public class HomeScrollingActivity
 
         @Override
         public void onError(Throwable t) {
+//            Log.w(TAG, "onError: >>> ");
             stopDataUpdateAnimation();
             showMessage(t.getMessage(), Messenger.DISMISSIBLE, null);
-            networkDisposable.dispose(); // needed?
+            networkDisposable.dispose();
         }
 
         @Override
         public void onComplete() {
+//            Log.d(TAG, "onComplete: >>> ");
             stopDataUpdateAnimation();
             networkDisposable.dispose();
         }
     }
+
+
+    SelectedEntityProvider homeProjectsProvider = new SelectedEntityProvider() {
+
+        @Override
+        public int getEntityType() {
+            return -1;
+        }
+
+        @Override
+        public AbstractViewModel getSelectedEntity() {
+            return null;
+        }
+
+        @Override
+        public void updateEntity() {
+            networkRequestsModel.getDataUpdater().lightProjectsUpdate();
+        }
+    };
 }

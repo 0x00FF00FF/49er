@@ -67,31 +67,42 @@ public class AuthenticationInterceptor implements Interceptor {
     Response response = chain.proceed(request);
 
 //    Log.d(TAG, "intercept: " + response.code());
-
-    if (loggedInUser != null) {
-      if (401 == response.code() || 500 == response.code()) { // invalid session throws 500
+    final String lastValue = authToken;
+    try {
+      if (loggedInUser != null) {
+        if (401 == response.code() || 500 == response.code()) { // invalid session throws 500
 //        if (!response.isSuccessful()) {
-        if (retries++ < retryCount) {
-          Log.w(TAG, "intercept: ->  should invalidate API KEY and retry login.");
+          if (retries++ < retryCount) {
+            Log.w(TAG, "intercept: ->  should invalidate API KEY and retry login.");
 
-          authToken = "";
-          Log.v(TAG, "intercept: before: " + authToken);
-          ViewModelCacheSingleton.getInstance().loggedInUser =
-              NetworkUserAccountService.login(loggedInUser, usersDao) // FIXME: inject non-static NetworkUserAccountService
-                  .subscribeOn(Schedulers.io())
-                  .blockingGet();
+            authToken = "";
+            Log.v(TAG, "intercept: before: " + authToken);
+            ViewModelCacheSingleton.getInstance().loggedInUser =
+                NetworkUserAccountService.login(loggedInUser, usersDao) // FIXME: inject non-static NetworkUserAccountService
+                    .subscribeOn(Schedulers.io())
+                    .blockingGet();
 
-          loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
+            loggedInUser = ViewModelCacheSingleton.getInstance().loggedInUser;
 
-          authToken = loggedInUser.getApiKey();
-          Log.i(TAG, "intercept: after: " + authToken);
-        } else {
-          Log.i(TAG, "intercept: max retries reached, enough is enough.");
+            authToken = loggedInUser.getApiKey();
+            Log.i(TAG, "intercept: after: " + authToken);
+          } else {
+            Log.i(TAG, "intercept: max retries reached, enough is enough.");
+            retries = 0;
+          }
+        }
+        if (response.isSuccessful()) {
           retries = 0;
         }
       }
-      if (response.isSuccessful()) {
-        retries = 0;
+    } finally {
+      // if the call that starts the auth process
+      // is disposed of right inside the try block,
+      // we need to make sure that we still have a token
+      // when the method is over
+      if ("".equals(authToken) && !"".equals(lastValue)) {
+        authToken = lastValue;
+        Log.i(TAG, "intercept: --> Loaded api key from quicksave. [" + authToken + "]");
       }
     }
 

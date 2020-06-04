@@ -22,10 +22,10 @@ import org.rares.miner49er.domain.entries.adapter.TimeEntriesAdapter;
 import org.rares.miner49er.domain.entries.adapter.TimeEntriesViewHolder;
 import org.rares.miner49er.domain.entries.model.TimeEntryData;
 import org.rares.miner49er.domain.entries.persistence.TimeEntriesRepository;
-import org.rares.miner49er.network.DataUpdater;
 import org.rares.miner49er.persistence.dao.AbstractViewModel;
 import org.rares.miner49er.ui.actionmode.ToolbarActionManager;
 import org.rares.miner49er.viewmodel.HierarchyViewModel;
+import org.rares.miner49er.viewmodel.NetworkRequestsModel;
 
 /**
  * @author rares
@@ -49,9 +49,11 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
     private ItemTouchHelper itemTouchHelper;
     private HierarchyViewModel vm;
 
-    public TimeEntriesUiOps(RecyclerView rv, DataUpdater networkDataUpdater) {
+    public TimeEntriesUiOps(RecyclerView rv) {
+        ViewModelProvider vmProvider = new ViewModelProvider((ViewModelStoreOwner) rv.getContext());
+        vm = vmProvider.get(HierarchyViewModel.class);
 
-        this.networkDataUpdater = networkDataUpdater;
+        networkDataUpdater = vmProvider.get(NetworkRequestsModel.class).getDataUpdater();
 
         teRepository = new TimeEntriesRepository(networkDataUpdater);
         teRepository.setup();
@@ -63,7 +65,6 @@ public class TimeEntriesUiOps extends ResizeableItemsUiOps
 
         setRv(rv);
 
-        vm = new ViewModelProvider((ViewModelStoreOwner) rv.getContext()).get(HierarchyViewModel.class);
     }
 
     @Override
