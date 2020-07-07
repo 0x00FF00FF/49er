@@ -310,12 +310,12 @@ public class ToolbarActionManager
          * {@link SupportMenuItem#SHOW_AS_ACTION_WITH_TEXT},
          * {@link SupportMenuItem#SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW})
          */
-        public int[][] menuResources;
+        public int[][] menuResources;           // todo: refactor?
         /**
          * Use these values to override the ones in the {@link MenuConfig#menuResources}
          * which are always created by the {@link ToolbarActionManager}.
          */
-        public int[][] overrideGenericMenuResources;
+        public int[][] overrideGenericMenuResources;// todo: refactor?
         /**
          * additional menu to inflate
          */
@@ -324,7 +324,7 @@ public class ToolbarActionManager
          * same as {@link #menuResources}, but for the
          * additional menu
          */
-        public int[][] additionalResources;
+        public int[][] additionalResources;// todo: refactor?
         /**
          * toolbar title
          */

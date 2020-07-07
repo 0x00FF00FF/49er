@@ -75,7 +75,6 @@ public enum NetworkingService {
   public final TimeEntriesService timeEntriesService = RestServiceGenerator.INSTANCE.generateService(TimeEntriesService.class);
   public final UserService userService = RestServiceGenerator.INSTANCE.generateService(UserService.class);
 
-  public final NetworkProgress networkProgress = new NetworkProgress();
 
 //  private PublishProcessor<Long> onDemandPublisher = PublishProcessor.create();
 //  private Flowable<Long> onDemandFlowable = onDemandPublisher.subscribeOn(Schedulers.io());

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
+@Deprecated
 public class NetworkProgress {
 
     private Map<String, Set<String>> networkCalls = new HashMap<>();

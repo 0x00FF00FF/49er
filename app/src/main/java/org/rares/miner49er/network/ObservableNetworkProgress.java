@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class ObservableNetworkProgress {
+public class ObservableNetworkProgress {  // network call tracker
   private static final String TAG = ObservableNetworkProgress.class.getSimpleName();
 
   public static final String ID_PROJECTS_LIGHT = "id_projects_light";

@@ -781,7 +781,7 @@ public class StickyLinearLayoutManager
         // be extracted into some interface + method
 //      --------------------------------------------------------------------
         View tempV = recycler.getViewForPosition(selectedPosition);
-//      how good would it have been if we'd have access to a viewHolder here...
+        // should use -> recycler.getScrapList().get(...);
         if (DEBUG && METHOD_DEBUG) {
             Log.v(TAG, "refreshSelectedView: x_x " + selectedView);
             Log.d(TAG, "refreshSelectedView: x_x " + tempV);

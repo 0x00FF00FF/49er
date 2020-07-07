@@ -64,6 +64,13 @@ public class UserStorIOSQLitePutResolver extends DefaultPutResolver<User> {
     contentValues.put("role", object.getRole());
     contentValues.put("objectid", object.getObjectId());
 
+//    if (object.getApiKey() == null || object.getApiKey().equals("")) {
+//      Log.e(TAG, "mapToContentValues: ----------------------------------");
+//      Log.e(TAG, "mapToContentValues: >>>> PUT USER WITH NO API KEY <<<<");
+//      Log.i(TAG, "mapToContentValues: " + object.getName());
+//      Log.e(TAG, "mapToContentValues: ----------------------------------");
+//    }
+
     return contentValues;
   }
 

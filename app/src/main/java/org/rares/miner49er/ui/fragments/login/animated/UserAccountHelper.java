@@ -164,7 +164,8 @@ class UserAccountHelper {
                   || (opt.get().lastUpdated + SESSION_TIMEOUT < System.currentTimeMillis() && /*online*/false)) {
 
                 return NetworkUserAccountService.login(userData, usersDao)
-                    .map(Optional::of);
+                    .map(Optional::of)
+                    .onErrorReturnItem(opt);
               }
               Log.i(TAG, "login: user exists in the local db.");
               return Single.just(opt);
@@ -174,9 +175,29 @@ class UserAccountHelper {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe((opt, throwable) -> {
                   if (opt != null && opt.isPresent() && userData.getPassword().equals(opt.get().getPassword())) {
+                    if (opt.get().getApiKey() == null || opt.get().getApiKey().equals("")) {
+                      Log.w(TAG, "login: >>> LOGIN WITH NO VALID API KEY"/* + online*/);
+                    }
                     onSuccess.accept(opt.get());
                   } else {
-                    setAndShowErrorMessage(R.string.login_failed_bad_u_p);
+//                    boolean connectException = throwable instanceof ConnectException;
+//                    if(!connectException) {
+//                      if(throwable instanceof CompositeException) {
+//                        List<Throwable> errors = ((CompositeException) throwable).getExceptions();
+//                        for (Throwable e : errors) {
+//                          if (e instanceof ConnectException) {
+//                            connectException = true;
+//                            break;
+//                          }
+//                        }
+//                      }
+//                    }
+//                    if (connectException) {
+//                      setAndShowErrorMessage("Could not log you in. Connection failure.");
+//                    } else {
+//                      Log.i(TAG, "login: thr: " + throwable);
+                      setAndShowErrorMessage(R.string.login_failed_bad_u_p);
+//                    }
                     onError.accept(throwable);
                   }
                 }
