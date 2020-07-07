@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="org.rares.miner49er.HomeScrollingActivity">
+    <item
+            android:id="@+id/action_add_user"
+            android:orderInCategory="100"
+            android:title="@string/action_add_user"
+            android:icon="@drawable/icon_path_add_user"
+            app:showAsAction="never"
+    />
+</menu>

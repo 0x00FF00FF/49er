@@ -2,21 +2,18 @@ package org.rares.miner49er.layoutmanager.postprocessing.rotation;
 
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.layoutmanager.postprocessing.ResizePostProcessor;
 
 public interface ItemRotator extends ResizePostProcessor {
-    enum ItemRotation {
-        ROTATE_COUNTER_CLOCKWISE(-90),
-        ROTATE_CLOCKWISE(90),
-        NO_ROTATION(0);
 
-        private int value;
+    int ROTATE_COUNTER_CLOCKWISE = -90;
+    int ROTATE_CLOCKWISE = 90;
+    int NO_ROTATION = 0;
 
-        ItemRotation(int value) {
-            this.value = value;
-        }
-    }
     void rotateItems(ViewGroup viewGroup);
-    void rotateItem(View view, boolean clockwise);
+
+    void rotateItem(RecyclerView.ViewHolder viewHolder, boolean clockwise);
+
     void validateViewRotation(View view, boolean closedState, boolean isViewSelected);
 }

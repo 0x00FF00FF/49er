@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/resizeable_list_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/projects_list_item_height"
+        android:gravity="center|start"
+        android:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+        android:foreground="?selectableItemBackground"
+        tools:background="@drawable/transient_semitransparent_rectangle_tr_bl"
+        tools:layout_height="64dp"
+>
+
+    <org.rares.ratv.rotationaware.RotationAwareTextView
+            android:id="@+id/ratv_resource_name_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/project_logo"
+            app:layout_constraintVertical_chainStyle="packed"
+
+            app:text_color="@color/pureWhite"
+            app:target_text_color="#FF777777"
+            app:background_color="#00FFFFFF"
+            app:target_background_color="#00000000"
+            app:text_size="@dimen/list_item_text_size"
+            app:target_rotation="-90"
+            app:target_text_size="10sp"
+            app:original_margin_left="10dp"
+            app:target_margin_left="0dp"
+            app:original_shadow_radius="0dp"
+            app:target_shadow_radius="0dp"
+            app:original_shadow_color="@color/pureWhite"
+            app:target_shadow_color="@color/pureWhite"
+            tools:background="@color/projects.default.bae0e7"
+            tools:text="something here like a project's name"
+    />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/project_logo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center|start"
+            android:src="@drawable/skull"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:contentDescription="@string/_projects_logo_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="h,1:1"
+            app:civ_border_color="@color/pureWhite"
+            app:civ_border_width="2dp"
+            tools:visibility="visible"
+    />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/half_vertical_guideline"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.33"
+    />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/half_horizontal_guideline"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.5"
+    />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/project_image"
+            android:layout_width="256dp"
+            android:layout_height="256dp"
+            android:alpha="0.15"
+            android:rotationX="50"
+            android:contentDescription="@string/_projects_pictures_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/half_vertical_guideline"
+            app:layout_constraintEnd_toEndOf="@id/project_logo"
+            app:civ_border_color="@color/pureWhite"
+            app:civ_border_width="20dp"
+            tools:src="@drawable/skull"
+            tools:rotationX="50"
+    />
+</androidx.constraintlayout.widget.ConstraintLayout>

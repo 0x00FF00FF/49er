@@ -1,115 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                 xmlns:tools="http://schemas.android.com/tools"
-                                                 android:id="@+id/main_container"
-                                                 android:layout_width="match_parent"
-                                                 android:layout_height="match_parent"
-                                                 android:fitsSystemWindows="true"
-                                                 tools:context="org.rares.miner49er.HomeScrollingActivity">
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="org.rares.miner49er.HomeScrollingActivity">
 
-    <android.support.design.widget.AppBarLayout
-            android:id="@+id/app_bar"
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_c"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/app_bar_height"
-            android:fitsSystemWindows="true"
-            android:theme="@style/AppTheme.AppBarOverlay"
-            app:layout_behavior="org.rares.miner49er.util.BehaviorFix">
+            android:layout_height="?attr/actionBarSize"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:popupTheme="@style/Custom.Widget.ActionButton.Overflow.Menu"
+    />
 
-        <android.support.design.widget.CollapsingToolbarLayout
-                android:id="@+id/toolbar_layout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                app:contentScrim="?attr/colorPrimary"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
-        >
-
-            <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:layout_collapseMode="pin"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
-        </android.support.design.widget.CollapsingToolbarLayout>
-    </android.support.design.widget.AppBarLayout>
+    <androidx.constraintlayout.widget.Guideline
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/guideline_horizontal_end"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_end="30dp"
+    />
 
     <LinearLayout
             android:id="@+id/scroll_views_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:orientation="horizontal"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:visibility="visible"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/toolbar_c"
+            app:layout_constraintBottom_toBottomOf="parent"
+    >
 
-        <!--<android.support.v4.widget.NestedScrollView-->
-        <!--android:id="@+id/projects_rv_parent"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:clipChildren="false"-->
-        <!--tools:context="org.rares.miner49er.HomeScrollingActivity"-->
-        <!--tools:showIn="@layout/activity_home_scrolling">-->
-        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
-
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_projects_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/old.picture.green"
                 android:layoutAnimation="@anim/anim_rv_item"
-                tools:listitem="@layout/resizeable_list_item"
+                tools:listitem="@layout/list_item_project"
                 tools:itemCount="8"
         />
 
-        <!--</android.support.v4.widget.NestedScrollView>-->
-
-
-        <!--<android.support.v4.widget.NestedScrollView-->
-        <!--android:id="@+id/issues_rv_parent"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="match_parent"-->
-        <!--tools:context="org.rares.miner49er.HomeScrollingActivity"-->
-        <!--tools:showIn="@layout/activity_home_scrolling"-->
-        <!--android:layout_weight="1"-->
-        <!--android:background="@color/villain.colorful.green"-->
-        <!--&gt;-->
-
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_issues_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/old.picture.green"/>
+                android:layout_marginStart="@dimen/_list_item_invisible_margin"
+                android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+                android:background="@drawable/background_margin_rv"
+        />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_time_entries_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/old.picture.green"/>
+                android:background="@drawable/background_margin_rv"
+        />
 
-
-        <!--</android.support.v4.widget.NestedScrollView>-->
     </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/fab_margin"
-            app:layout_anchor="@id/app_bar"
-            app:layout_anchorGravity="bottom|end"
-            app:srcCompat="@android:drawable/ic_dialog_email"/>
+    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:id="@+id/top_overlay_mask"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:rotation="180"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintTop_toTopOf="@id/scroll_views_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
 
-    <android.support.design.widget.FloatingActionButton
+    <org.rares.miner49er.ui.custom.mask.OverlayMask
+            android:id="@+id/bottom_overlay_mask"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="@dimen/_list_item_invisible_margin"
+            android:layout_marginStart="@dimen/_list_item_invisible_margin"
+            android:layout_marginRight="@dimen/_list_item_invisible_margin"
+            android:layout_marginEnd="@dimen/_list_item_invisible_margin"
+            app:layout_constraintTop_toBottomOf="@id/guideline_horizontal_end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="-24dp"
-            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="32dp"
+            android:layout_marginEnd="36dp"
             android:layout_marginRight="6dp"
-            app:backgroundTint="@color/colorPrimary"
-            app:srcCompat="@android:drawable/ic_menu_mapmode"/>
+            app:srcCompat="@drawable/icon_path_sync"
+            app:backgroundTint="@color/pureWhite"
+            app:tint="@color/colorOnPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="visible"
+    />
 
-</android.support.design.widget.CoordinatorLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="32dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginRight="36dp"
+            app:srcCompat="@drawable/icon_path_eye"
+            app:backgroundTint="@color/indigo_100_blacked"
+            app:tint="@color/pureWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fab2"
+            android:visibility="visible"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

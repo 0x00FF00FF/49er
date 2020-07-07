@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+        xmlns:tools="http://schemas.android.com/tools"
+        package="${applicationId}">
+    <uses-sdk
+            tools:overrideLibrary="android_libs.ub_uiautomator"/>
+    <!--<uses-sdk
+            tools:overrideLibrary="
+            android.app,
+            android.support.test,
+            android.support.test.rule,
+            android.support.test.espresso,
+            android.support.test.espresso.idling,
+            android.support.test.uiautomator.v18"/>-->
+</manifest>
+<!--
+because of:
+        ERROR: Manifest merger failed : uses-sdk:minSdkVersion 14 cannot be smaller than version 18 declared in library
+            [androidx.test.uiautomator:uiautomator:2.2.0]
+            /home/rares/.gradle/caches/transforms-2/files-2.1/b8b6a2702904c45423262bba48325be9/AndroidManifest.xml
+            as the library might be using APIs not available in 14
+        Suggestion: use a compatible library with a minSdk of at most 14,
+        or increase this project's minSdk version to at least 18,
+        or use tools:overrideLibrary="android_libs.ub_uiautomator" to force usage (may lead to runtime failures)
+when adding androidx.test:rules to the testImplementation
+really strange that this manifest needs to be in the app/src/androidTest/ folder instead of src/sharedTest or src/test
+-->

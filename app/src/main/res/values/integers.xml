@@ -2,8 +2,12 @@
 <resources>
     <integer name="anim_duration_medium">300</integer>
     <integer name="anim_duration_long">800</integer>
+    <integer name="comment_max_length">256</integer>
+    <integer name="max_hours">16</integer>
+    <integer name="min_hours">1</integer>
     <!--ids-->
     <integer name="id_item_text"/>
     <integer name="id_item_width"/>
     <integer name="id_item_height"/>
+    <integer name="tag_toolbar_action_manager"/>
 </resources>

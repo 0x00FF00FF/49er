@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/resizeable_list_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/projects_list_item_height"
+        android:layout_marginStart="@dimen/_list_item_corner_radius_large"
+        android:layout_marginLeft="@dimen/_list_item_corner_radius_large"
+        android:gravity="center|start"
+        tools:background="@color/pureWhite"
+        tools:layout_marginBottom="1dp"
+        tools:showIn="@layout/activity_home_scrolling">
+
+    <org.rares.ratv.rotationaware.RotationAwareTextView
+            android:id="@+id/ratv_resource_name_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:background_color="#00FFFFFF"
+            app:target_background_color="#00FFFFFF"
+            app:text_color="#CCFFFFFF"
+            app:target_text_color="#88FFFFFF"
+            app:text_size="@dimen/list_item_text_size"
+            app:target_rotation="-90"
+            app:original_margin_left="13dp"
+            app:target_margin_left="9dp"
+            app:original_shadow_radius="0dp"
+            app:target_shadow_radius="0dp"
+            app:original_shadow_color="@color/pureWhite"
+            app:target_shadow_color="@color/pureWhite"
+            tools:background="@color/projects.default.bae0e7"
+            tools:text="something here like a issue's name"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

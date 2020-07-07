@@ -1,97 +1,131 @@
 package org.rares.miner49er._abstract;
 
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import io.reactivex.functions.Consumer;
 import lombok.Getter;
 import lombok.Setter;
-import org.rares.miner49er.BaseInterfaces.ListItemClickListener;
+import org.rares.miner49er.BaseInterfaces;
+import org.rares.miner49er.BaseInterfaces.ListItemEventListener;
+import org.rares.miner49er.persistence.dao.AbstractViewModel;
+
+import java.util.List;
 
 /**
  * @author rares
  * @since 07.03.2018
  */
 
-public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableViewHolder>
-        extends RecyclerView.Adapter<ExtendedViewHolder> {
+public abstract class AbstractAdapter<ExtendedViewHolder extends ResizeableItemViewHolder, T extends AbstractViewModel>
+    extends RecyclerView.Adapter<ExtendedViewHolder>
+    implements Consumer<List> {
 
-    public static final String TAG = AbstractAdapter.class.getSimpleName();
+  public static final String TAG = AbstractAdapter.class.getSimpleName();
 
-    @Getter
-    @Setter
-    private int maxElevation = 0;
+  @Getter
+  @Setter
+  private int maxElevation = 0;
 
-    @Getter
-    @Setter
-    private int parentColor;
+  @Getter
+  @Setter
+  private int parentColor = Color.parseColor("#cbbeb5");
 
-    @Getter
-    @Setter
-    private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
+  @Getter
+  @Setter
+  private int lastSelectedPosition = -1, previouslySelectedPosition = -1;
 
-    protected ListItemClickListener clickListener;
+  protected ListItemEventListener eventListener;
 
+  @Setter
+  protected BaseInterfaces.UnbinderHost unbinderHost = null;
 
-    /**
-     * disable (custom=non {@link RecyclerView.ItemAnimator}) animation
-     * and return true;
-     */
-    @Override
-    public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
-        // todo: disable animation
-        return true;
+  /**
+   * disable (custom=non {@link RecyclerView.ItemAnimator}) animation
+   * and return true;
+   */
+  @Override
+  public boolean onFailedToRecycleView(@NonNull ExtendedViewHolder holder) {
+    // todo: disable animation
+    Log.e(TAG, "onFailedToRecycleView: WELL... " + holder.hashCode());
+    return true;
+  }
+
+  @Override
+  public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
+//        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder.getItemText() + "], position = [" + position + "]");
+  }
+
+  @Override
+  public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
+//        Log.e(TAG, "onViewDetachedFromWindow() called with: holder = [" + holder.hashCode() + "]");
+    // for when the view is animating and is scrolled out of the visible area
+    if (holder.getAnimator() != null && holder.getAnimator().isRunning()) {
+      holder.getAnimator().end();
     }
+    holder.disposables.clear();
+  }
 
-    @Override
-    @CallSuper
-    public void onBindViewHolder(@NonNull ExtendedViewHolder holder, int position) {
-//        Log.i(TAG, "onBindViewHolder: ");
-//        if (!viewHolders.contains(holder)) {
-//            viewHolders.add(holder);
+  @Override
+  public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
+//        if (holder instanceof ProjectsViewHolder) {
+//            ProjectsViewHolder projectsViewHolder = (ProjectsViewHolder) holder;
+//            projectsViewHolder.clearImages();
 //        }
-        int bgColor = parentColor + ((position % 2 == 0 ? 1 : -1) * 15);
-        holder.itemView.setBackgroundColor(bgColor);
-        holder.getItemProperties().setItemBgColor(bgColor);
-        // TODO: 07.03.2018 use a more intelligent compare mechanism + check if adapter has fixed ids
-//        if (holder.getItemProperties().getData().equals(getData(position))) {
-//            holder.setToBeRebound(false);
-//        } else {
-//            holder.setToBeRebound(true);
-//        }
+//        Log.i(TAG, "onViewRecycled() called with: holder = [" + holder.hashCode() + "]");
+    holder.disposables.clear();
+  }
+
+  @Override
+  public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
+    if (holder instanceof ItemViewAnimator) {
+
+//            Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemText());
+
+      ((ItemViewAnimator) holder).validateItem(
+          getLastSelectedPosition() != -1,
+          holder.getAdapterPosition() == getLastSelectedPosition());
     }
+//        Log.i(TAG, "onViewAttachedToWindow() called with: holder = [" + holder.hashCode() + "]");
+  }
 
-    @Override
-    public void onViewDetachedFromWindow(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewDetachedFromWindow: " + holder.getItemProperties().getData());
+  public T getSelected() {
+    return getData().get(getLastSelectedPosition());
+  }
+
+  public int findPositionByObjectId(String objectId) {
+    int size = getData().size();
+    for (int i = 0; i < size; i++) {
+      T data = getData().get(i);
+      if(data.objectId.equals(objectId)){
+        return i;
+      }
     }
+    return -1;
+  }
 
-    @Override
-    public void onViewRecycled(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewRecycled: " + holder.getItemProperties().getData());
+  public int findPositionById(long id) {
+    int size = getData().size();
+    for (int i = 0; i < size; i++) {
+      T data = getData().get(i);
+      if(data.id.equals(id)){ // Long-long
+        return i;
+      }
     }
+    return -1;
+  }
 
-    @Override
-    public void onViewAttachedToWindow(@NonNull ExtendedViewHolder holder) {
-//        Log.i(TAG, "onViewAttachedToWindow: " + holder.getItemProperties().getData());
-        // the following may not be needed if
-        // the first itemView after the visible
-        // ones in the recycler view list is not
-        // drawn; but that solution could have
-        // other (unwanted) implications in
-        // scrolling behaviour.
-        {
-            TextView tv = (TextView) ((ViewGroup) holder.itemView).getChildAt(0);
-            String newData = resolveData(holder.getAdapterPosition());
-            if (tv.getText().length() != newData.length()) {
-                tv.setText(newData);
-            }
-//            Log.w(TAG, "onViewAttachedToWindow: " + tv.getText());
-        }
+  public abstract void clearData();
 
-    }
+  public abstract String resolveData(int position, boolean forceFullData);
 
-    public abstract String resolveData(int position);
+  public abstract T getDisplayData(int adapterPosition);
 
+  public abstract List<T> getData();
+
+  public abstract String getToolbarData(Context context, int position);
+
+  public abstract boolean canRemoveItem(int position);
 }

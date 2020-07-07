@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class NumberUtils {
-    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
+    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(10000);
     private static final AtomicInteger projectsIds = new AtomicInteger(30/*Integer.MAX_VALUE*/);
     private static final AtomicInteger elevationDegree = new AtomicInteger(21);
 
@@ -19,11 +19,13 @@ public class NumberUtils {
     }
 
     /**
+     * Deprecated: use ViewCompat.generateViewId();
      * Generate a value suitable for use in {@link android.view.View#setId(int)}.
      * This value will not collide with ID values generated at build time by aapt for R.id.
      *
      * @return a generated ID value
      */
+    @Deprecated
     public static int generateViewId() {
         for (; ; ) {
             final int result = sNextGeneratedId.get();

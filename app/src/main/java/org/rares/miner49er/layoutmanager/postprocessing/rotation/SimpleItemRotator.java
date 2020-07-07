@@ -1,16 +1,17 @@
 package org.rares.miner49er.layoutmanager.postprocessing.rotation;
 
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.recyclerview.widget.RecyclerView;
 import org.rares.miner49er.R;
 import org.rares.miner49er._abstract.AbstractAdapter;
 
-import static org.rares.miner49er.util.TextUtils.TAG;
-
 public class SimpleItemRotator extends AbstractItemRotator {
+
+    public SimpleItemRotator(RecyclerView recyclerView) {
+        super(recyclerView);
+    }
 
     @Override
     public void rotateItems(ViewGroup viewGroup) {
@@ -19,23 +20,30 @@ public class SimpleItemRotator extends AbstractItemRotator {
 
         float closedDimension = viewGroup.getContext().getResources().getDimension(R.dimen.projects_rv_collapsed_selected_item_width);
         for (int i = 0; i < viewGroup.getChildCount(); i++) {
-            View v = viewGroup.getChildAt(i);
-            RecyclerView.ViewHolder vh = rv.getChildViewHolder(v);
-            ViewGroup vg = (ViewGroup) v;
-            TextView tv = (TextView) vg.getChildAt(0);
+            View itemView = viewGroup.getChildAt(i);
+            RecyclerView.ViewHolder vh = rv.getChildViewHolder(itemView);
+            ViewGroup vg = (ViewGroup) itemView;
 
             boolean closedState = _tempAdapter.getLastSelectedPosition() != -1;
 
+            View childView = vg.getChildAt(0);
+
             int itemPosition = vh.getAdapterPosition();
 
-            String text = _tempAdapter.resolveData(vh.getAdapterPosition());
-            tv.setText(text);
+            String text = _tempAdapter.resolveData(itemPosition, false);
 
-            validateViewRotation(v,
+            if (childView instanceof TextView) {
+                TextView tv = (TextView) childView;
+                if (text != null) {
+                    tv.setText(text);
+                }
+            }
+
+            validateViewRotation(itemView,
                     closedState,
                     _tempAdapter.getLastSelectedPosition() == itemPosition
             );
-            v.invalidate();
+            itemView.invalidate();
             if (postProcessorConsumer != null) {
                 postProcessorConsumer.onPostProcessEnd();
             }
@@ -43,14 +51,8 @@ public class SimpleItemRotator extends AbstractItemRotator {
     }
 
     @Override
-    public void rotateItem(View view, boolean clockwise) {
-//        view.animate().rotationBy(clockwise ? 90 : -90);
-    }
-
-    @Override
-    public void validateViewRotation(View view, boolean closedState, boolean isViewSelected) {
-        Log.i(TAG, "validateViewRotation: cALLED");
-        super.validateViewRotation(view, closedState, isViewSelected);
+    public void rotateItem(RecyclerView.ViewHolder viewHolder, boolean clockwise) {
+//        doing nothing here
     }
 
     @Override

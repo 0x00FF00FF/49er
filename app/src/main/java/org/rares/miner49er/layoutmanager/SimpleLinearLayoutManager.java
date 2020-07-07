@@ -1,9 +1,9 @@
 package org.rares.miner49er.layoutmanager;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.AttributeSet;
 import android.view.View;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import lombok.Setter;
 
 import java.util.Collections;
@@ -37,7 +37,23 @@ public class SimpleLinearLayoutManager
     @Setter
     int itemCollapsedWidth = -1;
 
+    @Override
+    public void resetState(boolean resetSelectedView) {
+        selectedPosition = -1;
+        maxItemElevation = 0;
+        itemCollapsedSelectedWidth = -1;
+        itemCollapsedWidth = -1;
+    }
+
     public List<ItemAnimationDto> resizeSelectedView(View itemView, boolean expandToMatchParent) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void addMeasureCompleteListener(PreloadSizeConsumer listener) {
+    }
+
+    @Override
+    public void removeMeasureCompleteListener(PreloadSizeConsumer listener) {
     }
 }
